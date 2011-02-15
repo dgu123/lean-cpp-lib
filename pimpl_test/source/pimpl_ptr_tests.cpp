@@ -5,6 +5,12 @@
 BOOST_AUTO_TEST_SUITE( pimpl_ptr )
 
 template <class Implementation, class ImplementationBase>
+struct test_extension
+{
+	typedef void (*function_type)(lean::pimpl_ptr<Implementation, ImplementationBase>&);
+};
+
+template <class Implementation, class ImplementationBase>
 void assign_unbind_destruct_test(lean::pimpl_ptr<Implementation, ImplementationBase> &pimplPtr)
 {
 	int ctrCalls = 0, dtrCalls = 0;
@@ -38,7 +44,7 @@ void assign_unbind_destruct_test(lean::pimpl_ptr<Implementation, ImplementationB
 
 template <class Implementation, class ImplementationBase>
 void empty_destruct_test(
-	const std::tr1::function<void (lean::pimpl_ptr<Implementation, ImplementationBase>&)> &testExtension)
+	typename test_extension<Implementation, ImplementationBase>::function_type testExtension)
 {
 	lean::pimpl_ptr<Implementation, ImplementationBase> emptyPtr(nullptr);
 	BOOST_CHECK( emptyPtr.empty() );
@@ -53,7 +59,7 @@ void empty_destruct_test(
 
 template <class Implementation, class ImplementationBase>
 void init_destruct_test(
-	const std::tr1::function<void (lean::pimpl_ptr<Implementation, ImplementationBase>&)> &testExtension)
+	typename test_extension<Implementation, ImplementationBase>::function_type testExtension)
 {
 	int ctrCalls = 0, dtrCalls = 0;
 	Implementation *impl = new Implementation(ctrCalls, dtrCalls);

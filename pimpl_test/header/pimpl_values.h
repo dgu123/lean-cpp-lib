@@ -1,23 +1,38 @@
 #pragma once
 
-#include "pimpl_modules.h"
+#include <lean/pimpl/pimpl_ptr.h>
+#include <lean/pimpl/opaque_val.h>
 
-DECLARE_OPAQUE_TYPE(ModuleHandle, void*);
+DECLARE_OPAQUE_TYPE(SomeInterfaceHandle, void*);
+DECLARE_OPAQUE_TYPE(SomeHandle, void*);
 
-#ifdef MODULE_KNOWN
-	class SubModule;
+class PrivateInterface;
 
-	DEFINE_OPAQUE_TYPE(ModuleHandle, SubModule*);
+#ifdef HANDLE_KNOWN
+	class PrivateInterface
+	{
+	public:
+		const bool trueValue;
+		PrivateInterface() : trueValue(true) { }
+		bool getTrue() { return true; }
+	};
+
+	typedef struct { int unused; } *PrivateHandle;
+
+	DEFINE_OPAQUE_TYPE(SomeInterfaceHandle, PrivateInterface*);
+	DEFINE_OPAQUE_TYPE(SomeHandle, PrivateHandle);
 #endif
 
-class SubModule
+class SomeModule
 {
 private:
-	ModuleHandle m_module;
+	lean::pimpl_ptr<PrivateInterface> m_interface;
+	SomeHandle m_handle;
 
 public:
-	SubModule(int n);
-	~SubModule();
+	SomeModule(int bogusTestHandle);
+	~SomeModule();
 
-	ModuleHandle getHandle();
+	SomeInterfaceHandle getInterface();
+	SomeHandle getHandle();
 };

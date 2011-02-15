@@ -64,7 +64,7 @@ public:
 	opaque_val(const actual_type &value = actual_type())
 		: m_value(value)
 	{
-		typedef assignment_check<void, is_opaque>::type assertion_type;
+		typedef assignment_check<void, is_opaque>::type static_assertion_type;
 	}
 #ifdef CPP0X_MOVE_SEMANTICS
 	/// Constructs an opaque value object from the given value.
@@ -107,7 +107,7 @@ using pimpl::opaque_val;
 } // namespace
 
 /// Declares an opaque type of the given name, setting its internal opaque
-/// value type to the given opaque type name.
+/// value type to the given opaque type.
 #define DECLARE_OPAQUE_TYPE(NAME, OPAQUE_TYPE)	\
 	struct NAME##_opaque_type_wrapper			\
 	{											\
@@ -121,8 +121,8 @@ using pimpl::opaque_val;
 		NAME##_opaque_type_wrapper> NAME;
 
 /// Defines the previously declared opaque type of the given name, setting
-/// its actual value type to the given actual type name and thus changing
-/// its state from opaque to transparent.
+/// its actual value type to the given actual type and thus changing its
+/// state from opaque to transparent.
 #define DEFINE_OPAQUE_TYPE(NAME, ACTUAL_TYPE)								\
 	struct NAME##_actual_type_wrapper : public NAME##_opaque_type_wrapper	\
 	{																		\

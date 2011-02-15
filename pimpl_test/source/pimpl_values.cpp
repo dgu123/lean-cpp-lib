@@ -1,19 +1,24 @@
 #include "stdafx.h"
 
-#define MODULE_KNOWN
-
+#define HANDLE_KNOWN
 #include "pimpl_values.h"
 
-SubModule::SubModule(int n)
-	: m_module(this)
+SomeModule::SomeModule(int bogusTestHandle)
+	: m_handle( reinterpret_cast<PrivateHandle>(bogusTestHandle) ),
+	m_interface( new PrivateInterface() )
 {
 }
 
-SubModule::~SubModule()
+SomeModule::~SomeModule()
 {
 }
 
-ModuleHandle SubModule::getHandle()
+SomeInterfaceHandle SomeModule::getInterface()
 {
-	return m_module;
+	return m_interface.getptr();
+}
+
+SomeHandle SomeModule::getHandle()
+{
+	return m_handle;
 }

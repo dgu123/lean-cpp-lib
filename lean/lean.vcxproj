@@ -94,7 +94,6 @@
     <ClInclude Include="header\lean_internal\stdafx.h" />
     <ClInclude Include="header\lean_internal\targetver.h" />
     <ClInclude Include="header\lean\pimpl\pimpl_ptr.h" />
-    <ClInclude Include="header\lean\pimpl\pimpl_val_proto.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

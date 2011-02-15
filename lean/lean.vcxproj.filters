@@ -84,9 +84,6 @@
     <ClInclude Include="header\lean\tags\tags.h">
       <Filter>Header Files\tags</Filter>
     </ClInclude>
-    <ClInclude Include="header\lean\pimpl\pimpl_val_proto.h">
-      <Filter>Header Files\pimpl</Filter>
-    </ClInclude>
     <ClInclude Include="header\lean\pimpl\opaque_val.h">
       <Filter>Header Files\pimpl</Filter>
     </ClInclude>

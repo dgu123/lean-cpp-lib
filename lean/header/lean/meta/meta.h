@@ -5,6 +5,7 @@
 #ifndef LEAN_META_META
 #define LEAN_META_META
 
+#include "strip.h"
 #include "conditional_type.h"
 #include "complete_type_or_base.h"
 #include "dereference.h"

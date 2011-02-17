@@ -25,6 +25,9 @@
     <Filter Include="Header Files\meta">
       <UniqueIdentifier>{cb1fcd6f-1ee5-4662-9ea5-f79193686d3b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\smart">
+      <UniqueIdentifier>{a6f8a453-7810-4d6a-ba72-7f0c788abab4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -92,6 +95,15 @@
     </ClInclude>
     <ClInclude Include="header\lean\meta\strip.h">
       <Filter>Header Files\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\smart\cloneable_obj.h">
+      <Filter>Header Files\smart</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\smart\smart.h">
+      <Filter>Header Files\smart</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\tags\cloneable.h">
+      <Filter>Header Files\tags</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

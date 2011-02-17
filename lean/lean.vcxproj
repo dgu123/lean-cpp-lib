@@ -89,6 +89,9 @@
     <ClInclude Include="header\lean\pimpl\opaque_val.h" />
     <ClInclude Include="header\lean\pimpl\unsafe_pimpl_base.h" />
     <ClInclude Include="header\lean\pimpl\safe_pimpl_base.h" />
+    <ClInclude Include="header\lean\smart\cloneable_obj.h" />
+    <ClInclude Include="header\lean\smart\smart.h" />
+    <ClInclude Include="header\lean\tags\cloneable.h" />
     <ClInclude Include="header\lean\tags\nonconstructible.h" />
     <ClInclude Include="header\lean\tags\noncopyable.h" />
     <ClInclude Include="header\lean\tags\tags.h" />

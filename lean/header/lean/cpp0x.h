@@ -35,61 +35,45 @@
 
 	namespace lean
 	{
-		struct assertion_failed;
-
-		template <bool Trigger, class Error = assertion_failed>
 		struct static_assertion_error;
-		template <class Error>
-		struct static_assertion_error<true, Error> { };
 
 		namespace impl
 		{
-			template <int ErrorSize>
-			struct trigger_static_assertion_error;
+			// Accepts literal to circumvent the requirement of typename (which dependens on context)
+			template <bool Triggered>
+			struct emit_static_assertion_error;
 
-/*			template <bool Trigger, class Error>
-			struct trigger_static_assertion_error { typedef void type; };
+			template <bool Assertion, class Error>
+			struct trigger_static_assertion_error
+			{
+				static const bool triggered = false;
+			};
 
 			template <class Error>
 			struct trigger_static_assertion_error<false, Error>
 			{
-				typedef char error[sizeof(Error)];
-				typedef void type;
+				// Defines literal instead of type to circumvent the requirement of typename (which dependens on context)
+				static const bool triggered = sizeof(Error) || true;
 			};
-*/		}
+		}
 	}
 	
-/*	/// Static assertion triggering a compiler error on failure.
+	/// Static assertion triggering a compiler error on failure.
 	#define LEAN_STATIC_ASSERT(expr) typedef \
-		::lean::impl::trigger_static_assertion_error<(expr), ::lean::static_assertion_error>::type \
-		LEAN_JOIN_TOKENS(static_assertion_error_, __LINE__)
+		::lean::impl::emit_static_assertion_error< \
+			::lean::impl::trigger_static_assertion_error<(expr), ::lean::static_assertion_error>::triggered \
+		> LEAN_JOIN_TOKENS(static_assertion_error_, __LINE__)
 
 	/// Static assertion incorporating the given message in a compiler error on failure.
 	#define LEAN_STATIC_ASSERT_MSG(expr, msg) typedef \
-		::lean::impl::trigger_static_assertion_error<(expr), ::lean::static_assertion_error>::type \
-		LEAN_JOIN_TOKENS(static_assertion_error_, __LINE__)
+		::lean::impl::emit_static_assertion_error< \
+			::lean::impl::trigger_static_assertion_error<(expr), ::lean::static_assertion_error>::triggered \
+		> LEAN_JOIN_TOKENS(static_assertion_error_, __LINE__)
 
 	/// Static assertion incorporating either the given message or the given type name in a compiler error on failure.
 	#define LEAN_STATIC_ASSERT_MSG_ALT(expr, msg, msgtype) struct static_assertion_error__##msgtype; typedef \
-		::lean::impl::trigger_static_assertion_error<(expr), static_assertion_error__##msgtype>::type \
-		LEAN_JOIN_TOKENS(static_assertion_error_, __LINE__)
-*/
-	/// Static assertion triggering a compiler error on failure.
-	#define LEAN_STATIC_ASSERT(expr) typedef \
-		::lean::impl::trigger_static_assertion_error< \
-			sizeof(::lean::static_assertion_error<(expr)>) \
-		> LEAN_JOIN_TOKENS(static_assertion_error_, __LINE__)
-
-	/// Static assertion incorporating the given message in a compiler error on failure.
-	#define LEAN_STATIC_ASSERT_MSG(expr, msg) typedef \
-		::lean::impl::trigger_static_assertion_error< \
-			sizeof(::lean::static_assertion_error<(expr)>) \
-		> LEAN_JOIN_TOKENS(static_assertion_error_, __LINE__)
-
-	/// Static assertion incorporating either the given message or the given type name in a compiler error on failure.
-	#define LEAN_STATIC_ASSERT_MSG_ALT(expr, msg, msgtype) struct assertion_failed__##msgtype; typedef \
-		::lean::impl::trigger_static_assertion_error< \
-			sizeof(::lean::static_assertion_error<(expr), assertion_failed__##msgtype>) \
+		::lean::impl::emit_static_assertion_error< \
+			::lean::impl::trigger_static_assertion_error<(expr), static_assertion_error__##msgtype>::triggered \
 		> LEAN_JOIN_TOKENS(static_assertion_error_, __LINE__)
 
 	// Emulate static_assert
@@ -110,7 +94,5 @@
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	#include <utility>
 #endif
-
-#define CPP0X_STATIC_ASSERT
 
 #endif

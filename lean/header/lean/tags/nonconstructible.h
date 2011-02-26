@@ -5,6 +5,7 @@
 #ifndef LEAN_TAGS_NONCONSTRUCTIBLE
 #define LEAN_TAGS_NONCONSTRUCTIBLE
 
+#include "../cpp0x.h"
 #include "noncopyable.h"
 
 namespace lean

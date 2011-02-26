@@ -123,6 +123,9 @@
     <ClInclude Include="header\lean\lean.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\macros.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

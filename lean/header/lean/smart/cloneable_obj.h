@@ -5,6 +5,8 @@
 #ifndef LEAN_SMART_CLONEABLE_OBJ
 #define LEAN_SMART_CLONEABLE_OBJ
 
+#include "../cpp0x.h"
+
 namespace lean
 {
 namespace smart

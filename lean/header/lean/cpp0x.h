@@ -5,6 +5,8 @@
 #ifndef LEAN_CPP0X
 #define LEAN_CPP0X
 
+#include "macros.h"
+
 // Disable all C++0x features by default when working with older C++ standards
 #if (201100L > __cplusplus) || defined(LEAN0X_DISABLE)
 	#define LEAN0X_NO_NULLPTR

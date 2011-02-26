@@ -6,7 +6,7 @@
 #define LEAN_CONTAINERS_ACCUMULATION_VECTOR
 
 #include <vector>
-
+#include "../cpp0x.h"
 #include "default_reallocation_policy.h"
 
 namespace lean

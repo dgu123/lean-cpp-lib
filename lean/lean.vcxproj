@@ -81,6 +81,7 @@
     <ClInclude Include="header\lean\cpp0x.h" />
     <ClInclude Include="header\lean\depconfig.h" />
     <ClInclude Include="header\lean\lean.h" />
+    <ClInclude Include="header\lean\macros.h" />
     <ClInclude Include="header\lean\memory\util.h" />
     <ClInclude Include="header\lean\meta\complete_type_or_base.h" />
     <ClInclude Include="header\lean\meta\conditional_type.h" />

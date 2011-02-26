@@ -5,6 +5,8 @@
 #ifndef LEAN_TAGS_NONCOPYABLE
 #define LEAN_TAGS_NONCOPYABLE
 
+#include "../cpp0x.h"
+
 namespace lean
 {
 namespace tags

@@ -5,10 +5,8 @@
 
 #pragma once
 
-#define CPP0X_MOVE_SEMANTICS
-#define CPP0X_STATIC_ASSERT
-
 #include <lean/depconfig.h>
+#include <lean/lean.h>
 
 #define BOOST_TEST_NO_LIB
 #include <boost/test/unit_test.hpp>

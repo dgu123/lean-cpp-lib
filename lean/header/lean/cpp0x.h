@@ -6,7 +6,7 @@
 #define LEAN_CPP0X
 
 // Disable all C++0x features by default when working with older C++ standards
-#if (201100L > __cplusplus) || defined (LEAN0X_DISABLE)
+#if (201100L > __cplusplus) || defined(LEAN0X_DISABLE)
 	#define LEAN0X_NO_NULLPTR
 	#define LEAN0X_NO_RVALUE_REFERENCES
 	#define LEAN0X_NO_STATIC_ASSERT
@@ -16,13 +16,17 @@
 	#define LEAN0X_NO_DELETE_METHODS
 #endif
 
-// Enable Visual Studio 2010 C++0x features
-#if (_MSC_VER >= 1600) && defined(_MSC_EXTENSIONS) && !defined (LEAN0X_DISABLE)
-	#undef LEAN0X_NO_NULLPTR
-	#undef LEAN0X_NO_RVALUE_REFERENCES
-	#undef LEAN0X_NO_STATIC_ASSERT
-	#undef LEAN0X_NO_DECLTYPE
-	#undef LEAN0X_NO_AUTO
+#ifndef LEAN0X_DISABLE
+
+	// Enable Visual Studio 2010 C++0x features
+	#if (_MSC_VER >= 1600) && defined(_MSC_EXTENSIONS)
+		#undef LEAN0X_NO_NULLPTR
+		#undef LEAN0X_NO_RVALUE_REFERENCES
+		#undef LEAN0X_NO_STATIC_ASSERT
+		#undef LEAN0X_NO_DECLTYPE
+		#undef LEAN0X_NO_AUTO
+	#endif
+
 #endif
 
 // Fix missing nullptr

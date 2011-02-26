@@ -50,7 +50,7 @@ public:
 	/// Opaque type of the value concealed by this wrapper.
 	typedef typename OpaqueTypeWrapperBase::type opaque_type;
 	/// Actual type of the value concealed by this wrapper, if fully defined.
-	typedef typename typename complete_type_or_base<OpaqueTypeWrapper, OpaqueTypeWrapperBase>::type::type actual_type;
+	typedef typename complete_type_or_base<OpaqueTypeWrapper, OpaqueTypeWrapperBase>::type::type actual_type;
 	/// Dereferenced type of the value concealed by this wrapper.
 	typedef typename maybe_dereference_once<actual_type>::value_type dereferenced_type;
 	/// Dereferenced return type of the value concealed by this wrapper.
@@ -66,7 +66,7 @@ public:
 	{
 		typedef assignment_check<void, is_opaque>::type static_assertion_type;
 	}
-#ifdef CPP0X_MOVE_SEMANTICS
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs an opaque value object from the given value.
 	opaque_val(opaque_val &&right) : m_value(std::move(right.m_value)) { }
 #endif
@@ -79,7 +79,7 @@ public:
 		m_value = value;
 		return *this;
 	}
-#ifdef CPP0X_MOVE_SEMANTICS
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Replaces the stored value with the given new value.
 	opaque_val& operator =(opaque_val &&right)
 	{

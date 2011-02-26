@@ -1,13 +1,13 @@
 /*****************************************************/
-/* lean Tags                    (c) Tobias Zirr 2011 */
+/* lean Smart                   (c) Tobias Zirr 2011 */
 /*****************************************************/
 
-#ifndef LEAN_TAGS_CLONEABLE
-#define LEAN_TAGS_CLONEABLE
+#ifndef LEAN_SMART_CLONEABLE
+#define LEAN_SMART_CLONEABLE
 
 namespace lean
 {
-namespace cloneable
+namespace smart
 {
 
 /// Base class that may be used to tag a specific class cloneable.
@@ -22,7 +22,7 @@ public:
 
 } // namespace
 
-using tags::cloneable;
+using smart::cloneable;
 
 } // namespace
 

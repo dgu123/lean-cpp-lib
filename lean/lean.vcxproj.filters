@@ -28,6 +28,9 @@
     <Filter Include="Header Files\smart">
       <UniqueIdentifier>{a6f8a453-7810-4d6a-ba72-7f0c788abab4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\memory">
+      <UniqueIdentifier>{b16c27e2-fd8d-48b1-940f-46c467c3ecd1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -102,8 +105,23 @@
     <ClInclude Include="header\lean\smart\smart.h">
       <Filter>Header Files\smart</Filter>
     </ClInclude>
-    <ClInclude Include="header\lean\tags\cloneable.h">
-      <Filter>Header Files\tags</Filter>
+    <ClInclude Include="header\lean\smart\cloneable.h">
+      <Filter>Header Files\smart</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\smart\ref_counter.h">
+      <Filter>Header Files\smart</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\memory\util.h">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\memory\memory.h">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\smart\deallocate_on_exit.h">
+      <Filter>Header Files\smart</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\lean.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

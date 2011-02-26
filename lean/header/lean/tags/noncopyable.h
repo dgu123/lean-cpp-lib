@@ -14,7 +14,7 @@ namespace tags
 class noncopyable
 {
 private:
-#ifdef CPP0X_DELETE_METHODS
+#ifndef LEAN0X_NO_DELETE_METHODS
 	noncopyable(const noncopyable&) = delete;
 	noncopyable& operator =(const noncopyable&) = delete;
 #else

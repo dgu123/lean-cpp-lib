@@ -7,6 +7,5 @@
 
 #include "noncopyable.h"
 #include "nonconstructible.h"
-#include "cloneable.h"
 
 #endif

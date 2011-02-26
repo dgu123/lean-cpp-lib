@@ -16,7 +16,7 @@ namespace tags
 class nonconstructible : public noncopyable
 {
 private:
-#ifdef CPP0X_DELETE_METHODS
+#ifndef LEAN0X_NO_DELETE_METHODS
 	nonconstructible() = delete;
 	~nonconstructible() = delete;
 #else

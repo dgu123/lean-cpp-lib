@@ -28,7 +28,7 @@ public:
 	/// Constructs a cloneable object by cloning the given cloneable object.
 	cloneable_obj(const cloneable_obj &right)
 		: m_cloneable( static_cast<Cloneable*>(right.m_cloneable->clone()) ) { };
-#ifdef CPP0X_MOVE_SEMANTICS
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs a cloneable object by cloning the given cloneable object.
 	opaque_val(cloneable_obj &&right)
 		: m_cloneable(std::move(right.m_cloneable))
@@ -63,7 +63,7 @@ public:
 			*this = *right.m_cloneable;
 		return *this;
 	}
-#ifdef CPP0X_MOVE_SEMANTICS
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Replaces the stored cloneable value with the value stored by the given cloneable object.
 	cloneable_obj& operator =(cloneable_obj &&right)
 	{

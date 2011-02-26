@@ -86,7 +86,7 @@ public:
 	inline accumulation_vector(size_type count, const Element& value) : m_container(count, value), m_size(count) { };
 	/// Copy Constructor.
 	inline accumulation_vector(size_type count, const Element& value, const Allocator& allocator) : m_container(count, value, allocator), m_size(count) { };
-#ifdef CPP0X_MOVE_SEMANTICS
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Move Constructor.
 	inline accumulation_vector(accumulation_vector&& right) : m_container(::std::move(right.m_container)), m_size(::std::move(right.m_size)) { };
 #endif
@@ -116,7 +116,7 @@ public:
 
 		return *this;
 	}
-#ifdef CPP0X_MOVE_SEMANTICS
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Move Assignment operator.
 	inline accumulation_vector& operator =(accumulation_vector&& right)
 	{

@@ -24,8 +24,9 @@
 	#endif
 #endif
 
+#define LEAN_JOIN_TOKEN_IMPL(a, b) a##b
 /// Appends token b to token a.
-#define LEAN_TOKEN_CONCAT(a, b) a#b
+#define LEAN_JOIN_TOKENS(a, b) LEAN_JOIN_TOKEN_IMPL(a, b)
 
 #include "cpp0x.h"
 

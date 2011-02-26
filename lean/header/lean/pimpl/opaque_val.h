@@ -5,6 +5,7 @@
 #ifndef LEAN_PIMPL_OPAQUE_VAL
 #define LEAN_PIMPL_OPAQUE_VAL
 
+#include "../lean.h"
 #include "../meta/conditional_type.h"
 #include "../meta/complete_type_or_base.h"
 #include "../meta/dereference.h"
@@ -24,28 +25,6 @@ class opaque_val
 private:
 	typename OpaqueTypeWrapperBase::type m_value;
 
-	/// Asserts that this wrapper is not in an opaque state when values are assigned.
-	template <class PassThroughType, bool IsOpaque>
-	struct assignment_check
-	{
-#ifdef CPP0X_STATIC_ASSERT
-		static_assert(!IsOpaque, "cannot assign value in opaque state");
-#endif
-		typedef PassThroughType type;
-	};
-
-#ifndef CPP0X_STATIC_ASSERT
-	struct cannot_assign_value_in_opaque_state;
-
-	template <class PassThroughType>
-	struct assignment_check<PassThroughType, true>
-	{
-		typedef char error[sizeof(cannot_assign_value_in_opaque_state)];
-
-		typedef PassThroughType type;
-	};
-#endif
-
 public:
 	/// Opaque type of the value concealed by this wrapper.
 	typedef typename OpaqueTypeWrapperBase::type opaque_type;
@@ -64,7 +43,7 @@ public:
 	opaque_val(const actual_type &value = actual_type())
 		: m_value(value)
 	{
-		typedef assignment_check<void, is_opaque>::type static_assertion_type;
+		LEAN_STATIC_ASSERT_MSG_ALT(!is_opaque, "cannot construct value in opaque state", cannot_construct_value_in_opaque_state);
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs an opaque value object from the given value.
@@ -74,7 +53,7 @@ public:
 	/// Replaces the stored value with the given new value.
 	opaque_val& operator =(const actual_type &value)
 	{
-		typedef assignment_check<void, is_opaque>::type assertion_type;
+		LEAN_STATIC_ASSERT_MSG_ALT(!is_opaque, "cannot assign value in opaque state", cannot_assign_value_in_opaque_state);
 
 		m_value = value;
 		return *this;

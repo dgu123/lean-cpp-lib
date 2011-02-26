@@ -6,21 +6,18 @@
 #define LEAN_CPP0X
 
 // Disable all C++0x features by default when working with older C++ standards
-#if (201100L > __cplusplus)
+#if (201100L > __cplusplus) || defined (LEAN0X_DISABLE)
 	#define LEAN0X_NO_NULLPTR
 	#define LEAN0X_NO_RVALUE_REFERENCES
 	#define LEAN0X_NO_STATIC_ASSERT
 	#define LEAN0X_NO_DECLTYPE
 	#define LEAN0X_NO_AUTO
 	#define LEAN0X_NO_ALIGNMENT
-	#define LEAN0X_NO_DELETE_METHODS;
+	#define LEAN0X_NO_DELETE_METHODS
 #endif
 
-// Allows for pre-0x testing
-#ifndef LEAN0X_DISABLE
-
 // Enable Visual Studio 2010 C++0x features
-#if (_MSC_VER >= 1600) && defined(_MSC_EXTENSIONS)
+#if (_MSC_VER >= 1600) && defined(_MSC_EXTENSIONS) && !defined (LEAN0X_DISABLE)
 	#undef LEAN0X_NO_NULLPTR
 	#undef LEAN0X_NO_RVALUE_REFERENCES
 	#undef LEAN0X_NO_STATIC_ASSERT
@@ -38,39 +35,75 @@
 
 	namespace lean
 	{
+		struct assertion_failed;
+
+		template <bool Trigger, class Error = assertion_failed>
 		struct static_assertion_error;
+		template <class Error>
+		struct static_assertion_error<true, Error> { };
 
 		namespace impl
 		{
-			template <bool Trigger, class Error>
-			struct trigger_static_assertion_error
-			{
-				typedef Error error_type;
-			};
+			template <int ErrorSize>
+			struct trigger_static_assertion_error;
+
+/*			template <bool Trigger, class Error>
+			struct trigger_static_assertion_error { typedef void type; };
 
 			template <class Error>
 			struct trigger_static_assertion_error<false, Error>
 			{
-				typedef Error error_type;
-				typedef char error[sizeof(error_type)];
+				typedef char error[sizeof(Error)];
+				typedef void type;
 			};
-		}
-		
+*/		}
 	}
+	
+/*	/// Static assertion triggering a compiler error on failure.
+	#define LEAN_STATIC_ASSERT(expr) typedef \
+		::lean::impl::trigger_static_assertion_error<(expr), ::lean::static_assertion_error>::type \
+		LEAN_JOIN_TOKENS(static_assertion_error_, __LINE__)
 
-	/// Emulate static_assert
-	#define static_assert(expr, msg) typedef \
-		::lean::impl::trigger_static_assertion_error<(expr), static_assertion_error>::error_type \
-		LEAN_TOKEN_CONCAT(static_assertion_error_, __LINE__);
+	/// Static assertion incorporating the given message in a compiler error on failure.
+	#define LEAN_STATIC_ASSERT_MSG(expr, msg) typedef \
+		::lean::impl::trigger_static_assertion_error<(expr), ::lean::static_assertion_error>::type \
+		LEAN_JOIN_TOKENS(static_assertion_error_, __LINE__)
 
-	/// Static assertion incorporating the given message TYPE in a compiler error on failure.
-	#define LEAN_STATIC_ASSERT(expr, msg, msgtype) typedef \
-		::lean::impl::trigger_static_assertion_error<(expr), msgtype>::error_type \
-		LEAN_TOKEN_CONCAT(static_assertion_error_, __LINE__);
+	/// Static assertion incorporating either the given message or the given type name in a compiler error on failure.
+	#define LEAN_STATIC_ASSERT_MSG_ALT(expr, msg, msgtype) struct static_assertion_error__##msgtype; typedef \
+		::lean::impl::trigger_static_assertion_error<(expr), static_assertion_error__##msgtype>::type \
+		LEAN_JOIN_TOKENS(static_assertion_error_, __LINE__)
+*/
+	/// Static assertion triggering a compiler error on failure.
+	#define LEAN_STATIC_ASSERT(expr) typedef \
+		::lean::impl::trigger_static_assertion_error< \
+			sizeof(::lean::static_assertion_error<(expr)>) \
+		> LEAN_JOIN_TOKENS(static_assertion_error_, __LINE__)
+
+	/// Static assertion incorporating the given message in a compiler error on failure.
+	#define LEAN_STATIC_ASSERT_MSG(expr, msg) typedef \
+		::lean::impl::trigger_static_assertion_error< \
+			sizeof(::lean::static_assertion_error<(expr)>) \
+		> LEAN_JOIN_TOKENS(static_assertion_error_, __LINE__)
+
+	/// Static assertion incorporating either the given message or the given type name in a compiler error on failure.
+	#define LEAN_STATIC_ASSERT_MSG_ALT(expr, msg, msgtype) struct assertion_failed__##msgtype; typedef \
+		::lean::impl::trigger_static_assertion_error< \
+			sizeof(::lean::static_assertion_error<(expr), assertion_failed__##msgtype>) \
+		> LEAN_JOIN_TOKENS(static_assertion_error_, __LINE__)
+
+	// Emulate static_assert
+	#define static_assert(expr, msg) LEAN_STATIC_ASSERT_MSG(expr, msg)
 
 #else
+	/// Static assertion triggering a compiler error on failure.
+	#define LEAN_STATIC_ASSERT(expr) static_assert(expr, #expr)
+	
 	/// Static assertion incorporating the given message in a compiler error on failure.
-	#define LEAN_STATIC_ASSERT(expr, msg, msgtype) static_assert(expr, msg)
+	#define LEAN_STATIC_ASSERT_MSG(expr, msg) static_assert(expr, msg)
+	
+	/// Static assertion incorporating either the given message or the given incomplete type in a compiler error on failure.
+	#define LEAN_STATIC_ASSERT_MSG_ALT(expr, msg, msgtype) static_assert(expr, msg)
 #endif
 
 // Automatically include utility for move semantics
@@ -78,10 +111,6 @@
 	#include <utility>
 #endif
 
-#endif
-
-#define CPP0X_MOVE_SEMANTICS
-#define CPP0X_DELETE_METHODS
 #define CPP0X_STATIC_ASSERT
 
 #endif

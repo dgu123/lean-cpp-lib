@@ -24,6 +24,14 @@
 	#endif
 #endif
 
+#ifdef _MSC_VER
+	/// Instructs the compiler to inline a specific method.
+	#define LEAN_INLINE __forceinline
+#else
+	/// Instructs the compiler to inline a specific method.
+	#define LEAN_INLINE inline
+#endif
+
 #include "macros.h"
 #include "cpp0x.h"
 

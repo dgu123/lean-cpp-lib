@@ -6,8 +6,8 @@
 #define LEAN_SMART_REF_COUNTER
 
 #include <memory>
-
-#include "deallocate_on_exit.h"
+#include "../lean.h"
+#include "../platform/atomic.h"
 
 namespace lean
 {
@@ -15,23 +15,23 @@ namespace smart
 {
 
 /// Reference counter class that maintains strong and weak reference counts.
-template < class Counter = long, class Allocator = std::allocator<long> >
+template < class Counter = long, class Allocator = std::allocator<Counter> >
 class ref_counter
 {
 public:
-	/// References structure.
+	/// Reference counter structure.
 	struct ref_counts
 	{
 		// Reference counter
 		Counter references;
 
 		// Weak reference count
-		Counter weakReferences;
+		Counter weakRefrences;
 
 		/// Constructor.
-		ref_counts(Counter references, Counter weakReferences)
+		ref_counts(Counter references, Counter weakRefrences)
 			: references(references),
-			weakReferences(weakReferences) { };
+			weakRefrences(weakRefrences) { };
 	};
 
 	// Allocator
@@ -41,32 +41,16 @@ public:
 	// Reference counts
 	ref_counts *m_references;
 
-	/// Acquires and sets the given reference counter.
-	inline void AcquireAndSet(References *pReferences)
-	{
-		m_references = pReferences;
-		++m_references->weakReferences;
-	}
-	/// Releases the current reference counter, leaving the object in an INVALID STATE.
-	inline void release()
-	{
-		--m_references->weakReferences;
-
-		// Clean up, if this is the last reference
-		if(m_references->weakReferences < 1)
-			delete_ref_counts(m_references);
-	}
-
 	/// Allocates and constructs a new internal reference counting object from the given parameters.
-	inline ref_counts new_ref_counts(int references, int weakReferences)
+	ref_counts new_ref_counts(Counter references, Counter weakRefrences)
 	{
 		ref_counts *references = m_allocator.allocate(1);
 
 		try
 		{
-			new (references) ref_counts(references, weakReferences);
+			new (references) ref_counts(references, weakRefrences);
 		}
-		catch(...)
+		catch (...)
 		{
 			m_allocator.deallocate(references, 1);
 			throw;
@@ -74,25 +58,50 @@ public:
 	}
 
 	/// Destructs and deallocates the given internal reference counting object.
-	inline void delete_ref_counts(const ref_counts *references)
+	void delete_ref_counts(const ref_counts *references)
 	{
-		deallocate_on_exit<ref_counts, _allocator_type> deallocate(references, m_allocator);
-		references->~ref_counts();
+		try
+		{
+			references->~ref_counts();
+		}
+		catch (...)
+		{
+			m_allocator.deallocate(references, 1);
+			throw;
+		}
+
+		m_allocator.deallocate(references, 1);
+	}
+
+	/// Acquires the given internal reference counting object.
+	void acquire(ref_counts *references)
+	{
+		atomic_increment(m_references->weakRefrences);
+	}
+
+	/// Releases the given internal reference counting object.
+	void release(ref_counts *references)
+	{
+		// Clean up, if this is the last reference
+		if (atomic_decrement(references->weakRefrences))
+			delete_ref_counts(references);
 	}
 
 public:
+	/// Type of the counter used by this class.
+	typedef Counter counter_type;
 	/// Type of the allocator used by this class.
 	typedef _allocator_type allocator_type;
 	
 	/// Constructor.
-	explicit ref_counter(int references = 1)
+	explicit ref_counter(counter_type references = 1)
 		: m_references( new_ref_counts(references, 1) ) { }
 	/// Constructor.
 	explicit ref_counter(const allocator_type& allocator)
 		: m_allocator(allocator),
 		m_references( new_ref_counts(1, 1) ) { }
 	/// Constructor.
-	ref_counter(int references, const allocator_type& allocator)
+	ref_counter(counter_type references, const allocator_type& allocator)
 		: m_allocator(allocator),
 		m_references( new_ref_counts(references, 1) ) { }
 	/// Copy constructor.
@@ -100,57 +109,81 @@ public:
 		: m_allocator(m_references.allocator),
 		m_references(refCounter.m_references)
 	{
-		++m_references->weakReferences;
+		acquire(m_references);
 	}
 	/// Destructor.
-	~CReferenceCounter()
+	~ref_counter()
 	{
-		release();
+		release(m_references);
 	}
 
 	/// Assignment operator.
-	CReferenceCounter& operator =(const CReferenceCounter& refCounter)
+	ref_counter& operator =(const ref_counter& refCounter)
 	{
 		// Don't re-assign the same
-		if(m_pReferences != refCounter.m_pReferences)
+		if(m_references != refCounter.m_references)
 		{
-			Release();
-			AcquireAndSet(refCounter.m_pReferences);
+			acquire(refCounter.m_references);
+
+			ref_counts *prevReferences = m_references;
+			m_references = refCounter.m_references;
+			
+			release(prevReferences);
 		}
 
 		return *this;
 	}
 
 	/// Increments the current reference count.
-	inline void Increment() const { m_pReferences->iReferences++; };
-	/// Decrements the current reference count.
-	inline void Decrement() const { m_pReferences->iReferences--; };
+	bool increment() const
+	{
+		for (;;)
+		{
+			Counter references = (volatile Counter&)m_references->references;
+			
+			// Make sure reference count has not become 0 yet
+			if (references < 1)
+				return false;
+			// Make sure value has not changed until it has successfully been updated
+			else if (atomic_test_and_set(m_references->references, references, references + 1))
+				return true;
+		}
 
-	/// Invalidates all references.
-	inline void Invalidate(int iReferences = 0) const { m_pReferences->iReferences = iReferences; };
+		LEAN_ASSERT(0);
+	}
+	/// Decrements the current reference count.
+	void decrement() const
+	{
+		atomic_decrement(references->references)
+	}
+	/// Overwrites the current reference count with the given value.
+	inline void invalidate(counter_type references = 0) const
+	{
+		atomic_set(m_references->references, references);
+	}
 
 	/// Gets the current reference count.
-	inline int GetCount() const { return m_pReferences->iReferences; };
+	inline counter_type count() const { return m_references->references; };
 	/// Gets whether the reference-counted object still exists (<==> reference count > 0).
-	inline bool IsValid() const { return (m_pReferences->iReferences > 0); };
+	inline bool valid() const { return (m_references->references > 0); };
 
 	/// Increments the current reference count.
-	inline CReferenceCounter& operator ++() { ++const_cast<const CReferenceCounter&>(*this); return *this; };
+	inline ref_counter& operator ++() { ++const_cast<const ref_counter&>(*this); return *this; };
 	/// Increments the current reference count.
-	inline const CReferenceCounter& operator ++() const { Increment(); return *this; };
+	inline const ref_counter& operator ++() const { increment(); return *this; };
 	/// Decrements the current reference count.
-	inline CReferenceCounter& operator --() { --const_cast<const CReferenceCounter&>(*this); return *this; };
+	inline ref_counter& operator --() { --const_cast<const ref_counter&>(*this); return *this; };
 	/// Decrements the current reference count.
-	inline const CReferenceCounter& operator --() const { Decrement(); return *this; };
+	inline const ref_counter& operator --() const { decrement(); return *this; };
 	/// Increments the current reference count.
-	inline int operator ++(int) const { int iPrevCount = GetCount(); ++(*this); return iPrevCount; };
+	inline counter_type operator ++(counter_type) const { counter_type prevCount = count(); ++(*this); return prevCount; };
 	/// Decrements the current reference count.
-	inline int operator --(int) const { int iPrevCount = GetCount(); --(*this); return iPrevCount;};
+	inline counter_type operator --(counter_type) const { counter_type prevCount = count(); --(*this); return prevCount;};
 
 	/// Gets the current reference count.
-	inline operator int() const { return GetCount(); };
+	inline operator int() const { return count(); };
 	/// Gets whether the reference-counted object still exists (<==> reference count > 0).
-	inline operator bool() const { return IsValid(); };
+	inline operator bool() const { return valid(); };
 };
 
 } // namespace

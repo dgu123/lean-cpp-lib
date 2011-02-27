@@ -22,17 +22,16 @@ private:
 	/// Acquires the given resource.
 	static Resource* acquire(Resource *resource)
 	{
-		if(resource && resource->ref_counter().increment())
-			return resource;
-		else
-			return nullptr;
+		return (resource && resource->ref_counter().increment())
+			? resource
+			: nullptr;
 	}
 
 	/// Releases the given resource.
 	static void release(Resource *resource)
 	{
 		// Clean up, if this is the last reference
-		if (resource && !--resource->ref_counter())
+		if (resource && !resource->ref_counter().decrement())
 			resource->destroy();
 	}
 
@@ -43,7 +42,7 @@ public:
 	typedef Resource* value_type;
 
 	/// Constructs a resource pointer from the given resource.
-	resource_ptr(resource_type *resource)
+	resource_ptr(resource_type *resource = nullptr)
 		: m_resource( acquire(resource) ) { };
 	/// Constructs a resource pointer from the given resource pointer.
 	resource_ptr(const resource_ptr &right)
@@ -54,7 +53,7 @@ public:
 		release(m_resource);
 	}
 
-	/// Replaces the stored resource with the given resource.
+	/// Replaces the stored resource with the given resource. <b>[ESA]</b>
 	resource_ptr& operator =(resource_type *resource)
 	{
 		if (m_resource != resource)
@@ -66,7 +65,7 @@ public:
 
 		return *this;
 	}
-	/// Replaces the stored resource with one stored by the given resource pointer.
+	/// Replaces the stored resource with one stored by the given resource pointer. <b>[ESA]</b>
 	resource_ptr& operator =(const resource_ptr &right)
 	{
 		*this = right.m_resource;

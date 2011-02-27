@@ -42,8 +42,9 @@ public:
 	{
 		if (impl != m_impl)
 		{
-			delete_impl(m_impl);
+			ImplementationBase *prevImpl = m_impl;
 			m_impl = impl;
+			delete_impl(prevImpl);
 		}
 
 		return *this;

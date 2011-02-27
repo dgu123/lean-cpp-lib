@@ -98,6 +98,7 @@
     <ClInclude Include="header\lean\smart\resource_ptr.h" />
     <ClInclude Include="header\lean\smart\smart.h" />
     <ClInclude Include="header\lean\smart\cloneable.h" />
+    <ClInclude Include="header\lean\smart\weak_resource_ptr.h" />
     <ClInclude Include="header\lean\tags\nonconstructible.h" />
     <ClInclude Include="header\lean\tags\noncopyable.h" />
     <ClInclude Include="header\lean\tags\tags.h" />

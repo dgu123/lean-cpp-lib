@@ -67,9 +67,29 @@ public:
 	/// Constructs a resource pointer from the given resource.
 	resource_ptr(resource_type *resource = nullptr)
 		: m_resource( acquire(resource) ) { };
+	/// Constructs a resource pointer from the given resource.
+	template <class Resource2>
+	resource_ptr(Resource2 *resource)
+		: m_resource( acquire(resource) ) { };
+
 	/// Constructs a resource pointer from the given resource pointer.
 	resource_ptr(const resource_ptr &right)
 		: m_resource( acquire(right.m_resource) ) { };
+	/// Constructs a resource pointer from the given resource pointer.
+	template <class Resource2>
+	resource_ptr(const resource_ptr<Resource2> &right)
+		: m_resource( acquire(right.m_resource) ) { };
+
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Constructs a resource pointer from the given r-value resource pointer.
+	template <class Resource2>
+	resource_ptr(resource_ptr<Resource2> &&right)
+		: m_resource(right.m_resource)
+	{
+		right.m_resource = nullptr;
+	}
+#endif
+
 	/// Destroys the resource pointer.
 	~resource_ptr()
 	{
@@ -88,12 +108,31 @@ public:
 
 		return *this;
 	}
+
 	/// Replaces the stored resource with one stored by the given resource pointer. <b>[ESA]</b>
 	resource_ptr& operator =(const resource_ptr &right)
 	{
-		*this = right.m_resource;
+		return (*this = right.m_resource);
+	}
+	/// Replaces the stored resource with one stored by the given resource pointer. <b>[ESA]</b>
+	template <class Resource2>
+	resource_ptr& operator =(const resource_ptr<Resource2> &right)
+	{
+		return (*this = right.m_resource);
+	}
+
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Replaces the stored resource with one stored by the r-value given resource pointer. <b>[ESA]</b>
+	template <class Resource2>
+	resource_ptr& operator =(resource_ptr<Resource2> &&right)
+	{
+		Resource *prevResource = m_resource;
+		m_resource = right.m_resource;
+		right.m_resource = prevResource;
+
 		return *this;
 	}
+#endif
 
 	/// Gets the resource stored by this resource pointer.
 	resource_type* get(void) const { return m_resource; };

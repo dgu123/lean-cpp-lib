@@ -34,10 +34,32 @@ public:
 	weak_resource_ptr(resource_type *resource = nullptr)
 		: m_resource(resource),
 		m_refCounter( (resource) ? resource->ref_counter() : ref_counter_type::null() ) { };
+	/// Constructs a resource pointer from the given resource.
+	template <class Resource2>
+	weak_resource_ptr(Resource2 *resource)
+		: m_resource(resource),
+		m_refCounter( (m_resource) ? m_resource->ref_counter() : ref_counter_type::null() ) { };
+	
 	/// Constructs a resource pointer from the given resource pointer.
 	weak_resource_ptr(const weak_resource_ptr &right)
 		: m_resource(right.m_resource),
 		m_refCounter(right.m_refCounter) { };
+	/// Constructs a resource pointer from the given resource pointer.
+	template <class Resource2>
+	weak_resource_ptr(const weak_resource_ptr<Resource2> &right)
+		: m_resource(right.m_resource),
+		m_refCounter(right.m_refCounter) { };
+
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Constructs a resource pointer from the given r-value resource pointer.
+	template <class Resource2>
+	weak_resource_ptr(weak_resource_ptr<Resource2> &&right)
+		: m_resource(right.m_resource),
+		m_refCounter(::std::move(right.m_refCounter))
+	{
+		right.m_resource = nullptr;
+	}
+#endif
 
 	/// Replaces the stored resource with the given resource. <b>[ESA]</b>
 	weak_resource_ptr& operator =(resource_type *resource)
@@ -50,12 +72,47 @@ public:
 
 		return *this;
 	}
+	
 	/// Replaces the stored resource with one stored by the given resource pointer. <b>[ESA]</b>
 	weak_resource_ptr& operator =(const weak_resource_ptr &right)
 	{
-		*this = right.m_resource;
+		if (m_resource != right.m_resource)
+		{
+			m_resource = right.m_resource;
+			m_refCounter = right.m_refCounter;
+		}
+
 		return *this;
 	}
+	/// Replaces the stored resource with one stored by the given resource pointer. <b>[ESA]</b>
+	template <class Resource2>
+	weak_resource_ptr& operator =(const weak_resource_ptr<Resource2> &right)
+	{
+		if (m_resource != right.m_resource)
+		{
+			m_resource = right.m_resource;
+			m_refCounter = right.m_refCounter;
+		}
+
+		return *this;
+	}
+
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Replaces the stored resource with the given resource. <b>[ESA]</b>
+	template <class Resource2>
+	weak_resource_ptr& operator =(weak_resource_ptr<Resource2> &&right)
+	{
+		if (m_resource != right.m_resource)
+		{
+			m_resource = right.m_resource;
+			m_refCounter = ::std::move(right.m_refCounter);
+
+			right.m_resource = nullptr;
+		}
+
+		return *this;
+	}
+#endif
 
 	/// Gets whether the resource stored by this pointer is still valid.
 	bool check() const

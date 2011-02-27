@@ -138,6 +138,9 @@
     <ClInclude Include="header\lean\smart\resource.h">
       <Filter>Header Files\smart</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\smart\weak_resource_ptr.h">
+      <Filter>Header Files\smart</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

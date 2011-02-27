@@ -7,6 +7,7 @@
 
 #include "../cpp0x.h"
 #include "ref_counter.h"
+#include "resource_ptr.h"
 
 namespace lean
 {
@@ -66,16 +67,23 @@ public:
 	{
 		return (check()) ? m_resource : nullptr;
 	}
+	/// Locks the resource stored by this resource pointer or returns null, if the resource has been destroyed.
+	resource_ptr<resource_type> lock()
+	{
+		return resource_ptr<resource_type>(m_resource, m_refCounter);
+	}
 	/// Gets the resource stored by this resource pointer.
-	resource_type* getunchecked(void) const { return m_resource; };
+	resource_type* get_unchecked(void) const { return m_resource; };
 
 	/// Gets the resource stored by this resource pointer.
-	resource_type& operator *() const { return *getunchecked(); };
+	resource_type& operator *() const { return *get_unchecked(); };
 	/// Gets the resource stored by this resource pointer.
-	resource_type* operator ->() const { return getunchecked(); };
+	resource_type* operator ->() const { return get_unchecked(); };
 
 	/// Gets the resource stored by this resource pointer or null, if the resource has been destroyed.
 	operator resource_type*() const { return get(); };
+	/// Gets the resource stored by this resource pointer or null, if the resource has been destroyed.
+	operator resource_ptr<resource_type>() const { return lock(); };
 };
 
 } // namespace

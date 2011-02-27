@@ -180,7 +180,7 @@ public:
 #endif
 
 	/// Increments the current reference count.
-	bool increment() const
+	bool increment_checked() const
 	{
 		LEAN_ASSERT(m_counts);
 
@@ -198,12 +198,19 @@ public:
 
 		LEAN_ASSERT(0);
 	}
+	/// Increments the current reference count.
+	counter_type increment() const
+	{
+		LEAN_ASSERT(m_counts);
+
+		return atomic_increment(m_counts->references);
+	}
 	/// Decrements the current reference count.
 	counter_type decrement() const
 	{
 		LEAN_ASSERT(m_counts);
 
-		return atomic_decrement(m_counts->references)
+		return atomic_decrement(m_counts->references);
 	}
 
 	/// Gets the current reference count.

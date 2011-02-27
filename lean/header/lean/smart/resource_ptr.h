@@ -12,19 +12,36 @@ namespace lean
 namespace smart
 {
 
+// Prototypes
+template <class Counter, class Allocator>
+class ref_counter;
+
 /// Resource pointer class that performs strong reference counting on the given resource type.
 template <class Resource>
 class resource_ptr
 {
+	template <class Resource>
+	friend class weak_resource_ptr;
+
 private:
 	Resource *m_resource;
 
 	/// Acquires the given resource.
-	static Resource* acquire(Resource *resource)
+	template <class Counter, class Allocator>
+	static Resource* acquire(Resource *resource, const ref_counter<Counter, Allocator>& refCounter)
 	{
-		return (resource && resource->ref_counter().increment())
+		return (resource && refCounter.increment_checked())
 			? resource
 			: nullptr;
+	}
+
+	/// Acquires the given resource.
+	static Resource* acquire(Resource *resource)
+	{
+		if (resource)
+			resource->ref_counter().increment();
+
+		return resource;
 	}
 
 	/// Releases the given resource.
@@ -34,6 +51,12 @@ private:
 		if (resource && !resource->ref_counter().decrement())
 			resource->destroy();
 	}
+
+protected:
+	/// Constructs a resource pointer from the given resource and reference counter.
+	template <class Counter, class Allocator>
+	resource_ptr(resource_type *resource, const ref_counter<Counter, Allocator>& refCounter)
+		: m_resource( acquire(resource, refCounter) ) { };
 
 public:
 	/// Type of the resource stored by this resource pointer.

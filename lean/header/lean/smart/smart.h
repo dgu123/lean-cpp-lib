@@ -7,5 +7,6 @@
 
 #include "cloneable.h"
 #include "cloneable_obj.h"
+#include "ref_counter.h"
 
 #endif

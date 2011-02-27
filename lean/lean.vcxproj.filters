@@ -31,6 +31,9 @@
     <Filter Include="Header Files\memory">
       <UniqueIdentifier>{b16c27e2-fd8d-48b1-940f-46c467c3ecd1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\platform">
+      <UniqueIdentifier>{f170af81-be1b-4d4a-90c6-649348a2fb49}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -117,14 +120,23 @@
     <ClInclude Include="header\lean\memory\memory.h">
       <Filter>Header Files\memory</Filter>
     </ClInclude>
-    <ClInclude Include="header\lean\smart\deallocate_on_exit.h">
-      <Filter>Header Files\smart</Filter>
-    </ClInclude>
     <ClInclude Include="header\lean\lean.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="header\lean\macros.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\platform\atomic.h">
+      <Filter>Header Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\platform\platform.h">
+      <Filter>Header Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\smart\resource_ptr.h">
+      <Filter>Header Files\smart</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\smart\resource.h">
+      <Filter>Header Files\smart</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

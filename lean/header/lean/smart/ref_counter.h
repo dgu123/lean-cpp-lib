@@ -26,12 +26,12 @@ public:
 		Counter references;
 
 		// Weak reference count
-		Counter weakRefrences;
+		Counter weakReferences;
 
 		/// Constructor.
-		ref_counts(Counter references, Counter weakRefrences)
+		ref_counts(Counter references, Counter weakReferences)
 			: references(references),
-			weakRefrences(weakRefrences) { };
+			weakReferences(weakReferences) { };
 	};
 
 	// Allocator
@@ -42,13 +42,13 @@ public:
 	ref_counts *m_references;
 
 	/// Allocates and constructs a new internal reference counting object from the given parameters.
-	ref_counts new_ref_counts(Counter references, Counter weakRefrences)
+	ref_counts new_ref_counts(Counter initialReferences, Counter initialWeakReferences)
 	{
 		ref_counts *references = m_allocator.allocate(1);
 
 		try
 		{
-			new (references) ref_counts(references, weakRefrences);
+			new (references) ref_counts(initialReferences, initialWeakReferences);
 		}
 		catch (...)
 		{
@@ -74,16 +74,17 @@ public:
 	}
 
 	/// Acquires the given internal reference counting object.
-	void acquire(ref_counts *references)
+	static ref_counts* acquire(ref_counts *references)
 	{
-		atomic_increment(m_references->weakRefrences);
+		atomic_increment(references->weakReferences);
+		return references;
 	}
 
 	/// Releases the given internal reference counting object.
 	void release(ref_counts *references)
 	{
 		// Clean up, if this is the last reference
-		if (atomic_decrement(references->weakRefrences))
+		if (atomic_decrement(references->weakReferences))
 			delete_ref_counts(references);
 	}
 
@@ -106,15 +107,23 @@ public:
 		m_references( new_ref_counts(references, 1) ) { }
 	/// Copy constructor.
 	ref_counter(const ref_counter& refCounter)
-		: m_allocator(m_references.allocator),
-		m_references(refCounter.m_references)
+		: m_allocator(refCounter.m_allocator),
+		m_references( acquire(refCounter.m_references) ) { }
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Move constructor.
+	ref_counter(ref_counter&& refCounter)
+		: m_allocator(::std::move(refCounter.allocator)),
+		m_references(::std::move(refCounter.m_references))
 	{
-		acquire(m_references);
+		// Warning: this effectively "breaks" the other object
+		refCounter.m_references = nullptr;
 	}
+#endif
 	/// Destructor.
 	~ref_counter()
 	{
-		release(m_references);
+		if (m_references)
+			release(m_references);
 	}
 
 	/// Assignment operator.
@@ -123,16 +132,32 @@ public:
 		// Don't re-assign the same
 		if(m_references != refCounter.m_references)
 		{
-			acquire(refCounter.m_references);
-
 			ref_counts *prevReferences = m_references;
-			m_references = refCounter.m_references;
+			m_references = acquire(refCounter.m_references);
 			
-			release(prevReferences);
+			if (prevReferences)
+				release(prevReferences);
 		}
 
 		return *this;
 	}
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Move assignment operator.
+	ref_counter& operator =(ref_counter&& refCounter)
+	{
+		// Don't re-assign the same
+		if(m_references != refCounter.m_references)
+		{
+			m_allocator = ::std::move(refCounter.m_allocator);
+			m_references = ::std::move(refCounter.m_references);
+
+			// Warning: this effectively "breaks" the other object
+			refCounter.m_references = nullptr;
+		}
+
+		return *this;
+	}
+#endif
 
 	/// Increments the current reference count.
 	bool increment() const
@@ -154,10 +179,10 @@ public:
 	/// Decrements the current reference count.
 	void decrement() const
 	{
-		atomic_decrement(references->references)
+		atomic_decrement(m_references->references)
 	}
 	/// Overwrites the current reference count with the given value.
-	inline void invalidate(counter_type references = 0) const
+	void invalidate(counter_type references = 0) const
 	{
 		atomic_set(m_references->references, references);
 	}

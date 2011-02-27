@@ -32,7 +32,7 @@ public:
 		: m_cloneable( static_cast<Cloneable*>(right.m_cloneable->clone()) ) { };
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs a cloneable object by cloning the given cloneable object.
-	opaque_val(cloneable_obj &&right)
+	cloneable_obj(cloneable_obj &&right)
 		: m_cloneable(std::move(right.m_cloneable))
 	{
 		// Warning: this "breaks" the other object

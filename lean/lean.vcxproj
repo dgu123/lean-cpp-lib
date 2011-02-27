@@ -93,8 +93,9 @@
     <ClInclude Include="header\lean\pimpl\unsafe_pimpl_base.h" />
     <ClInclude Include="header\lean\pimpl\safe_pimpl_base.h" />
     <ClInclude Include="header\lean\smart\cloneable_obj.h" />
-    <ClInclude Include="header\lean\smart\deallocate_on_exit.h" />
     <ClInclude Include="header\lean\smart\ref_counter.h" />
+    <ClInclude Include="header\lean\smart\resource.h" />
+    <ClInclude Include="header\lean\smart\resource_ptr.h" />
     <ClInclude Include="header\lean\smart\smart.h" />
     <ClInclude Include="header\lean\smart\cloneable.h" />
     <ClInclude Include="header\lean\tags\nonconstructible.h" />
@@ -104,6 +105,8 @@
     <ClInclude Include="header\lean_internal\targetver.h" />
     <ClInclude Include="header\lean\pimpl\pimpl_ptr.h" />
     <ClInclude Include="header\lean\memory\memory.h" />
+    <ClInclude Include="header\lean\platform\atomic.h" />
+    <ClInclude Include="header\lean\platform\platform.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

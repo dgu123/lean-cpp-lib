@@ -53,10 +53,15 @@ private:
 	}
 
 protected:
+	enum bind_reference_t { bind_reference };
+
 	/// Constructs a resource pointer from the given resource and reference counter.
 	template <class Counter, class Allocator>
-	resource_ptr(resource_type *resource, const ref_counter<Counter, Allocator>& refCounter)
+	resource_ptr(Resource *resource, const ref_counter<Counter, Allocator>& refCounter)
 		: m_resource( acquire(resource, refCounter) ) { };
+	/// Constructs a resource pointer from the given resource without incrementing its reference count.
+	resource_ptr(Resource *resource, bind_reference_t)
+		: m_resource(resource) { };
 
 public:
 	/// Type of the resource stored by this resource pointer.
@@ -91,9 +96,27 @@ public:
 #endif
 
 	/// Destroys the resource pointer.
-	~resource_ptr()
+	~resource_ptr() throw()
 	{
 		release(m_resource);
+	}
+
+	/// Binds the given resource reference to this resource pointer.
+	static resource_ptr bind(resource_type *resource)
+	{
+		return resource_ptr(resource, bind_reference);
+	}
+	/// Unbinds the resource reference held by this resource pointer.
+	resource_type* unbind()
+	{
+		Resource *prevResource = m_resource;
+		m_resource = nullptr;
+		return prevResource;
+	}
+	/// Transfers the resource reference held by this resource pointer to a new resource pointer.
+	resource_ptr transfer()
+	{
+		return bind(unbind());
 	}
 
 	/// Replaces the stored resource with the given resource. <b>[ESA]</b>
@@ -146,9 +169,17 @@ public:
 	operator resource_type*() const { return get(); };
 };
 
+/// Binds the given resource reference to a new resource pointer.
+template <class Resource>
+inline resource_ptr<Resource> bind_resource(Resource *resource)
+{
+	return resource_ptr<Resource>::bind(resource);
+}
+
 } // namespace
 
 using smart::resource_ptr;
+using smart::bind_resource;
 
 } // namespace
 

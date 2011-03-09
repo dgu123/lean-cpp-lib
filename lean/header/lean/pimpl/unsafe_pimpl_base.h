@@ -13,6 +13,9 @@ namespace pimpl
 /// Base class for private implementation classes to be managed by smart pointers.
 class unsafe_pimpl_base
 {
+protected:
+	unsafe_pimpl_base() { };
+	~unsafe_pimpl_base() throw() { };
 };
 
 } // namespace

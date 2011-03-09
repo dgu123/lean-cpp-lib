@@ -20,17 +20,23 @@ BOOST_AUTO_TEST_CASE( fixed_module )
 
 BOOST_AUTO_TEST_CASE( unsafe_pimpl_base_fixed_module )
 {
-    module_check<UnsafeFixedModule>();
+	module_check<UnsafeFixedModule>();
 }
 
 BOOST_AUTO_TEST_CASE( safe_pimpl_base_fixed_module )
 {
-    module_check<SafeFixedModule>();
+	module_check<SafeFixedModule>();
 }
 
 BOOST_AUTO_TEST_CASE( safe_pimpl_base_header_module )
 {
-    module_check<SafeHeaderModule>();
+	module_check<SafeHeaderModule>();
+}
+
+BOOST_AUTO_TEST_CASE( unsafe_pimpl_base_header_module )
+{
+	// ASSERT: Does not compile as pimpl destructor is unknown
+//	module_check<UnsafeHeaderModule>();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

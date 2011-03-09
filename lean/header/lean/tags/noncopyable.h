@@ -26,7 +26,7 @@ private:
 
 protected:
 	noncopyable() { }
-	~noncopyable() { }
+	~noncopyable() throw() { }
 };
 
 } // namespace

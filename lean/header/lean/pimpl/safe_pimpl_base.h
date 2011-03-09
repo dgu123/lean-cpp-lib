@@ -13,10 +13,13 @@ namespace pimpl
 /// Base class for private implementation classes to be securely managed by smart pointers.
 class safe_pimpl_base
 {
+protected:
+	safe_pimpl_base() { };
+
 public:
 	/// Virtual destructor guarantees correct destruction
 	/// even where the actual pimpl class is unknown.
-	virtual ~safe_pimpl_base() { };
+	virtual ~safe_pimpl_base() throw() { };
 };
 
 } // namespace

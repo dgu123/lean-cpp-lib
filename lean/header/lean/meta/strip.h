@@ -5,6 +5,8 @@
 #ifndef LEAN_META_STRIP
 #define LEAN_META_STRIP
 
+#include "../cpp0x.h"
+
 namespace lean
 {
 namespace meta
@@ -26,6 +28,15 @@ struct strip_reference<Type&>
 	typedef Type type;
 	static const bool stripped = true;
 };
+
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+template <class Type>
+struct strip_reference<Type&&>
+{
+	typedef Type type;
+	static const bool stripped = true;
+};
+#endif
 
 /// Strips a const modifier from the given type.
 template <class Type>

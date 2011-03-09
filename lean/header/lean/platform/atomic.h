@@ -22,21 +22,18 @@ namespace platform
 	}
 
 	/// Atomically decrements the given value, returning the results.
-	template <class Type>
 	__forceinline long atomic_decrement(long &value)
 	{
 		return _InterlockedDecrement(&value);
 	}
 
 	/// Atomically tests if the given value is equal to the given expected value, assigning the given new value on success.
-	template <class Type>
 	__forceinline bool atomic_test_and_set(long &value, long expectedValue, long newValue)
 	{
 		return (_InterlockedCompareExchange(&value, newValue, expectedValue) == expectedValue);
 	}
 
 	/// Atomically sets the given value.
-	template <class Type>
 	__forceinline void atomic_set(long &value, long newValue)
 	{
 		_InterlockedExchange(&value, newValue);
@@ -51,21 +48,18 @@ namespace platform
 	}
 
 	/// Atomically decrements the given value, returning the results.
-	template <class Type>
 	__forceinline short atomic_decrement(short &value)
 	{
 		return _InterlockedDecrement16(&value);
 	}
 
 	/// Atomically tests if the given value is equal to the given expected value, assigning the given new value on success.
-	template <class Type>
 	__forceinline bool atomic_test_and_set(short &value, short expectedValue, short newValue)
 	{
 		return (_InterlockedCompareExchange16(&value, newValue, expectedValue) == expectedValue);
 	}
 
 	/// Atomically sets the given value.
-	template <class Type>
 	__forceinline void atomic_set(short &value, short newValue)
 	{
 		_InterlockedExchange16(&value, newValue);
@@ -73,6 +67,11 @@ namespace platform
 
 } // namespace
 } // namespace
+
+
+#else
+
+#error Unknown compiler, intrinsics unavailable.
 
 #endif
 

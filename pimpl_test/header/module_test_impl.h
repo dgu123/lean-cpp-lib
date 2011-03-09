@@ -5,32 +5,32 @@
 
 class UnsafeModuleTestImpl : public lean::unsafe_pimpl_base
 {
-	int &m_dtrCalls;
+	int *m_dtrCalls;
 
 public:
-	UnsafeModuleTestImpl(int &ctrCalls, int &dtrCalls)
+	UnsafeModuleTestImpl(int *ctrCalls, int *dtrCalls)
 		: m_dtrCalls(dtrCalls)
 	{
-		++ctrCalls;
+		++*ctrCalls;
 	}
 	~UnsafeModuleTestImpl()
 	{
-		++m_dtrCalls;
+		++*m_dtrCalls;
 	}
 };
 
 class SafeModuleTestImpl : public lean::safe_pimpl_base
 {
-	int &m_dtrCalls;
+	int *m_dtrCalls;
 
 public:
-	SafeModuleTestImpl(int &ctrCalls, int &dtrCalls)
+	SafeModuleTestImpl(int *ctrCalls, int *dtrCalls)
 		: m_dtrCalls(dtrCalls)
 	{
-		++ctrCalls;
+		++*ctrCalls;
 	}
 	~SafeModuleTestImpl()
 	{
-		++m_dtrCalls;
+		++*m_dtrCalls;
 	}
 };

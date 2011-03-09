@@ -14,9 +14,9 @@ namespace smart
 
 // Prototypes
 template <class Resource>
-friend class resource_ptr;
+class resource_ptr;
 template <class Resource>
-friend class weak_resource_ptr;
+class weak_resource_ptr;
 
 /// Base class that may be used to tag a specific class as a resource.
 template < class Counter = long, class Allocator = std::allocator<Counter> >
@@ -47,6 +47,8 @@ protected:
 	resource(const resource& right) { }
 	/// Assignment operator.
 	resource& operator =(const resource& right) { }
+	/// Destructor.
+	~resource() throw() { }
 };
 
 } // namespace

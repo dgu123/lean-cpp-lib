@@ -35,7 +35,7 @@ public:
 	/// Constructs a pimpl pointer from the given implementation.
 	pimpl_ptr(Implementation *impl) : m_impl(impl) { }
 	/// Destructs this pimpl pointer, deleting any implementation stored.
-	~pimpl_ptr() { delete_impl(m_impl); }
+	~pimpl_ptr() throw() { delete_impl(m_impl); }
 
 	/// Deletes any implementation stored, storing the given new implementation in this pimpl pointer.
 	pimpl_ptr& operator =(Implementation *impl)

@@ -14,7 +14,7 @@ template <class Implementation, class ImplementationBase>
 void assign_unbind_destruct_test(lean::pimpl_ptr<Implementation, ImplementationBase> &pimplPtr)
 {
 	int ctrCalls = 0, dtrCalls = 0;
-	Implementation *impl = new Implementation(ctrCalls, dtrCalls);
+	Implementation *impl = new Implementation(&ctrCalls, &dtrCalls);
 	
 	pimplPtr = impl;
 	BOOST_CHECK( !pimplPtr.empty() );
@@ -62,7 +62,7 @@ void init_destruct_test(
 	typename test_extension<Implementation, ImplementationBase>::function_type testExtension)
 {
 	int ctrCalls = 0, dtrCalls = 0;
-	Implementation *impl = new Implementation(ctrCalls, dtrCalls);
+	Implementation *impl = new Implementation(&ctrCalls, &dtrCalls);
 
 	{
 		lean::pimpl_ptr<Implementation, ImplementationBase> initPtr(impl);

@@ -10,6 +10,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pimpl_test", "pimpl_test\pi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "meta_test", "meta_test\meta_test.vcxproj", "{E504BDAE-EBBE-4DF8-92E9-06CADA3C5DB2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "smart_test", "smart_test\smart_test.vcxproj", "{68E0A00C-EF24-4377-878B-681FAE4870FB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -28,6 +30,10 @@ Global
 		{E504BDAE-EBBE-4DF8-92E9-06CADA3C5DB2}.Debug|Win32.Build.0 = Debug|Win32
 		{E504BDAE-EBBE-4DF8-92E9-06CADA3C5DB2}.Release|Win32.ActiveCfg = Release|Win32
 		{E504BDAE-EBBE-4DF8-92E9-06CADA3C5DB2}.Release|Win32.Build.0 = Release|Win32
+		{68E0A00C-EF24-4377-878B-681FAE4870FB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{68E0A00C-EF24-4377-878B-681FAE4870FB}.Debug|Win32.Build.0 = Debug|Win32
+		{68E0A00C-EF24-4377-878B-681FAE4870FB}.Release|Win32.ActiveCfg = Release|Win32
+		{68E0A00C-EF24-4377-878B-681FAE4870FB}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

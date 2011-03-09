@@ -43,3 +43,12 @@ private:
 public:
 	SafeHeaderModule(int &ctrCalls, int &dtrCalls);
 };
+
+class UnsafeHeaderModule
+{
+private:
+	lean::pimpl_ptr<UnsafeModuleTestImpl, lean::unsafe_pimpl_base> m_impl;
+
+public:
+	UnsafeHeaderModule(int &ctrCalls, int &dtrCalls);
+};

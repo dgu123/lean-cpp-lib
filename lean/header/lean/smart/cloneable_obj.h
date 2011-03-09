@@ -40,7 +40,7 @@ public:
 	}
 #endif
 	/// Destroys the cloneable object.
-	~cloneable_obj()
+	~cloneable_obj() throw()
 	{
 		if (m_cloneable)
 			m_cloneable->destroy();

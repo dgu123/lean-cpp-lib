@@ -13,6 +13,9 @@ namespace smart
 /// Base class that may be used to tag a specific class cloneable.
 class cloneable
 {
+protected:
+	~cloneable() throw() { };
+
 public:
 	/// Constructs and returns a clone of this cloneable.
 	virtual cloneable* clone() const = nullptr;

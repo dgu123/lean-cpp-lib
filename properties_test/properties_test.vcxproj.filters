@@ -21,24 +21,18 @@
     <ClInclude Include="header\stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="header\allocator_test_impl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="header\resource_test_impl.h">
+    <ClInclude Include="header\property_driven_test_impl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\smart_test.cpp">
+    <ClCompile Include="source\properties_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\ref_counter_tests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\resource_ptr_tests.cpp">
+    <ClCompile Include="source\property_tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

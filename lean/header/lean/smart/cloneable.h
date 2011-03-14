@@ -18,9 +18,9 @@ protected:
 
 public:
 	/// Constructs and returns a clone of this cloneable.
-	virtual cloneable* clone() const = nullptr;
+	virtual cloneable* clone() const = 0;
 	/// Destroys this cloneable.
-	virtual void destroy() const = nullptr;
+	virtual void destroy() const = 0;
 };
 
 } // namespace

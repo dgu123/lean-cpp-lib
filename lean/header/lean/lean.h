@@ -32,6 +32,30 @@
 	#define LEAN_INLINE inline
 #endif
 
+namespace lean
+{
+
+/// Returns the smaller of both arguments.
+template <class T1, class T2>
+LEAN_INLINE T1 min(T1 a, T2 b)
+{
+	return (a < b) ? a : b;
+}
+
+/// Returns the larger of both arguments.
+template <class T1, class T2>
+LEAN_INLINE T1 max(T1 a, T2 b)
+{
+	return (a < b) ? b : a;
+}
+
+} // namespace
+
+#ifndef LEAN_NO_MINMAX	
+	using lean::min;
+	using lean::max;
+#endif
+
 #include "macros.h"
 #include "cpp0x.h"
 

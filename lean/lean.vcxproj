@@ -81,6 +81,8 @@
     <ClInclude Include="header\lean\cpp0x.h" />
     <ClInclude Include="header\lean\depconfig.h" />
     <ClInclude Include="header\lean\lean.h" />
+    <ClInclude Include="header\lean\logging\log.h" />
+    <ClInclude Include="header\lean\logging\logging.h" />
     <ClInclude Include="header\lean\macros.h" />
     <ClInclude Include="header\lean\memory\util.h" />
     <ClInclude Include="header\lean\meta\complete_type_or_base.h" />
@@ -92,7 +94,12 @@
     <ClInclude Include="header\lean\pimpl\opaque_val.h" />
     <ClInclude Include="header\lean\pimpl\unsafe_pimpl_base.h" />
     <ClInclude Include="header\lean\pimpl\safe_pimpl_base.h" />
+    <ClInclude Include="header\lean\properties\properties.h" />
+    <ClInclude Include="header\lean\properties\property.h" />
+    <ClInclude Include="header\lean\properties\property_collection.h" />
+    <ClInclude Include="header\lean\smart\auto_restore.h" />
     <ClInclude Include="header\lean\smart\cloneable_obj.h" />
+    <ClInclude Include="header\lean\smart\com_ptr.h" />
     <ClInclude Include="header\lean\smart\ref_counter.h" />
     <ClInclude Include="header\lean\smart\resource.h" />
     <ClInclude Include="header\lean\smart\resource_ptr.h" />

@@ -68,19 +68,19 @@
 	#define LEAN_STATIC_ASSERT(expr) typedef \
 		::lean::impl::emit_static_assertion_error< \
 			::lean::impl::trigger_static_assertion_error<(expr), ::lean::static_assertion_error>::triggered \
-		> LEAN_JOIN_TOKENS(static_assertion_error_, __LINE__)
+		> LEAN_JOIN_VALUES(static_assertion_error_, __LINE__)
 
 	/// Static assertion incorporating the given message in a compiler error on failure.
 	#define LEAN_STATIC_ASSERT_MSG(expr, msg) typedef \
 		::lean::impl::emit_static_assertion_error< \
 			::lean::impl::trigger_static_assertion_error<(expr), ::lean::static_assertion_error>::triggered \
-		> LEAN_JOIN_TOKENS(static_assertion_error_, __LINE__)
+		> LEAN_JOIN_VALUES(static_assertion_error_, __LINE__)
 
 	/// Static assertion incorporating either the given message or the given type name in a compiler error on failure.
 	#define LEAN_STATIC_ASSERT_MSG_ALT(expr, msg, msgtype) struct static_assertion_error__##msgtype; typedef \
 		::lean::impl::emit_static_assertion_error< \
 			::lean::impl::trigger_static_assertion_error<(expr), static_assertion_error__##msgtype>::triggered \
-		> LEAN_JOIN_TOKENS(static_assertion_error_, __LINE__)
+		> LEAN_JOIN_VALUES(static_assertion_error_, __LINE__)
 
 	// Emulate static_assert
 	#define static_assert(expr, msg) LEAN_STATIC_ASSERT_MSG(expr, msg)

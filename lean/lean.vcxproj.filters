@@ -34,6 +34,12 @@
     <Filter Include="Header Files\platform">
       <UniqueIdentifier>{f170af81-be1b-4d4a-90c6-649348a2fb49}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\properties">
+      <UniqueIdentifier>{09dc0e61-e8cd-4f41-bcee-5ad5ea593426}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\logging">
+      <UniqueIdentifier>{053e59fb-cfe4-46fc-8544-bdddfde35fbe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -140,6 +146,27 @@
     </ClInclude>
     <ClInclude Include="header\lean\smart\weak_resource_ptr.h">
       <Filter>Header Files\smart</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\smart\com_ptr.h">
+      <Filter>Header Files\smart</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\smart\auto_restore.h">
+      <Filter>Header Files\smart</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\properties\properties.h">
+      <Filter>Header Files\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\properties\property.h">
+      <Filter>Header Files\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\properties\property_collection.h">
+      <Filter>Header Files\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\logging\logging.h">
+      <Filter>Header Files\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\logging\log.h">
+      <Filter>Header Files\logging</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

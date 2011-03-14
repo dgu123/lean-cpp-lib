@@ -164,18 +164,19 @@ public:
 		return *this;
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
-	/// Move assignment operator.
+	/// Move assignment operator. [ESA]
 	ref_counter& operator =(ref_counter&& refCounter)
 	{
 		// Don't re-assign the same
 		if(m_counts != refCounter.m_counts)
 		{
 			ref_counts *prevReferences = m_counts;
-			m_counts = ::std::move(refCounter.m_counts);
-			release(prevReferences);
 
+			m_counts = ::std::move(refCounter.m_counts);
 			// Warning: this effectively "breaks" the other object
 			refCounter.m_counts = nullptr;
+
+			release(prevReferences);
 		}
 
 		return *this;

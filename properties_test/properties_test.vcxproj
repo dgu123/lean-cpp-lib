@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{68E0A00C-EF24-4377-878B-681FAE4870FB}</ProjectGuid>
+    <ProjectGuid>{A11D6D64-1099-44BC-9844-13EF2F2DC55D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>smart_test</RootNamespace>
+    <RootNamespace>properties_test</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -81,14 +81,15 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="header\allocator_test_impl.h" />
+    <ClInclude Include="header\property_driven_test_impl.h" />
     <ClInclude Include="header\stdafx.h" />
-    <ClInclude Include="header\resource_test_impl.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\resource_ptr_tests.cpp" />
-    <ClCompile Include="source\ref_counter_tests.cpp" />
-    <ClCompile Include="source\smart_test.cpp">
+    <ClCompile Include="source\properties_test.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="source\property_tests.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>

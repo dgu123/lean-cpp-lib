@@ -102,7 +102,7 @@ public:
 	}
 
 	/// Binds the given resource reference to this resource pointer.
-	static resource_ptr bind(resource_type *resource)
+	static LEAN_INLINE resource_ptr bind(resource_type *resource)
 	{
 		return resource_ptr(resource, bind_reference);
 	}
@@ -145,33 +145,34 @@ public:
 	}
 
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
-	/// Replaces the stored resource with one stored by the r-value given resource pointer. <b>[ESA]</b>
+	/// Replaces the stored resource with the one stored by the given r-value resource pointer. <b>[ESA]</b>
 	template <class Resource2>
 	resource_ptr& operator =(resource_ptr<Resource2> &&right)
 	{
 		Resource *prevResource = m_resource;
 		m_resource = right.m_resource;
-		right.m_resource = prevResource;
+		right.m_resource = nullptr;
+		release(prevResource);
 
 		return *this;
 	}
 #endif
 
 	/// Gets the resource stored by this resource pointer.
-	resource_type* get(void) const { return m_resource; };
+	LEAN_INLINE resource_type* get(void) const { return m_resource; };
 
 	/// Gets the resource stored by this resource pointer.
-	resource_type& operator *() const { return *get(); };
+	LEAN_INLINE resource_type& operator *() const { return *get(); };
 	/// Gets the resource stored by this resource pointer.
-	resource_type* operator ->() const { return get(); };
+	LEAN_INLINE resource_type* operator ->() const { return get(); };
 
 	/// Gets the resource stored by this resource pointer.
-	operator resource_type*() const { return get(); };
+	LEAN_INLINE operator resource_type*() const { return get(); };
 };
 
 /// Binds the given resource reference to a new resource pointer.
 template <class Resource>
-inline resource_ptr<Resource> bind_resource(Resource *resource)
+LEAN_INLINE resource_ptr<Resource> bind_resource(Resource *resource)
 {
 	return resource_ptr<Resource>::bind(resource);
 }

@@ -21,10 +21,16 @@ private:
 	Cloneable *m_cloneable;
 
 	/// Acquires the given cloneable.
+	static Cloneable* acquire(const Cloneable &cloneable)
+	{
+		return static_cast<Cloneable*>( cloneable.clone() );
+	}
+
+	/// Acquires the given cloneable.
 	static Cloneable* acquire(const Cloneable *cloneable)
 	{
 		return (cloneable)
-			? static_cast<Cloneable*>( cloneable->clone() )
+			? acquire(*cloneable)
 			: nullptr;
 	}
 
@@ -46,7 +52,7 @@ public:
 
 	/// Constructs a cloneable object by cloning the given cloneable value.
 	cloneable_obj(const value_type &cloneable)
-		: m_cloneable( acquire(&cloneable) ) { };
+		: m_cloneable( acquire(cloneable) ) { };
 	/// Constructs a cloneable object by cloning the given cloneable object.
 	cloneable_obj(const cloneable_obj &right)
 		: m_cloneable( acquire(right.m_cloneable) ) { };
@@ -76,7 +82,7 @@ public:
 	cloneable_obj& operator =(const value_type &cloneable)
 	{
 		CloneableType *prevCloneable = m_cloneable;
-		m_cloneable = acquire(&cloneable);
+		m_cloneable = acquire(cloneable);
 		release(prevCloneable);
 		
 		return *this;

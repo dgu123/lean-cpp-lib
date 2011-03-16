@@ -168,6 +168,15 @@
     <ClInclude Include="header\lean\logging\log.h">
       <Filter>Header Files\logging</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\memory\alignment.h">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\memory\crt_heap.h">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\memory\heap_allocator.h">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

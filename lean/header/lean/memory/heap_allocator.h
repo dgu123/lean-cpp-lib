@@ -159,14 +159,14 @@ public:
 
 /// Checks the given two allocators for equivalence.
 template<class Element, class Heap, size_t Alignment, class Other>
-LEAN_INLINE bool operator ==(const heap_allocator<Element, Heal, Alignment>&, const allocator<Other, Heap, Alignment>&)
+LEAN_INLINE bool operator ==(const heap_allocator<Element, Heap, Alignment>&, const allocator<Other, Heap, Alignment>&)
 {
 	return true;
 }
 
 /// Checks the given two allocators for inequivalence.
 template<class Element, class Heap, size_t Alignment, class Other>
-LEAN_INLINE bool operator !=(const heap_allocator<Element, Heal, Alignment>&, const allocator<Other, Heap, Alignment>&)
+LEAN_INLINE bool operator !=(const heap_allocator<Element, Heap, Alignment>&, const allocator<Other, Heap, Alignment>&)
 {
 	return false;
 }

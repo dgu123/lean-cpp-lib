@@ -41,7 +41,8 @@ struct crt_heap
 	template <size_t Alignment>
 	static LEAN_INLINE void free(void *memory)
 	{
-		::operator delete(memory - reinterpret_cast<unsigned char*>(memory)[-1]);
+		if (memory)
+			::operator delete(memory - reinterpret_cast<unsigned char*>(memory)[-1]);
 	}
 
 	template <>

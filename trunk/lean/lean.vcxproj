@@ -74,6 +74,7 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="header\lean\memory\crt_heap.h" />
     <ClInclude Include="header\lean\containers\accumulation_vector.h" />
     <ClInclude Include="header\lean\containers\containers.h" />
     <ClInclude Include="header\lean\containers\default_reallocation_policy.h" />
@@ -84,6 +85,8 @@
     <ClInclude Include="header\lean\logging\log.h" />
     <ClInclude Include="header\lean\logging\logging.h" />
     <ClInclude Include="header\lean\macros.h" />
+    <ClInclude Include="header\lean\memory\alignment.h" />
+    <ClInclude Include="header\lean\memory\heap_allocator.h" />
     <ClInclude Include="header\lean\memory\util.h" />
     <ClInclude Include="header\lean\meta\complete_type_or_base.h" />
     <ClInclude Include="header\lean\meta\conditional_type.h" />

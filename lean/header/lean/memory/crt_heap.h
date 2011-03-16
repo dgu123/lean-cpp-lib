@@ -6,6 +6,7 @@
 #define LEAN_MEMORY_CRT_HEAP
 
 #include "../lean.h"
+#include "alignment.h"
 
 namespace lean
 {
@@ -46,7 +47,7 @@ struct crt_heap
 	template <>
 	static LEAN_INLINE void* allocate<1>(size_type size) { return allocate(size); }
 	template <>
-	static LEAN_INLINE void free<1>(void *memory) { return free(memory); }
+	static LEAN_INLINE void free<1>(void *memory) { free(memory); }
 };
 
 } // namespace

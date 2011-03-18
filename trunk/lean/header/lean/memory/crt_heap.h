@@ -42,7 +42,8 @@ struct crt_heap
 	static LEAN_INLINE void free(void *memory)
 	{
 		if (memory)
-			::operator delete(memory - reinterpret_cast<unsigned char*>(memory)[-1]);
+			::operator delete( reinterpret_cast<void*>(
+				reinterpret_cast<unsigned char*>(memory) - reinterpret_cast<unsigned char*>(memory)[-1] ) );
 	}
 
 	template <>

@@ -28,7 +28,7 @@ public:
 	static const bool is_complete = (
 		sizeof( check_type( static_cast<FullType*>(nullptr) ) )
 		==
-		sizeof(BaseType) );
+		sizeof(complete) );
 	
 	/// Full type if complete (and derived from BaseType), BaseType otherwise.
 	typedef typename conditional_type<is_complete, FullType, BaseType>::type type;

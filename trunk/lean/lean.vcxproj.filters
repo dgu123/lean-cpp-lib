@@ -120,9 +120,6 @@
     <ClInclude Include="header\lean\smart\ref_counter.h">
       <Filter>Header Files\smart</Filter>
     </ClInclude>
-    <ClInclude Include="header\lean\memory\util.h">
-      <Filter>Header Files\memory</Filter>
-    </ClInclude>
     <ClInclude Include="header\lean\memory\memory.h">
       <Filter>Header Files\memory</Filter>
     </ClInclude>
@@ -175,6 +172,9 @@
       <Filter>Header Files\memory</Filter>
     </ClInclude>
     <ClInclude Include="header\lean\memory\heap_allocator.h">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\memory\aligned.h">
       <Filter>Header Files\memory</Filter>
     </ClInclude>
   </ItemGroup>

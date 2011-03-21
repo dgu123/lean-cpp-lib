@@ -47,8 +47,10 @@ protected:
 	resource(const resource& right) { }
 	/// Assignment operator.
 	resource& operator =(const resource& right) { }
+#ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
 	/// Destructor.
 	~resource() throw() { }
+#endif
 };
 
 } // namespace

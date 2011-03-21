@@ -27,6 +27,11 @@
 #ifdef _MSC_VER
 	/// Instructs the compiler to inline a specific method.
 	#define LEAN_INLINE __forceinline
+
+	#ifndef LEAN_DEBUG_BUILD
+		/// Prefer default destructors over empty destructors (limited access control)
+		#define LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
+	#endif
 #else
 	/// Instructs the compiler to inline a specific method.
 	#define LEAN_INLINE inline

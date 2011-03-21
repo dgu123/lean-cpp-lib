@@ -40,9 +40,10 @@ public:
 			references(references),
 			weakReferences(weakReferences) { };
 #endif
+#ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
 		// Destructor.
 		~ref_counts() throw() { };
-
+#endif
 	public:
 		/// Allocator type.
 		typedef allocator_type_ allocator_type;

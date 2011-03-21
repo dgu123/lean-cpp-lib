@@ -19,7 +19,9 @@ namespace memory
 	{
 	protected:
 		LEAN_INLINE aligned() { };
+#ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
 		LEAN_INLINE ~aligned() throw() { };
+#endif
 
 	public:
 		/// Allocates an aligned block of memory of the given size.

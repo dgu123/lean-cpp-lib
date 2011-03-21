@@ -26,7 +26,9 @@ private:
 
 protected:
 	noncopyable() { }
+#ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
 	~noncopyable() throw() { }
+#endif
 };
 
 } // namespace

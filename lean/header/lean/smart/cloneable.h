@@ -14,7 +14,9 @@ namespace smart
 class cloneable
 {
 protected:
+#ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
 	~cloneable() throw() { };
+#endif
 
 public:
 	/// Constructs and returns a clone of this cloneable.

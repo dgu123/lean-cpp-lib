@@ -15,6 +15,7 @@ class unsafe_pimpl_base
 {
 protected:
 	unsafe_pimpl_base() { };
+	// Always defined, as restricted dtor access is the only reason for this class to exist
 	~unsafe_pimpl_base() throw() { };
 };
 

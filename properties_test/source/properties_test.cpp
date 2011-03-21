@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include <lean/properties/property.h>
+#include <lean/properties/property_accessors.h>
 
 #include "property_driven_test_impl.h"
 

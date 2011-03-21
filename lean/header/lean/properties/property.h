@@ -18,17 +18,21 @@ namespace lean
 namespace properties
 {
 
+/// Passes data to a specific destination.
 template <class Class>
 class property_setter : public cloneable
 {
 public:
+	/// Passes the given values of the given type to the given object.
 	virtual void operator ()(Class &object, const type_info &type, const void *values, size_t count) = 0;
 };
 
+/// Fetches data from a specific source.
 template <class Class>
 class property_getter : public cloneable
 {
 public:
+	/// Fetches the given number of values of the given type from the given object.
 	virtual void operator ()(const Class &object, const type_info &type, void *values, size_t count) const = 0;
 };
 
@@ -57,6 +61,7 @@ typedef property_logging_policy property_error_policy;
 
 #pragma region property_constant
 
+/// Holds a constant array of values, returning a matching subset of these on getter access.
 template <class Class, class Value>
 class property_constant : public property_getter<Class>
 {
@@ -71,6 +76,7 @@ public:
 		: m_constantValues(constantValues),
 		m_count(count) { };
 
+	/// Copies the given number of values of the given type from the constant value array held, if available.
 	void operator ()(const Class &object, const type_info &type, void *values, size_t count) const
 	{
 		if (type == typeid(value_type))
@@ -78,8 +84,12 @@ public:
 		else
 			impl::property_error_policy::type_mismatch<value_type>(type);
 	}
+
+	property_constant* clone() const { return new property_constant(*this); }
+	void destroy() const { delete this; }
 };
 
+/// Constructs a property getter that provides access to the given number of the given values.
 template <class Class, class Value>
 LEAN_INLINE property_constant<Class, Value> make_property_constant(const Value *constantValues, size_t count)
 {
@@ -114,6 +124,7 @@ struct union_helper
 
 #pragma region property_n_accessors
 
+/// Provides write access to arbitrary object data of the given type using a given setter method.
 template <class Class, class UnionValue, class Count, class Return,
 	Return (Class::*Setter)(const UnionValue*, Count),
 	class Value = UnionValue>
@@ -123,6 +134,7 @@ public:
 	typedef typename strip_modifiers<Value>::type value_type;
 	typedef typename strip_modifiers<UnionValue>::type union_type;
 
+	/// Passes the given number of values of the given type to the given object using the stored setter method, if the value types are matching.
 	void operator ()(Class &object, const type_info &type, const void *values, size_t count)
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
@@ -140,6 +152,7 @@ public:
 	void destroy() const { delete this; }
 };
 
+/// Provides read access to arbitrary object data of the given type using a given getter method.
 template <class Class, class UnionValue, class Count, class Return,
 	Return (Class::*Getter)(UnionValue*, Count) const,
 	class Value = UnionValue>
@@ -149,6 +162,7 @@ public:
 	typedef typename strip_modifiers<Value>::type value_type;
 	typedef typename strip_modifiers<UnionValue>::type union_type;
 	
+	/// Retrieves the given number of values of the given type from the given object using the stored getter method, if available.
 	void operator ()(const Class &object, const type_info &type, void *values, size_t count) const
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
@@ -304,6 +318,7 @@ struct property_c_helper<Class, ValueArg, 4, Return>
 
 } // namespace
 
+/// Provides write access to arbitrary object data of the given type using a given multi-parameter setter method.
 template <class Class, class UnionValueArg, int ArgCount, class Return,
 	typename impl::property_c_helper<Class, UnionValueArg, ArgCount, Return>::setter_type Setter,
 	class ValueArg = UnionValueArg>
@@ -316,6 +331,7 @@ public:
 	typedef typename strip_modifiers<typename strip_reference<ValueArg>::type>::type value_type;
 	typedef typename strip_modifiers<typename strip_reference<UnionValueArg>::type>::type union_type;
 
+	/// Passes the given number of values of the given type to the given object using the stored setter method, if the value types are matching.
 	void operator ()(Class &object, const type_info &type, const void *values, size_t count)
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
@@ -337,6 +353,7 @@ public:
 	void destroy() const { delete this; }
 };
 
+/// Provides read access to arbitrary object data of the given type using a given multi-parameter getter method.
 template <class Class, class UnionValueArg, int ArgCount, class Return,
 	typename impl::property_c_helper<Class, UnionValueArg, ArgCount, Return>::getter_type Getter,
 	class ValueArg = UnionValueArg>
@@ -349,6 +366,7 @@ public:
 	typedef typename strip_modifiers<typename strip_reference<ValueArg>::type>::type value_type;
 	typedef typename strip_modifiers<typename strip_reference<UnionValueArg>::type>::type union_type;
 
+	/// Retrieves the given number of values of the given type from the given object using the stored getter method, if available.
 	void operator ()(const Class &object, const type_info &type, void *values, size_t count) const
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
@@ -496,6 +514,7 @@ LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 4, Return, ValueArg
 
 #pragma region property_r_accessors
 
+/// Provides read access to arbitrary object data of the given type using a given return-value getter method.
 template <class Class, class UnionValueReturn,
 	UnionValueReturn (Class::*Getter)() const,
 	class ValueReturn = UnionValueReturn>
@@ -505,6 +524,7 @@ public:
 	typedef typename strip_modifiers<typename strip_reference<ValueReturn>::type>::type value_type;
 	typedef typename strip_modifiers<typename strip_reference<UnionValueReturn>::type>::type union_type;
 
+	/// Retrieves the given number of values of the given type from the given object using the stored getter method, if available.
 	void operator ()(const Class &object, const type_info &type, void *values, size_t count) const
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
@@ -567,12 +587,17 @@ using properties::make_property_constant;
 
 } // namespace
 
+/// Constructs a property getter that provides access to the given number of the given values.
 #define LEAN_MAKE_PROPERTY_CONSTANT(constants, count) lean::properties::make_property_constant(constants, count)
 
+/// Constructs a property setter that provides access to object values using the given setter method.
 #define LEAN_MAKE_PROPERTY_SETTER(setter) lean::properties::impl::deduce_accessor_binder(setter).bind_setter<setter>()
+/// Constructs a property setter that provides access to object values using the given getter method.
 #define LEAN_MAKE_PROPERTY_GETTER(getter) lean::properties::impl::deduce_accessor_binder(getter).bind_getter<getter>()
 
+/// Constructs a property setter that provides access to object values using the given setter method, splitting or merging values of the given type to values of the setter parameter type.
 #define LEAN_MAKE_PROPERTY_SETTER_UNION(setter, value_type) lean::properties::impl::deduce_accessor_binder<value_type>(setter).bind_setter<setter>()
+/// Constructs a property getter that provides access to object values using the given getter method, splitting or merging values of the given type to values of the getter parameter (return) type.
 #define LEAN_MAKE_PROPERTY_GETTER_UNION(getter, value_type) lean::properties::impl::deduce_accessor_binder<value_type>(getter).bind_getter<getter>()
 
 #endif

@@ -6,6 +6,7 @@
 #define LEAN_SMART_CLONEABLE_OBJ
 
 #include "../cpp0x.h"
+#include "../meta/conditional_type.h"
 
 namespace lean
 {
@@ -14,7 +15,7 @@ namespace smart
 
 
 /// Cloneable object class that stores an automatic instance of the given cloneable type.
-template <class Cloneable>
+template <class Cloneable, bool PointerSemantics = false>
 class cloneable_obj
 {
 private:
@@ -49,6 +50,8 @@ protected:
 public:
 	/// Type of the cloneable value stored by this cloneable object.
 	typedef Cloneable value_type;
+	/// Const value_type for value semantics, value_type for pointer semantics.
+	typedef typename conditional_type<PointerSemantics, value_type, const value_type>::type maybe_const_value_type;
 
 	/// Constructs a cloneable object by cloning the given cloneable value.
 	cloneable_obj(const value_type &cloneable)
@@ -74,6 +77,10 @@ public:
 	/// Gets a null cloneable object that may only be copied from and assigned to.
 	static LEAN_INLINE cloneable_obj null()
 	{
+		LEAN_STATIC_ASSERT_MSG_ALT(PointerSemantics,
+			"Null objects only available for pointer semantics.",
+			Null_objects_only_available_for_pointer_semantics);
+
 		// Warning: this object is effectively "broken"
 		return cloneable_obj(nullptr);
 	}
@@ -120,25 +127,25 @@ public:
 	/// Gets the value stored by this cloneable object.
 	value_type& get(void) { LEAN_ASSERT(m_cloneable); return *m_cloneable; };
 	/// Gets the value stored by this cloneable object.
-	const value_type& get(void) const { LEAN_ASSERT(m_cloneable); return *m_cloneable; };
+	maybe_const_value_type& get(void) const { LEAN_ASSERT(m_cloneable); return *m_cloneable; };
 	/// Gets the value stored by this cloneable object.
 	value_type* getptr(void) { return m_cloneable; };
 	/// Gets the value stored by this cloneable object.
-	const value_type* getptr(void) const { return m_cloneable; };
+	maybe_const_value_type* getptr(void) const { return m_cloneable; };
 
 	/// Gets the value stored by this cloneable object.
 	value_type& operator *() { return get(); };
 	/// Gets the value stored by this cloneable object.
-	const value_type& operator *() const { return get(); };
+	maybe_const_value_type& operator *() const { return get(); };
 	/// Gets the value stored by this cloneable object.
 	value_type* operator ->() { LEAN_ASSERT(m_cloneable); return m_cloneable; };
 	/// Gets the value stored by this cloneable object.
-	const value_type* operator ->() const { LEAN_ASSERT(m_cloneable); return m_cloneable; };
+	maybe_const_value_type* operator ->() const { LEAN_ASSERT(m_cloneable); return m_cloneable; };
 
 	/// Gets the value stored by this cloneable object.
 	operator value_type&() { return get(); };
 	/// Gets the value stored by this cloneable object.
-	operator const value_type&() const { return get(); };
+	operator maybe_const_value_type&() const { return get(); };
 };
 
 } // namespace

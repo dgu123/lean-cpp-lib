@@ -41,8 +41,8 @@ struct property_desc
 	const std::type_info *type;							///< Element type.
 	size_t count;										///< Number of elements.
 	
-	cloneable_obj< property_setter<Class> > setter;		///< Value setter.
-	cloneable_obj< property_getter<Class> > getter;		///< Value getter.
+	cloneable_obj<property_setter<Class>, true> setter;		///< Value setter.
+	cloneable_obj<property_getter<Class>, true> getter;		///< Value getter.
 };
 
 /// Describes a named property.

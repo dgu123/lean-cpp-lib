@@ -27,6 +27,8 @@
 #ifdef _MSC_VER
 	/// Instructs the compiler to inline a specific method.
 	#define LEAN_INLINE __forceinline
+	/// Instructs the compiler not to inline a specific method.
+	#define LEAN_NOINLINE __declspec(noinline)
 
 	#ifndef LEAN_DEBUG_BUILD
 		/// Prefer default destructors over empty destructors (limited access control)
@@ -35,6 +37,8 @@
 #else
 	/// Instructs the compiler to inline a specific method.
 	#define LEAN_INLINE inline
+	/// Instructs the compiler not to inline a specific method.
+	#define LEAN_NOINLINE inline
 #endif
 
 namespace lean

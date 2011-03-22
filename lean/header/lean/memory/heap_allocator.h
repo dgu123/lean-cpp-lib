@@ -82,17 +82,19 @@ public:
 	{
 		new(ptr) Element(value);
 	}
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs a new element from the given value at the given pointer.
 	LEAN_INLINE void construct(pointer ptr, value_type&& value)
 	{
-		new(ptr) Element(std::move(value));
+		new(ptr) Element(std::forward<value_type>(value));
 	}
 	/// Constructs a new element from the given value at the given pointer.
 	template<class Other>
 	LEAN_INLINE void construct(pointer ptr, Other&& value)
 	{
-		new(ptr) Element(std::move(value));
+		new(ptr) Element(std::forward<Other>(value));
 	}
+#endif
 	/// Destructs an element at the given pointer.
 	LEAN_INLINE void destroy(pointer ptr)
 	{

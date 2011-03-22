@@ -74,6 +74,8 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="header\lean\containers\atomic_collection.h" />
+    <ClInclude Include="header\lean\containers\simple_vector.h" />
     <ClInclude Include="header\lean\memory\aligned.h" />
     <ClInclude Include="header\lean\memory\crt_heap.h" />
     <ClInclude Include="header\lean\containers\accumulation_vector.h" />

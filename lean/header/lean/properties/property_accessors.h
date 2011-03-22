@@ -22,13 +22,13 @@ namespace impl
 struct property_logging_policy
 {
 	template <class Property>
-	static void type_mismatch(const type_info &value)
+	static LEAN_NOINLINE void type_mismatch(const type_info &value)
 	{
 		LEAN_LOG_ERROR("Property / value type mismatch: "
 			<< typeid(Property).name() << " vs. " << value.name());
 	}
 
-	static void count_mismatch(size_t propertyCount, size_t valueCount)
+	static LEAN_NOINLINE void count_mismatch(size_t propertyCount, size_t valueCount)
 	{
 		LEAN_LOG_ERROR("Property / value count mismatch: "
 			<< propertyCount << " vs. " << valueCount);

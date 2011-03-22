@@ -180,6 +180,12 @@
     <ClInclude Include="header\lean\properties\property_accessors.h">
       <Filter>Header Files\properties</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\containers\atomic_collection.h">
+      <Filter>Header Files\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\containers\simple_vector.h">
+      <Filter>Header Files\containers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

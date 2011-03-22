@@ -5,7 +5,6 @@
 #ifndef LEAN_PROPERTIES_PROPERTY_COLLECTION
 #define LEAN_PROPERTIES_PROPERTY_COLLECTION
 
-#include <cstddef>
 #include <typeinfo>
 #include <vector>
 
@@ -18,14 +17,14 @@ template <class Class, class Description>
 class property_collection
 {
 private:
-	std::vector<Description> m_properties;
+	typedef std::vector<Description> property_vector;
+	property_vector m_properties;
 
 public:
 	/// Property description type.
 	typedef Description property_desc;
-
-	property_collection();
-	property_collection(const property_collection &inherit);
+	/// Iterator type.
+	typedef typename property_vector::const_iterator iterator;
 
 	/// Adds a property created from the given property description.
 	LEAN_INLINE size_t add(const property_desc& propertyDesc)
@@ -45,22 +44,33 @@ public:
 		return m_properties.size();
 	}
 
+	/// Gets a const iterator to the first property description.
+	LEAN_INLINE iterator begin() const
+	{
+		return m_properties.begin();
+	}
+	/// Gets a const iterator one past the last property description.
+	LEAN_INLINE iterator end() const
+	{
+		return m_properties.end();
+	}
+
 	/// Assigns the given value to the property identified by the given id, fails silently.
 	template <class Value>
-	LEAN_INLINE void set(Class &object, size_t id, const Value &value)
+	LEAN_INLINE void set(Class &object, size_t id, const Value &value) const
 	{
 		set(object, id, &value, 1);
 	}
 	/// Assigns the given values to the property identified by the given id, fails silently.
 	template <class Value>
-	LEAN_INLINE void set(Class &object, size_t id, const Value *values, size_t count)
+	LEAN_INLINE void set(Class &object, size_t id, const Value *values, size_t count) const
 	{
 		if (id < m_properties.size())
 		{
-			Description &desc = m_properties[id];
+			const Description &desc = m_properties[id];
 			
 			if (desc.setter.getptr())
-				desc.setter(object, typeid(Value), values, count);
+				*desc.setter(object, typeid(Value), values, count);
 		}
 	}
 
@@ -79,7 +89,7 @@ public:
 			const Description &desc = m_properties[id];
 
 			if (desc.getter.getptr())
-				desc.getter(object, typeid(Value), values, count);
+				*desc.getter(object, typeid(Value), values, count);
 		}
 	}
 

@@ -9,6 +9,9 @@
 #include "../tags/noncopyable.h"
 #include "../platform/atomic.h"
 
+// Include automatically to encourage use of scoped_lock
+#include "../smart/scoped_lock.h"
+
 namespace lean
 {
 namespace concurrent
@@ -45,9 +48,14 @@ public:
 	}
 };
 
+/// Scoped exclusive spin lock.
+typedef smart::scoped_lock< spin_lock<> > scoped_sl_lock;
+
 } // namespace
 
 using concurrent::spin_lock;
+
+using concurrent::scoped_sl_lock;
 
 } // namespace
 

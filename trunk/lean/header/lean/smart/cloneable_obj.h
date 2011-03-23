@@ -13,7 +13,6 @@ namespace lean
 namespace smart
 {
 
-
 /// Cloneable object class that stores an automatic instance of the given cloneable type.
 template <class Cloneable, bool PointerSemantics = false>
 class cloneable_obj

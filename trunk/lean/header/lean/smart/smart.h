@@ -16,5 +16,6 @@
 #include "weak_resource_ptr.h"
 
 #include "com_ptr.h"
+#include "scoped_lock.h"
 
 #endif

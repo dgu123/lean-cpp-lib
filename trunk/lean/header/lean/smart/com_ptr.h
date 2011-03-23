@@ -12,7 +12,6 @@ namespace lean
 namespace smart
 {
 
-
 /// COM pointer class that performs reference counting on COM objects of the given type.
 template <class COMType>
 class com_ptr

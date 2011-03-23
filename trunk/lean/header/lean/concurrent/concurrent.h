@@ -7,6 +7,7 @@
 
 #include "spin_lock.h"
 #include "shareable_spin_lock.h"
-#include "lock_shared.h"
+
+#include "shareable_lock_policies.h"
 
 #endif

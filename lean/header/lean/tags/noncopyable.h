@@ -31,9 +31,28 @@ protected:
 #endif
 };
 
+/// Base class that may be used to tag a specific class nonassignable.
+class nonassignable
+{
+private:
+#ifndef LEAN0X_NO_DELETE_METHODS
+	nonassignable& operator =(const nonassignable&) = delete;
+#else
+	nonassignable& operator =(const nonassignable&);
+#endif
+
+protected:
+	nonassignable() { }
+	nonassignable(const nonassignable&) { }
+#ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
+	~nonassignable() throw() { }
+#endif
+};
+
 } // namespace
 
 using tags::noncopyable;
+using tags::nonassignable;
 
 } // namespace
 

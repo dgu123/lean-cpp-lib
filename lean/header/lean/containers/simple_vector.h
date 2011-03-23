@@ -312,8 +312,22 @@ public:
 		return s_max_size;
 	}
 
-	// TODO: swap?
+	/// Swaps the contents of this vector and the given vector.
+	LEAN_INLINE void swap(simple_vector &right) throw()
+	{
+		std::swap(m_allocator, right.m_allocator);
+		std::swap(m_elements, right.m_elements);
+		std::swap(m_count, right.m_count);
+		std::swap(m_capacity, right.m_capacity);
+	}
 };
+
+/// Swaps the contents of the given vectors.
+template <class Element, class Allocator>
+LEAN_INLINE void swap(simple_vector<Element, Allocator> &left, simple_vector<Element, Allocator> &right)
+{
+	left.swap(right);
+}
 
 } // namespace
 

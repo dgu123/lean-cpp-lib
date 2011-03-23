@@ -15,27 +15,27 @@ namespace smart
 
 /// Default locking policy.
 template <class Lockable>
-struct default_locking_policy
+struct default_lock_policy
 {
 	/// Calls try_lock on the given lock object.
-	LEAN_INLINE void try_lock(Lockable &lock)
+	static LEAN_INLINE bool try_lock(Lockable &lock)
 	{
-		lock.try_lock();
+		return lock.try_lock();
 	}
 	/// Calls lock on the given lock object.
-	LEAN_INLINE void lock(Lockable &lock)
+	static LEAN_INLINE void lock(Lockable &lock)
 	{
 		lock.lock();
 	}
 	/// Calls unlock on the given lock object.
-	LEAN_INLINE void unlock(Lockable &lock)
+	static LEAN_INLINE void unlock(Lockable &lock)
 	{
 		lock.unlock();
 	}
 };
 
 /// Automatic lock management class that locks a given object on construction to be unlocked on destruction.
-template < class Lockable, class Policy = default_locking_policy<Lockable> >
+template < class Lockable, class Policy = default_lock_policy<Lockable> >
 class scoped_lock : public noncopyable
 {
 private:
@@ -67,7 +67,7 @@ public:
 
 } // namespace
 
-using smart::default_locking_policy;
+using smart::default_lock_policy;
 using smart::scoped_lock;
 
 } // namespace

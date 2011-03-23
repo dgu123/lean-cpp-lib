@@ -9,6 +9,10 @@
 #include "../tags/noncopyable.h"
 #include "../platform/atomic.h"
 
+// Include automatically to encourage use of scoped_lock
+#include "shareable_lock_policies.h"
+#include "../smart/scoped_lock.h"
+
 namespace lean
 {
 namespace concurrent
@@ -103,9 +107,20 @@ public:
 	}
 };
 
+/// Scoped exclusive sharable spin lock.
+typedef smart::scoped_lock< shareable_spin_lock<> > scoped_ssl_lock;
+/// Scoped shared sharable spin lock.
+typedef smart::scoped_lock< shareable_spin_lock<>, shared_lock_policy< shareable_spin_lock<> > > scoped_ssl_lock_shared;
+/// Scoped sharable spin lock upgrade.
+typedef smart::scoped_lock< shareable_spin_lock<>, upgrade_lock_policy< shareable_spin_lock<> > > scoped_ssl_upgrade_lock;
+
 } // namespace
 
 using concurrent::shareable_spin_lock;
+
+using concurrent::scoped_ssl_lock;
+using concurrent::scoped_ssl_lock_shared;
+using concurrent::scoped_ssl_upgrade_lock;
 
 } // namespace
 

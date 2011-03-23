@@ -13,7 +13,6 @@ namespace lean
 namespace smart
 {
 
-
 /// Auto restore class that automatically restores the initial value of the stored object on destruction.
 template <class Value>
 class auto_restore : public noncopyable

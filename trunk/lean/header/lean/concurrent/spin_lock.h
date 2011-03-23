@@ -23,7 +23,8 @@ private:
 
 public:
 	/// Constructs a binary spin lock.
-	spin_lock() : m_counter(0) {  }
+	spin_lock()
+		: m_counter(0) {  }
 
 	/// Tries to lock this spin lock, returning false if currenty locked by another user.
 	LEAN_INLINE bool try_lock()

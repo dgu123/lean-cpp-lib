@@ -47,9 +47,44 @@ public:
 	}
 };
 
+/// Adapts the upgrading functionality of a sharable lock to the standard lock interface.
+template <class ShareableLock>
+class upgrade_lock : public nonassignable
+{
+private:
+	ShareableLock &m_lock;
+
+public:
+	/// Type of the underlying shareable lock.
+	typedef ShareableLock lock_type;
+
+	/// Constructs an shareable lock adapter from the given shareable lock.
+	explicit LEAN_INLINE upgrade_lock(lock_type &lock)
+		: m_lock(lock) {  }
+
+	/// Calls try_upgrade_lock on the underlying shareable lock.
+	LEAN_INLINE bool try_lock()
+	{
+		return m_lock.try_upgrade_lock();
+	}
+
+	/// Calls upgrade_lock on the underlying shareable lock.
+	LEAN_INLINE void lock()
+	{
+		m_lock.upgrade_lock();
+	}
+
+	/// Calls downgrade_lock on the underlying shareable lock.
+	LEAN_INLINE void unlock()
+	{
+		m_lock.downgrade_lock();
+	}
+};
+
 } // namespace
 
 using concurrent::lock_shared;
+using concurrent::upgrade_lock;
 
 } // namespace
 

@@ -6,5 +6,7 @@
 #define LEAN_CONCURRENT_CONCURRENT
 
 #include "spin_lock.h"
+#include "shareable_spin_lock.h"
+#include "lock_shared.h"
 
 #endif

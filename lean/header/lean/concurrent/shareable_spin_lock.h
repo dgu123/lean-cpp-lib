@@ -2,8 +2,8 @@
 /* lean Containers              (c) Tobias Zirr 2011 */
 /*****************************************************/
 
-#ifndef LEAN_CONCURRENT_SHARABLE_SPINLOCK
-#define LEAN_CONCURRENT_SHARABLE_SPINLOCK
+#ifndef LEAN_CONCURRENT_SHAREABLE_SPINLOCK
+#define LEAN_CONCURRENT_SHAREABLE_SPINLOCK
 
 #include "../lean.h"
 #include "../tags/noncopyable.h"
@@ -14,7 +14,7 @@ namespace lean
 namespace concurrent
 {
 
-/// Implements a sharable spin lock that is NOT reentrant.
+/// Implements a shareable spin lock that is NOT reentrant.
 template <class Counter = long>
 class shareable_spin_lock : public noncopyable
 {
@@ -23,7 +23,8 @@ private:
 
 public:
 	/// Constructs a shareable spin lock.
-	shareable_spin_lock() : m_counter(0) {  }
+	shareable_spin_lock()
+		: m_counter(0) {  }
 
 	/// Tries to exclusively lock this spin lock, returning false if currently locked / shared by another user.
 	LEAN_INLINE bool try_lock()

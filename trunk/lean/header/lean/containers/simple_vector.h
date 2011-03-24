@@ -49,12 +49,12 @@ private:
 		}
 	}
 	/// Copies the given source element to the given destination.
-	LEAN_INLINE void copy_construct(Element *dest, Element *source)
+	LEAN_INLINE void copy_construct(Element *dest, const Element *source)
 	{
 		m_allocator.construct(dest, *source);
 	}
 	/// Copies elements from the given source range to the given destination.
-	void copy_construct(Element *source, Element *sourceEnd, Element *dest)
+	void copy_construct(const Element *source, const Element *sourceEnd, Element *dest)
 	{
 		Element *destr = dest;
 

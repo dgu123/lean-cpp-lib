@@ -13,8 +13,6 @@ namespace lean
 namespace containers
 {
 
-// TODO: atomic support
-
 template < class Element, class Allocator = std::allocator<Element> >
 class simple_vector
 {
@@ -49,8 +47,29 @@ private:
 			throw;
 		}
 	}
+	/// Copies the given source element to the given destination.
+	LEAN_INLINE void copy_construct(Element *dest, Element *source)
+	{
+		m_allocator.construct(dest, *source);
+	}
+	/// Copies elements from the given source range to the given destination.
+	void copy_construct(Element *source, Element *sourceEnd, Element *dest)
+	{
+		Element *destr = dest;
+
+		try
+		{
+			for (; source != sourceEnd; ++dest, ++source)
+				copy_construct(dest, source);
+		}
+		catch(...)
+		{
+			destruct(destr, dest);
+			throw;
+		}
+	}
 	/// Moves the given source element to the given destination.
-	LEAN_INLINE void move_construct(Element *source, Element *dest)
+	LEAN_INLINE void move_construct(Element *dest, Element *source)
 	{
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 		m_allocator.construct(dest, std::move(*source));
@@ -92,7 +111,7 @@ private:
 	{
 		Element *newElements = m_allocator.allocate(newCapacity);
 
-		if (m_elements)
+		if (m_count > 0)
 			try
 			{
 				move_construct(m_elements, m_elements + m_count, newElements);
@@ -122,6 +141,25 @@ private:
 			}
 
 			m_allocator.deallocate(oldElements, oldCapacity);
+		}
+	}
+
+	/// Frees the given elements.
+	void free(Element *elements, size_t count, size_t capacity)
+	{
+		if (elements)
+		{
+			try
+			{
+				destruct(elements, elements + count);
+			}
+			catch(...)
+			{
+				m_allocator.deallocate(elements, capacity);
+				throw;
+			}
+
+			m_allocator.deallocate(elements, capacity);
 		}
 	}
 
@@ -160,26 +198,79 @@ public:
 		m_elements(nullptr),
 		m_count(0),
 		m_capacity(0) { }
+	/// Copies all elements from the given vector to this vector.
+	simple_vector(const simple_vector &right)
+		: m_allocator(right.m_allocator),
+		m_elements(nullptr),
+		m_count(0),
+		m_capacity(0)
+	{
+		assign(right.begin(), right.end());
+	}
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Moves all elements from the given vector to this vector.
+	simple_vector(simple_vector &&right)
+		: m_allocator(std::move(right.m_allocator)),
+		m_elements(std::move(right.m_elements)),
+		m_count(std::move(right.m_count)),
+		m_capacity(std::move(right.m_capacity))
+	{
+		right.m_elements = nullptr;
+		right.m_count = 0;
+		right.m_capacity = 0;
+	}
+#endif
 	/// Destroys all elements in this vector.
 	~simple_vector()
 	{
-		if (m_elements)
-		{
-			try
-			{
-				destruct(m_elements, m_elements + m_count);
-			}
-			catch(...)
-			{
-				m_allocator.deallocate(m_elements, m_capacity);
-				throw;
-			}
-
-			m_allocator.deallocate(m_elements, m_capacity);
-		}
+		free(m_elements, m_count, m_capacity);
 	}
 
-	// TODO: copy, assignment (+ move)
+	/// Copies all elements of the given vector to this vector.
+	simple_vector& operator =(const simple_vector &right)
+	{
+		if (&right != this)
+			assign(right.begin(), right.end());
+		return *this;
+	}
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Moves all elements from the given vector to this vector.
+	simple_vector& operator =(simple_vector &&right)
+	{
+		if (&right != this)
+		{
+			Element *prevElements = m_elements;
+			size_t prevCount = m_count;
+			size_t prevCapacity = m_capacity;
+
+			m_allocator = std::move(right.m_allocator);
+			m_elements = std::move(right.m_elements);
+			m_count = std::move(right.m_count);
+			m_capacity = std::move(right.m_capacity);
+
+			right.m_elements = nullptr;
+			right.m_count = 0;
+			right.m_capacity = 0;
+
+			free(prevElements, prevCount, prevCapacity);
+		}
+		return *this;
+	}
+#endif
+
+	/// Assigns the given range of elements to this vector.
+	void assign(const_iterator source, const_iterator sourceEnd)
+	{
+		clear();
+
+		size_t count = sourceEnd - source;
+
+		if (count > m_capacity)
+			reallocate(capacity_hint(count));
+
+		copy_construct(source, sourceEnd, m_elements);
+		m_count = count;
+	}
 
 	/// Appends the given element to this vector.
 	LEAN_INLINE void push_back(const value_type &value)
@@ -269,8 +360,6 @@ public:
 	LEAN_INLINE reference operator [](size_type pos) { return m_elements[pos]; };
 	/// Gets an element by position, access violation on failure.
 	LEAN_INLINE const_reference operator [](size_type pos) const { return m_elements[pos]; };
-
-	// TODO: check compilation behavior for repeated end() calls
 
 	/// Returns an iterator to the first element contained by this vector.
 	LEAN_INLINE iterator begin(void) { return m_elements; };

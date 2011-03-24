@@ -7,6 +7,7 @@
 
 #include "../lean.h"
 #include <memory>
+#include <stdexcept>
 
 namespace lean 
 {
@@ -163,6 +164,30 @@ private:
 		}
 	}
 
+	/// Triggers an out of range error.
+	LEAN_NOINLINE static void out_of_range()
+	{
+		throw std::out_of_range("simple_vector<T> out of range");
+	}
+	/// Triggers an underflow error.
+	LEAN_NOINLINE static void underflow()
+	{
+		throw std::underflow_error("simple_vector<T> empty");
+	}
+
+	/// Checks the given position.
+	LEAN_INLINE void check_pos(size_t pos)
+	{
+		if (m_count <= pos)
+			out_of_range();
+	}
+	/// Checks that the vector is non-empty.
+	LEAN_INLINE void check_nonempty(size_t pos)
+	{
+		if (empty())
+			underflow();
+	}
+
 public:
 	/// Type of the allocator used by this vector.
 	typedef allocator_type_ allocator_type;
@@ -295,13 +320,10 @@ public:
 	/// Removes the last element from this vector.
 	LEAN_INLINE void pop_back()
 	{
-		if (m_count > 0)
-		{
-			--m_count;
-			destruct(m_elements + m_count);
-		}
+		check_nonempty();
 
-		// TODO: exception?
+		--m_count;
+		destruct(m_elements + m_count);
 	}
 
 	/// Clears all elements from this vector.
@@ -340,21 +362,19 @@ public:
 			destruct(m_elements + newCount, elementsOldEnd);
 		}
 	}
-
-	// TODO: exceptions?
-
+	
 	/// Gets an element by position, access violation on failure.
-	LEAN_INLINE reference at(size_type pos) { return m_elements[pos]; };
+	LEAN_INLINE reference at(size_type pos) { check_pos(pos); return m_elements[pos]; };
 	/// Gets an element by position, access violation on failure.
-	LEAN_INLINE const_reference at(size_type pos) const { return m_elements[pos]; };
+	LEAN_INLINE const_reference at(size_type pos) const { check_pos(pos); return m_elements[pos]; };
 	/// Gets the first element in the vector, access violation on failure.
-	LEAN_INLINE reference front(void) { return *m_elements; };
+	LEAN_INLINE reference front(void) { check_pos(0); return *m_elements; };
 	/// Gets the first element in the vector, access violation on failure.
-	LEAN_INLINE const_reference front(void) const { return *m_elements; };
+	LEAN_INLINE const_reference front(void) const { check_pos(0); return *m_elements; };
 	/// Gets the last element in the vector, access violation on failure.
-	LEAN_INLINE reference back(void) { return m_elements[m_count - 1]; };
+	LEAN_INLINE reference back(void) { check_pos(0); return m_elements[m_count - 1]; };
 	/// Gets the last element in the vector, access violation on failure.
-	LEAN_INLINE const_reference back(void) const { return m_elements[m_count - 1]; };
+	LEAN_INLINE const_reference back(void) const { check_pos(0); return m_elements[m_count - 1]; };
 
 	/// Gets an element by position, access violation on failure.
 	LEAN_INLINE reference operator [](size_type pos) { return m_elements[pos]; };
@@ -373,6 +393,8 @@ public:
 	/// Gets a copy of the allocator used by this vector.
 	LEAN_INLINE allocator_type get_allocator() const { return m_allocator; };
 
+	/// Returns true if the vector is empty.
+	LEAN_INLINE bool empty(void) const { return (m_count <= 0); };
 	/// Returns the number of elements contained by this vector.
 	LEAN_INLINE size_type size(void) const { return m_count; };
 	/// Returns the number of elements this vector could contain without reallocation.

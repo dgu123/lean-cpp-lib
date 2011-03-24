@@ -176,13 +176,13 @@ private:
 	}
 
 	/// Checks the given position.
-	LEAN_INLINE void check_pos(size_t pos)
+	LEAN_INLINE void check_pos(size_t pos) const
 	{
 		if (m_count <= pos)
 			out_of_range();
 	}
 	/// Checks that the vector is non-empty.
-	LEAN_INLINE void check_nonempty(size_t pos)
+	LEAN_INLINE void check_nonempty(size_t pos) const
 	{
 		if (empty())
 			underflow();

@@ -74,6 +74,10 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="header\lean\concurrent\concurrent.h" />
+    <ClInclude Include="header\lean\concurrent\shareable_lock_policies.h" />
+    <ClInclude Include="header\lean\concurrent\shareable_spin_lock.h" />
+    <ClInclude Include="header\lean\concurrent\spin_lock.h" />
     <ClInclude Include="header\lean\containers\atomic_collection.h" />
     <ClInclude Include="header\lean\containers\simple_vector.h" />
     <ClInclude Include="header\lean\memory\aligned.h" />
@@ -109,6 +113,7 @@
     <ClInclude Include="header\lean\smart\ref_counter.h" />
     <ClInclude Include="header\lean\smart\resource.h" />
     <ClInclude Include="header\lean\smart\resource_ptr.h" />
+    <ClInclude Include="header\lean\smart\scoped_lock.h" />
     <ClInclude Include="header\lean\smart\smart.h" />
     <ClInclude Include="header\lean\smart\cloneable.h" />
     <ClInclude Include="header\lean\smart\weak_resource_ptr.h" />

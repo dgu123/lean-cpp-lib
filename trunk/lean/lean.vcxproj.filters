@@ -40,6 +40,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Header Files\concurrent">
+      <UniqueIdentifier>{79bda9a5-9c1b-4261-ab8a-811f20299cbb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -185,6 +188,21 @@
     </ClInclude>
     <ClInclude Include="header\lean\containers\simple_vector.h">
       <Filter>Header Files\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\concurrent\concurrent.h">
+      <Filter>Header Files\concurrent</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\concurrent\spin_lock.h">
+      <Filter>Header Files\concurrent</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\concurrent\shareable_spin_lock.h">
+      <Filter>Header Files\concurrent</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\smart\scoped_lock.h">
+      <Filter>Header Files\smart</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\concurrent\shareable_lock_policies.h">
+      <Filter>Header Files\concurrent</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

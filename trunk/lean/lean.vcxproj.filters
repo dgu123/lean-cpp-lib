@@ -204,6 +204,9 @@
     <ClInclude Include="header\lean\concurrent\shareable_lock_policies.h">
       <Filter>Header Files\concurrent</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\platform\timer.h">
+      <Filter>Header Files\platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

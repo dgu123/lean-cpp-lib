@@ -58,7 +58,7 @@ namespace memory
 
 	/// Aligns the given pointer on the given alignment boundaries.
 	template <size_t Alignment, class Value>
-	LEAN_INLINE Integer align(Value *pointer)
+	LEAN_INLINE Value* align(Value *pointer)
 	{
 		return reinterpret_cast<Value*>(
 			align_integer<Alignment>( reinterpret_cast<uintptr_t>(pointer) ) );
@@ -77,7 +77,7 @@ namespace memory
 
 	/// Aligns the given pointer on the given alignment boundaries, incrementing it at least by one.
 	template <size_t Alignment, class Value>
-	LEAN_INLINE Integer upper_align(Value *pointer)
+	LEAN_INLINE Value* upper_align(Value *pointer)
 	{
 		return reinterpret_cast<Value*>(
 			upper_align_integer<Alignment>( reinterpret_cast<uintptr_t>(pointer) ) );
@@ -87,17 +87,20 @@ namespace memory
 	template <size_t Alignment>
 	struct stack_aligned
 	{
-		LEAN_STATIC_ASSERT_MSG_ALT(false, "Alignment is required to be power of two.", Alignment_is_required_to_be_power_of_two);
+		// Always checked, therefore use static_assert with care
+		LEAN_STATIC_ASSERT_MSG_ALT(Alignment & ~Alignment, // = false, dependent
+			"Alignment is required to be power of two.",
+			Alignment_is_required_to_be_power_of_two);
 	};
 
-	template <> alignas(1) struct stack_aligned<1> { };
-	template <> alignas(2) struct stack_aligned<2> { };
-	template <> alignas(4) struct stack_aligned<4> { };
-	template <> alignas(8) struct stack_aligned<8> { };
-	template <> alignas(16) struct stack_aligned<16> { };
-	template <> alignas(32) struct stack_aligned<32> { };
-	template <> alignas(64) struct stack_aligned<64> { };
-	template <> alignas(128) struct stack_aligned<128> { };
+	template <> struct alignas(1) stack_aligned<1> { };
+	template <> struct alignas(2) stack_aligned<2> { };
+	template <> struct alignas(4) stack_aligned<4> { };
+	template <> struct alignas(8) stack_aligned<8> { };
+	template <> struct alignas(16) stack_aligned<16> { };
+	template <> struct alignas(32) stack_aligned<32> { };
+	template <> struct alignas(64) stack_aligned<64> { };
+	template <> struct alignas(128) stack_aligned<128> { };
 
 } // namespace
 

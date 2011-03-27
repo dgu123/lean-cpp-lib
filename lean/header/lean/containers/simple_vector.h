@@ -25,7 +25,7 @@ private:
 	size_t m_count;
 	size_t m_capacity;
 
-	static const size_t s_max_size = reinterpret_cast<size_t>(-1) / sizeof(Element);
+	static const size_t s_max_size = static_cast<size_t>(-1) / sizeof(Element);
 
 	/// Default constructs an element at the given location.
 	LEAN_INLINE void default_construct(Element *dest)

@@ -103,6 +103,7 @@
     <ClInclude Include="header\lean\pimpl\opaque_val.h" />
     <ClInclude Include="header\lean\pimpl\unsafe_pimpl_base.h" />
     <ClInclude Include="header\lean\pimpl\safe_pimpl_base.h" />
+    <ClInclude Include="header\lean\platform\timer.h" />
     <ClInclude Include="header\lean\properties\properties.h" />
     <ClInclude Include="header\lean\properties\property.h" />
     <ClInclude Include="header\lean\properties\property_accessors.h" />

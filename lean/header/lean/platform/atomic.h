@@ -71,11 +71,12 @@ namespace platform
 
 		//// Integers ////
 
-		template <size_t size>
+		template <size_t Size>
 		struct atomic_type
 		{
-			LEAN_STATIC_ASSERT_MSG_ALT(false,
-				"Atomic operations on integers of the given type unsupported."
+			// Always checked, therefore use static_assert with care
+			LEAN_STATIC_ASSERT_MSG_ALT(Size & ~Size, // = false, dependent
+				"Atomic operations on integers of the given type unsupported.",
 				Atomic_operations_on_integers_of_the_given_type_unsupported);
 		};
 

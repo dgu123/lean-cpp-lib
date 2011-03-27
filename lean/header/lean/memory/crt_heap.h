@@ -28,13 +28,13 @@ struct crt_heap
 	template <size_t Alignment>
 	static LEAN_INLINE void* allocate(size_type size)
 	{
-		LEAN_STATIC_ASSERT_MSG_ALT(Alignment > reinterpret_cast<unsigned char>(-1),
+		LEAN_STATIC_ASSERT_MSG_ALT(Alignment < static_cast<unsigned char>(-1),
 			"Alignment > max unsigned char unsupported.",
 			Alignment_bigger_than_max_unsigned_char_unsupported);
 
 		unsigned char *unaligned = reinterpret_cast<unsigned char*>( ::operator new(size + Alignment) );
 		unsigned char *aligned = upper_align<Alignment>(unaligned);
-		aligned[-1] = reinterpret_cast<unsigned char>(aligned - unaligned);
+		aligned[-1] = static_cast<unsigned char>(aligned - unaligned);
 		return aligned;
 	}
 	/// Frees the given aligned block of memory.

@@ -115,7 +115,7 @@ public:
 	/// Estimates the maximum number of elements that may be constructed.
 	LEAN_INLINE size_t max_size() const
 	{
-		size_t count = reinterpret_cast<size_t>(-1) / sizeof(Element);
+		size_t count = static_cast<size_t>(-1) / sizeof(Element);
 		return (0 < count) ? count : 1;
 	}
 };

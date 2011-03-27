@@ -33,14 +33,14 @@ public:
 	/// Tries to exclusively lock this spin lock, returning false if currently locked / shared by another user.
 	LEAN_INLINE bool try_lock()
 	{
-		return atomic_test_and_set(m_counter, 0, reinterpret_cast<Counter>(-1));
+		return atomic_test_and_set(m_counter, 0, static_cast<Counter>(-1));
 	}
 
 	/// Tries to atomically upgrade shared ownership of this spin lock to exclusive ownership,
 	/// returning false if currently shared with another user.
 	LEAN_INLINE bool try_upgrade_lock()
 	{
-		return atomic_test_and_set(m_counter, 1, reinterpret_cast<Counter>(-1));
+		return atomic_test_and_set(m_counter, 1, static_cast<Counter>(-1));
 	}
 
 	/// Exclusively locks this spin lock, returning immediately on success, otherwise waiting for the lock to become available.
@@ -59,13 +59,13 @@ public:
 	/// Atomically releases exclusive ownership and re-acquires shared ownership, permitting waiting threads to continue execution.
 	LEAN_INLINE void downgrade_lock()
 	{
-		atomic_test_and_set(m_counter, reinterpret_cast<Counter>(-1), 1);
+		atomic_test_and_set(m_counter, static_cast<Counter>(-1), 1);
 	}
 
 	/// Unlocks this spin lock, permitting waiting threads to continue execution.
 	LEAN_INLINE void unlock()
 	{
-		atomic_test_and_set(m_counter, reinterpret_cast<Counter>(-1), 0);
+		atomic_test_and_set(m_counter, static_cast<Counter>(-1), 0);
 	}
 
 	/// Tries to obtain shared ownership of this spin lock, returning false if currently locked exclusively by another user.
@@ -75,7 +75,7 @@ public:
 		{
 			Counter counter = static_cast<volatile Counter&>(m_counter);
 
-			if (counter == reinterpret_cast<Counter>(-1))
+			if (counter == static_cast<Counter>(-1))
 				return false;
 			else if (atomic_test_and_set(m_counter, counter, counter + 1))
 				return true;
@@ -97,7 +97,7 @@ public:
 		{
 			Counter counter = static_cast<volatile Counter&>(m_counter);
 
-			if (counter == reinterpret_cast<Counter>(-1) ||
+			if (counter == static_cast<Counter>(-1) ||
 				counter == 0 ||
 				atomic_test_and_set(m_counter, counter, counter - 1))
 				return;

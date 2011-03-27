@@ -16,6 +16,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "properties_test", "properti
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "asm_test", "asm_test\asm_test.vcxproj", "{ABEC2E8B-33FB-4A5D-99B0-F6BB67E4D134}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "memory_test", "memory_test\memory_test.vcxproj", "{ED890171-1B12-44B7-AE48-306615A82BE7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -46,6 +48,10 @@ Global
 		{ABEC2E8B-33FB-4A5D-99B0-F6BB67E4D134}.Debug|Win32.Build.0 = Debug|Win32
 		{ABEC2E8B-33FB-4A5D-99B0-F6BB67E4D134}.Release|Win32.ActiveCfg = Release|Win32
 		{ABEC2E8B-33FB-4A5D-99B0-F6BB67E4D134}.Release|Win32.Build.0 = Release|Win32
+		{ED890171-1B12-44B7-AE48-306615A82BE7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{ED890171-1B12-44B7-AE48-306615A82BE7}.Debug|Win32.Build.0 = Debug|Win32
+		{ED890171-1B12-44B7-AE48-306615A82BE7}.Release|Win32.ActiveCfg = Release|Win32
+		{ED890171-1B12-44B7-AE48-306615A82BE7}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

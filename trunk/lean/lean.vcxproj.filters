@@ -27,9 +27,6 @@
     <Filter Include="Header Files\memory">
       <UniqueIdentifier>{b16c27e2-fd8d-48b1-940f-46c467c3ecd1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\platform">
-      <UniqueIdentifier>{f170af81-be1b-4d4a-90c6-649348a2fb49}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\properties">
       <UniqueIdentifier>{09dc0e61-e8cd-4f41-bcee-5ad5ea593426}</UniqueIdentifier>
     </Filter>
@@ -42,6 +39,12 @@
     </Filter>
     <Filter Include="Header Files\concurrent">
       <UniqueIdentifier>{79bda9a5-9c1b-4261-ab8a-811f20299cbb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\io">
+      <UniqueIdentifier>{875b1abe-2c0a-4c80-ad67-ab61bc65b110}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\time">
+      <UniqueIdentifier>{9f2e4440-c4b6-4109-9e9e-05647dcb0f91}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -132,12 +135,6 @@
     <ClInclude Include="header\lean\macros.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="header\lean\platform\atomic.h">
-      <Filter>Header Files\platform</Filter>
-    </ClInclude>
-    <ClInclude Include="header\lean\platform\platform.h">
-      <Filter>Header Files\platform</Filter>
-    </ClInclude>
     <ClInclude Include="header\lean\smart\resource_ptr.h">
       <Filter>Header Files\smart</Filter>
     </ClInclude>
@@ -204,8 +201,23 @@
     <ClInclude Include="header\lean\concurrent\shareable_lock_policies.h">
       <Filter>Header Files\concurrent</Filter>
     </ClInclude>
-    <ClInclude Include="header\lean\platform\timer.h">
-      <Filter>Header Files\platform</Filter>
+    <ClInclude Include="header\lean\io\wcharcvt.h">
+      <Filter>Header Files\io</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\io\io.h">
+      <Filter>Header Files\io</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\time\time.h">
+      <Filter>Header Files\time</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\time\timer.h">
+      <Filter>Header Files\time</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\concurrent\atomic.h">
+      <Filter>Header Files\concurrent</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\io\endianness.h">
+      <Filter>Header Files\io</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

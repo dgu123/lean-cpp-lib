@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "../lean.h"
-#include "../platform/atomic.h"
+#include "../concurrent/atomic.h"
 
 namespace lean
 {

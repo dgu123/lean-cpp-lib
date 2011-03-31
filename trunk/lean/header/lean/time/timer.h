@@ -1,9 +1,9 @@
 /*****************************************************/
-/* lean Platform                (c) Tobias Zirr 2011 */
+/* lean Time                    (c) Tobias Zirr 2011 */
 /*****************************************************/
 
-#ifndef LEAN_PLATFORM_TIMER
-#define LEAN_PLATFORM_TIMER
+#ifndef LEAN_TIME_TIMER
+#define LEAN_TIME_TIMER
 
 #include "../lean.h"
 #include <ctime>

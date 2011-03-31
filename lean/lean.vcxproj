@@ -74,12 +74,16 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="header\lean\concurrent\atomic.h" />
     <ClInclude Include="header\lean\concurrent\concurrent.h" />
     <ClInclude Include="header\lean\concurrent\shareable_lock_policies.h" />
     <ClInclude Include="header\lean\concurrent\shareable_spin_lock.h" />
     <ClInclude Include="header\lean\concurrent\spin_lock.h" />
     <ClInclude Include="header\lean\containers\atomic_collection.h" />
     <ClInclude Include="header\lean\containers\simple_vector.h" />
+    <ClInclude Include="header\lean\io\endianness.h" />
+    <ClInclude Include="header\lean\io\io.h" />
+    <ClInclude Include="header\lean\io\wcharcvt.h" />
     <ClInclude Include="header\lean\memory\aligned.h" />
     <ClInclude Include="header\lean\memory\crt_heap.h" />
     <ClInclude Include="header\lean\containers\accumulation_vector.h" />
@@ -103,7 +107,6 @@
     <ClInclude Include="header\lean\pimpl\opaque_val.h" />
     <ClInclude Include="header\lean\pimpl\unsafe_pimpl_base.h" />
     <ClInclude Include="header\lean\pimpl\safe_pimpl_base.h" />
-    <ClInclude Include="header\lean\platform\timer.h" />
     <ClInclude Include="header\lean\properties\properties.h" />
     <ClInclude Include="header\lean\properties\property.h" />
     <ClInclude Include="header\lean\properties\property_accessors.h" />
@@ -121,12 +124,12 @@
     <ClInclude Include="header\lean\tags\nonconstructible.h" />
     <ClInclude Include="header\lean\tags\noncopyable.h" />
     <ClInclude Include="header\lean\tags\tags.h" />
+    <ClInclude Include="header\lean\time\time.h" />
+    <ClInclude Include="header\lean\time\timer.h" />
     <ClInclude Include="header\lean_internal\stdafx.h" />
     <ClInclude Include="header\lean_internal\targetver.h" />
     <ClInclude Include="header\lean\pimpl\pimpl_ptr.h" />
     <ClInclude Include="header\lean\memory\memory.h" />
-    <ClInclude Include="header\lean\platform\atomic.h" />
-    <ClInclude Include="header\lean\platform\platform.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

@@ -7,7 +7,7 @@
 
 #include "../lean.h"
 #include "../tags/noncopyable.h"
-#include "../platform/atomic.h"
+#include "atomic.h"
 
 // Include automatically to encourage use of scoped_lock
 #include "../smart/scoped_lock.h"

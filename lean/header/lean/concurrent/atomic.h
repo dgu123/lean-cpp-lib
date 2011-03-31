@@ -1,9 +1,9 @@
 /*****************************************************/
-/* lean Platform                (c) Tobias Zirr 2011 */
+/* lean Concurrent              (c) Tobias Zirr 2011 */
 /*****************************************************/
 
-#ifndef LEAN_PLATFORM_ATOMIC
-#define LEAN_PLATFORM_ATOMIC
+#ifndef LEAN_CONCURRENT_ATOMIC
+#define LEAN_CONCURRENT_ATOMIC
 
 #include "../lean.h"
 
@@ -111,7 +111,7 @@ namespace platform
 	{
 		typedef typename impl::atomic_type<sizeof(Integer)>::type atomic_int;
 
-		return reinterpret_cast<Integer>( impl::atomic_increment(
+		return static_cast<Integer>( impl::atomic_increment(
 			reinterpret_cast<atomic_int&>(value) ) );
 	}
 
@@ -121,7 +121,7 @@ namespace platform
 	{
 		typedef typename impl::atomic_type<sizeof(Integer)>::type atomic_int;
 
-		return reinterpret_cast<Integer>( impl::atomic_decrement(
+		return static_cast<Integer>( impl::atomic_decrement(
 			reinterpret_cast<atomic_int&>(value) ) );
 	}
 
@@ -133,8 +133,8 @@ namespace platform
 
 		return impl::atomic_test_and_set(
 			reinterpret_cast<atomic_int&>(value),
-			reinterpret_cast<atomic_int>(expectedValue),
-			reinterpret_cast<atomic_int>(newValue) );
+			static_cast<atomic_int>(expectedValue),
+			static_cast<atomic_int>(newValue) );
 	}
 
 	/// Atomically sets the given value.
@@ -145,7 +145,7 @@ namespace platform
 
 		impl::atomic_set(
 			reinterpret_cast<atomic_int&>(value),
-			reinterpret_cast<atomic_int>(newValue) );
+			static_cast<atomic_int>(newValue) );
 	}
 
 } // namespace

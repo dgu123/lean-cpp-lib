@@ -1,10 +1,10 @@
 /*****************************************************/
-/* lean Platform                (c) Tobias Zirr 2011 */
+/* lean Time                    (c) Tobias Zirr 2011 */
 /*****************************************************/
 
-#ifndef LEAN_PLATFORM
-#define LEAN_PLATFORM
+#ifndef LEAN_TIME_TIME
+#define LEAN_TIME_TIME
 
-#include "atomic.h"
+#include "timer.h"
 
 #endif

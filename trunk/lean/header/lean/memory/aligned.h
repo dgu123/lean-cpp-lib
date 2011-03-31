@@ -17,6 +17,19 @@ namespace memory
 	template <size_t Alignment, class Heap = crt_heap>
 	class aligned : public stack_aligned<Alignment>
 	{
+	private:
+#ifndef LEAN0X_NO_DELETE_METHODS
+		/// Cannot be aligned properly, therefore disabled.
+		LEAN_INLINE void* operator new[](size_t size) = delete;
+		/// Cannot be aligned properly, therefore disabled.
+		LEAN_INLINE void operator delete[](void *memory) = delete;
+#else
+		/// Cannot be aligned properly, therefore disabled.
+		LEAN_INLINE void* operator new[](size_t size);
+		/// Cannot be aligned properly, therefore disabled.
+		LEAN_INLINE void operator delete[](void *memory);
+#endif
+
 	protected:
 		LEAN_INLINE aligned() { };
 #ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
@@ -29,18 +42,8 @@ namespace memory
 		{
 			return Heap::allocate<Alignment>(size);
 		}
-		/// Allocates an aligned block of memory of the given size.
-		LEAN_INLINE void* operator new[](size_t size)
-		{
-			return Heap::allocate<Alignment>(size);
-		}
 		/// Frees an aligned block of memory of the given size.
 		LEAN_INLINE void operator delete(void *memory)
-		{
-			return Heap::free<Alignment>(memory);
-		}
-		/// Allocates an aligned block of memory of the given size.
-		LEAN_INLINE void operator delete[](void *memory)
 		{
 			return Heap::free<Alignment>(memory);
 		}

@@ -7,6 +7,7 @@
 
 #include <locale>
 #include "../lean.h"
+#include "endianness.h"
 
 namespace lean
 {
@@ -27,11 +28,9 @@ protected:
 		const wchar_t* from, const wchar_t* from_end, const wchar_t*& from_next,
 		char* to, char* to_end, char*& to_next) const
 	{
-		size_t size = (from_end - from) * sizeof(wchar_t);
-
-		memcpy(to, from, size);
+		byteswap_big(from, from_end, reinterpret_cast<wchar_t*>(to));
 		from_next = from_end;
-		to_next = to + size;
+		to_next = to + (reinterpret_cast<const char*>(from_end) - reinterpret_cast<const char*>(from));
 
 		return ok;
 	}
@@ -41,11 +40,9 @@ protected:
 		const char* from, const char* from_end, const char*& from_next,
 		wchar_t* to, wchar_t* to_end, wchar_t*& to_next) const
 	{
-		size_t size = (from_end - from);
-
-		memcpy(to, from, size);
+		byteswap_big(reinterpret_cast<const wchar_t*>(from), reinterpret_cast<const wchar_t*>(from_end), to);
 		from_next = from_end;
-		to_next = to + (size / sizeof(wchar_t));
+		to_next = to + (reinterpret_cast<const wchar_t*>(from_end) - reinterpret_cast<const wchar_t*>(from));
 
 		return ok;
 	}

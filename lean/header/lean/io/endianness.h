@@ -70,8 +70,31 @@ LEAN_INLINE Value byteswap(Value value)
 {
 	typedef typename impl::swap_type<sizeof(Value)>::type swap_int;
 
-	return reinterpret_cast<const Value&>( impl::byteswap(
-			reinterpret_cast<const swap_int&>(value) ) );
+	return reinterpret_cast<const Value&>(static_cast<const swap_int&>( impl::byteswap(
+			reinterpret_cast<const swap_int&>(value) ) ));
+}
+
+/// Swaps the byte order of the given values.
+template <class Value>
+LEAN_INLINE void byteswap(const Value *value, const Value *valueEnd, Value *dest)
+{
+	LEAN_ASSERT(dest);
+	LEAN_ASSERT(value);
+	LEAN_ASSERT(value <= valueEnd);
+
+	while (value != valueEnd)
+		*(dest++) = byteswap(*(value++));
+}
+
+/// Swaps the byte order of the given values.
+template <class Value>
+LEAN_INLINE void bytecopy(const Value *value, const Value *valueEnd, Value *dest)
+{
+	LEAN_ASSERT(dest);
+	LEAN_ASSERT(value);
+	LEAN_ASSERT(value <= valueEnd);
+
+	memcpy(dest, value, reinterpret_cast<const char*>(valueEnd) - reinterpret_cast<const char*>(value));
 }
 
 #ifndef LEAN_BIG_ENDIAN
@@ -90,6 +113,20 @@ LEAN_INLINE Value byteswap_big(Value value)
 	return byteswap(value);
 }
 
+/// Sets the byte order of the given values to little endian.
+template <class Value>
+LEAN_INLINE void byteswap_little(const Value *value, const Value *valueEnd, Value *dest)
+{
+	bytecopy(value, valueEnd, dest);
+}
+
+/// Sets the byte order of the given values to big endian.
+template <class Value>
+LEAN_INLINE void byteswap_big(const Value *value, const Value *valueEnd, Value *dest)
+{
+	byteswap(value, valueEnd, dest);
+}
+
 #else
 
 /// Sets the byte order of the given value to little endian.
@@ -104,6 +141,20 @@ template <class Value>
 LEAN_INLINE Value byteswap_big(Value value)
 {
 	return value;
+}
+
+/// Sets the byte order of the given values to little endian.
+template <class Value>
+LEAN_INLINE void byteswap_little(const Value *value, const Value *valueEnd, Value *dest)
+{
+	byteswap(value, valueEnd, dest);
+}
+
+/// Sets the byte order of the given values to big endian.
+template <class Value>
+LEAN_INLINE void byteswap_big(const Value *value, const Value *valueEnd, Value *dest)
+{
+	bytecopy(value, valueEnd, dest);
 }
 
 #endif

@@ -49,6 +49,9 @@
     <Filter Include="Source Files\time">
       <UniqueIdentifier>{55932d64-8493-457a-aafc-10fc1e06af74}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\config">
+      <UniqueIdentifier>{3db40b34-971a-44d1-8974-4feba0791229}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -227,6 +230,15 @@
     </ClInclude>
     <ClInclude Include="header\lean\types.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\config\faststl.h">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\config\stdstd.h">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\config\windows.h">
+      <Filter>Header Files\config</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

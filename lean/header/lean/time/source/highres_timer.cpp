@@ -1,5 +1,5 @@
 #ifdef LEAN_BUILD_LIB
-#include "lean/depconfig.h"
+#include "lean/config/windows.h"
 #endif
 
 #include "../highres_timer.h"

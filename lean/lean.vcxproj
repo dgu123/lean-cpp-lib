@@ -79,6 +79,9 @@
     <ClInclude Include="header\lean\concurrent\shareable_lock_policies.h" />
     <ClInclude Include="header\lean\concurrent\shareable_spin_lock.h" />
     <ClInclude Include="header\lean\concurrent\spin_lock.h" />
+    <ClInclude Include="header\lean\config\faststl.h" />
+    <ClInclude Include="header\lean\config\stdstd.h" />
+    <ClInclude Include="header\lean\config\windows.h" />
     <ClInclude Include="header\lean\containers\atomic_collection.h" />
     <ClInclude Include="header\lean\containers\simple_vector.h" />
     <ClInclude Include="header\lean\io\endianness.h" />

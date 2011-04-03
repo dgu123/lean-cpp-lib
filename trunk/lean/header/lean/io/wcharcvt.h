@@ -40,11 +40,17 @@ protected:
 		const char* from, const char* from_end, const char*& from_next,
 		wchar_t* to, wchar_t* to_end, wchar_t*& to_next) const
 	{
-		byteswap_big(reinterpret_cast<const wchar_t*>(from), reinterpret_cast<const wchar_t*>(from_end), to);
-		from_next = from_end;
-		to_next = to + (reinterpret_cast<const wchar_t*>(from_end) - reinterpret_cast<const wchar_t*>(from));
+		LEAN_STATIC_ASSERT_MSG_ALT(
+			(sizeof(wchar_t) & (sizeof(wchar_t) - 1)) == 0,
+			"Sizeof(wchar_t) is no power of two.",
+			Sizeof_wchar_t_is_no_power_of_two);
 
-		return ok;
+		from_next = from + ((from_end - from) & ~(sizeof(wchar_t) - 1));
+
+		byteswap_big(reinterpret_cast<const wchar_t*>(from), reinterpret_cast<const wchar_t*>(from_next), to);
+		to_next = to + (reinterpret_cast<const wchar_t*>(from_next) - reinterpret_cast<const wchar_t*>(from));
+
+		return (from_next != from_end) ? partial : ok;
 	}
 
 	/// No shifting done.
@@ -57,23 +63,29 @@ protected:
 	/// Computes the length of the string to be encoded.
 	virtual int do_length(mbstate_t&, const char* from, const char* end, size_t max) const
 	{
-		return static_cast<int>( min(static_cast<size_t>(end - from), max) );
+		LEAN_STATIC_ASSERT_MSG_ALT(
+			(sizeof(wchar_t) & (sizeof(wchar_t) - 1)) == 0,
+			"Sizeof(wchar_t) is no power of two.",
+			Sizeof_wchar_t_is_no_power_of_two);
+
+		return static_cast<int>(
+			min(static_cast<size_t>(end - from), max * sizeof(wchar_t)) & ~(sizeof(wchar_t) - 1) );
+	}
+
+	/// Gets the (maximum) size of one wide-character.
+	virtual int do_max_length() const throw()
+	{
+		return sizeof(wchar_t);
 	}
 
 	/// No real conversion done.
 	virtual bool do_always_noconv() const throw()
 	{
-		return true;
+		return false;
 	}
 
 	/// Gets the size of one wide-character.
 	virtual int do_encoding() const throw()
-	{
-		return sizeof(wchar_t);
-	}
-
-	/// Gets the (maximum) size of one wide-character.
-	virtual int do_max_length() const throw()
 	{
 		return sizeof(wchar_t);
 	}

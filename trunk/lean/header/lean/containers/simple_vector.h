@@ -22,10 +22,11 @@ private:
 	allocator_type_ m_allocator;
 
 	Element *m_elements;
-	size_t m_count;
-	size_t m_capacity;
+	Element *m_elementsEnd;
+	Element *m_capacityEnd;
 
-	static const size_t s_max_size = static_cast<size_t>(-1) / sizeof(Element);
+	static const size_t s_maxSize = static_cast<size_t>(-1) / sizeof(Element);
+	static const size_t s_minSize = (16 < s_maxSize) ? 16 : s_maxSize;
 
 	/// Default constructs an element at the given location.
 	LEAN_INLINE void default_construct(Element *dest)
@@ -98,7 +99,7 @@ private:
 	/// Destructs the elements in the given range.
 	LEAN_INLINE void destruct(Element *destr)
 	{
-		m_allocator.destroy(*destr);
+		m_allocator.destroy(destr);
 	}
 	/// Destructs the elements in the given range.
 	void destruct(Element *destr, Element *destrEnd)
@@ -112,10 +113,11 @@ private:
 	{
 		Element *newElements = m_allocator.allocate(newCapacity);
 
-		if (m_count > 0)
+		if (!empty())
 			try
 			{
-				move_construct(m_elements, m_elements + m_count, newElements);
+//				move_construct(m_elements, m_elementsEnd, newElements);
+				memcpy(newElements, m_elements, size() * sizeof(Element));
 			}
 			catch(...)
 			{
@@ -124,16 +126,19 @@ private:
 			}
 
 		Element *oldElements = m_elements;
-		size_t oldCapacity = m_capacity;
+		Element *oldElementsEnd = m_elementsEnd;
+		size_t oldCapacity = capacity();
 		
+		// Mind the order, size() based on member variables!
+		m_elementsEnd = newElements + size();
+		m_capacityEnd = newElements + newCapacity;
 		m_elements = newElements;
-		m_capacity = newCapacity;
 
 		if (oldElements)
 		{
 			try
 			{
-				destruct(oldElements, oldElements + m_count);
+//				destruct(oldElements, oldElementsEnd);
 			}
 			catch(...)
 			{
@@ -146,13 +151,13 @@ private:
 	}
 
 	/// Frees the given elements.
-	void free(Element *elements, size_t count, size_t capacity)
+	void free(Element *elements, Element *elementsEnd, size_t capacity)
 	{
 		if (elements)
 		{
 			try
 			{
-				destruct(elements, elements + count);
+				destruct(elements, elementsEnd);
 			}
 			catch(...)
 			{
@@ -169,23 +174,11 @@ private:
 	{
 		throw std::out_of_range("simple_vector<T> out of range");
 	}
-	/// Triggers an underflow error.
-	LEAN_NOINLINE static void underflow()
-	{
-		throw std::underflow_error("simple_vector<T> empty");
-	}
-
 	/// Checks the given position.
 	LEAN_INLINE void check_pos(size_t pos) const
 	{
-		if (m_count <= pos)
+		if (m_elementsEnd <= m_elements + pos)
 			out_of_range();
-	}
-	/// Checks that the vector is non-empty.
-	LEAN_INLINE void check_nonempty(size_t pos) const
-	{
-		if (empty())
-			underflow();
 	}
 
 public:
@@ -215,20 +208,20 @@ public:
 	/// Constructs an empty vector.
 	simple_vector()
 		: m_elements(nullptr),
-		m_count(0),
-		m_capacity(0) { }
+		m_elementsEnd(nullptr),
+		m_capacityEnd(nullptr) { }
 	/// Constructs an empty vector.
 	simple_vector(allocator_type allocator)
 		: m_allocator(allocator),
 		m_elements(nullptr),
-		m_count(0),
-		m_capacity(0) { }
+		m_elementsEnd(nullptr),
+		m_capacityEnd(nullptr) { }
 	/// Copies all elements from the given vector to this vector.
 	simple_vector(const simple_vector &right)
 		: m_allocator(right.m_allocator),
 		m_elements(nullptr),
-		m_count(0),
-		m_capacity(0)
+		m_elementsEnd(nullptr),
+		m_capacityEnd(nullptr)
 	{
 		assign(right.begin(), right.end());
 	}
@@ -237,18 +230,18 @@ public:
 	simple_vector(simple_vector &&right)
 		: m_allocator(std::move(right.m_allocator)),
 		m_elements(std::move(right.m_elements)),
-		m_count(std::move(right.m_count)),
-		m_capacity(std::move(right.m_capacity))
+		m_elementsEnd(std::move(right.m_elementsEnd)),
+		m_capacityEnd(std::move(right.m_capacityEnd))
 	{
 		right.m_elements = nullptr;
-		right.m_count = 0;
-		right.m_capacity = 0;
+		right.m_elementsEnd = nullptr;
+		right.m_capacityEnd = nullptr;
 	}
 #endif
 	/// Destroys all elements in this vector.
 	~simple_vector()
 	{
-		free(m_elements, m_count, m_capacity);
+		free(m_elements, m_elementsEnd, capacity());
 	}
 
 	/// Copies all elements of the given vector to this vector.
@@ -265,19 +258,19 @@ public:
 		if (&right != this)
 		{
 			Element *prevElements = m_elements;
-			size_t prevCount = m_count;
-			size_t prevCapacity = m_capacity;
+			Element *prevElementsEnd = m_elementsEnd;
+			size_t prevCapacity = capacity();
 
 			m_allocator = std::move(right.m_allocator);
 			m_elements = std::move(right.m_elements);
-			m_count = std::move(right.m_count);
-			m_capacity = std::move(right.m_capacity);
+			m_elementsEnd = std::move(right.m_elementsEnd);
+			m_capacityEnd = std::move(right.m_capacityEnd);
 
 			right.m_elements = nullptr;
-			right.m_count = 0;
-			right.m_capacity = 0;
+			right.m_elementsEnd = nullptr;
+			right.m_capacityEnd = nullptr;
 
-			free(prevElements, prevCount, prevCapacity);
+			free(prevElements, prevElementsEnd, prevCapacity);
 		}
 		return *this;
 	}
@@ -290,76 +283,81 @@ public:
 
 		size_t count = sourceEnd - source;
 
-		if (count > m_capacity)
+		if (m_elements + count > m_capacityEnd)
 			reallocate(capacity_hint(count));
 
 		copy_construct(source, sourceEnd, m_elements);
-		m_count = count;
+		m_elementsEnd = m_elements + count;
 	}
 
 	/// Appends the given element to this vector.
 	LEAN_INLINE void push_back(const value_type &value)
 	{
-		if (m_count >= m_capacity)
-			reallocate(capacity_hint(m_count + 1));
+		if (m_elementsEnd >= m_capacityEnd)
+			reallocate(capacity_hint(size() + 1));
 
-		m_allocator.construct(m_elements + m_count, value);
-		++m_count;
+		m_allocator.construct(m_elementsEnd, value);
+		++m_elementsEnd;
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Appends the given element to this vector.
 	LEAN_INLINE void push_back(value_type &&value)
 	{
-		if (m_count >= m_capacity)
-			reallocate(capacity_hint(m_count + 1));
+		if (m_elementsEnd >= m_capacityEnd)
+			reallocate(capacity_hint(size() + 1));
 
-		m_allocator.construct(m_elements + m_count, std::forward<value_type>(value));
-		++m_count;
+		m_allocator.construct(m_elementsEnd, std::forward<value_type>(value));
+		++m_elementsEnd;
 	}
 #endif
 	/// Removes the last element from this vector.
 	LEAN_INLINE void pop_back()
 	{
-		check_nonempty();
+		LEAN_ASSERT(!empty());
 
-		--m_count;
-		destruct(m_elements + m_count);
+		destruct(m_elementsEnd--);
 	}
 
 	/// Clears all elements from this vector.
 	LEAN_INLINE void clear()
 	{
-		if (m_count > 0)
+		if (!empty())
 		{
-			Element *elementsOldEnd = m_elements + m_count;
-			m_count = 0;
-			destruct(m_elements, elementsOldEnd);
+			Element *oldElementsEnd = m_elementsEnd;
+			m_elementsEnd = m_elements;
+			destruct(m_elements, oldElementsEnd);
 		}
 	}
 
 	/// Reserves space for the predicted number of elements given.
 	LEAN_INLINE void reserve(size_t newCapacity)
 	{
-		if (newCapacity > m_capacity)
+		if (m_elements + newCapacity > m_capacityEnd)
 			reallocate(newCapacity);
 	}
 	/// Resizes this vector, either appending empty elements to or removing elements from the back of this vector.
 	void resize(size_t newCount)
 	{
-		if (newCount > m_count)
+		Elements *newElementsEnd = m_elements + newCount;
+
+		if (newElementsEnd > m_elementsEnd)
 		{
-			if (newCount > m_capacity)
+			if (newElementsEnd > m_capacityEnd)
+			{
 				reallocate(capacity_hint(newCount));
+				// Update pointers!
+				newElementsEnd = m_elements + newCount;
+			}
 			
-			default_construct(m_elements + m_count, m_elements + newCount);
-			m_count = newCount;
+			default_construct(m_elementsEnd, newElementsEnd);
+			m_elementsEnd = newElementsEnd;
 		}
 		// Handle newCount == m_count == 0 (m_elements might still contain nullptr)
-		else if (newCount < m_count)
+		else if (newElementsEnd < m_elementsEnd)
 		{
-			Element *elementsOldEnd = m_elements + m_count;
-			m_count = newCount;
-			destruct(m_elements + newCount, elementsOldEnd);
+			Element *oldElementsEnd = m_elementsEnd;
+			m_elementsEnd = newElementsEnd;
+			destruct(newElementsEnd, oldElementsEnd);
 		}
 	}
 	
@@ -368,13 +366,13 @@ public:
 	/// Gets an element by position, access violation on failure.
 	LEAN_INLINE const_reference at(size_type pos) const { check_pos(pos); return m_elements[pos]; };
 	/// Gets the first element in the vector, access violation on failure.
-	LEAN_INLINE reference front(void) { check_pos(0); return *m_elements; };
+	LEAN_INLINE reference front(void) { LEAN_ASSERT(!empty()); return *m_elements; };
 	/// Gets the first element in the vector, access violation on failure.
-	LEAN_INLINE const_reference front(void) const { check_pos(0); return *m_elements; };
+	LEAN_INLINE const_reference front(void) const { LEAN_ASSERT(!empty()); return *m_elements; };
 	/// Gets the last element in the vector, access violation on failure.
-	LEAN_INLINE reference back(void) { check_pos(0); return m_elements[m_count - 1]; };
+	LEAN_INLINE reference back(void) { LEAN_ASSERT(!empty()); return m_elementsEnd[-1]; };
 	/// Gets the last element in the vector, access violation on failure.
-	LEAN_INLINE const_reference back(void) const { check_pos(0); return m_elements[m_count - 1]; };
+	LEAN_INLINE const_reference back(void) const { LEAN_ASSERT(!empty()); return m_elementsEnd[-1]; };
 
 	/// Gets an element by position, access violation on failure.
 	LEAN_INLINE reference operator [](size_type pos) { return m_elements[pos]; };
@@ -386,19 +384,19 @@ public:
 	/// Returns a constant iterator to the first element contained by this vector.
 	LEAN_INLINE const_iterator begin(void) const { return m_elements; };
 	/// Returns an iterator beyond the last element contained by this vector.
-	LEAN_INLINE iterator end(void) { return m_elements + m_count; };
+	LEAN_INLINE iterator end(void) { return m_elementsEnd; };
 	/// Returns a constant iterator beyond the last element contained by this vector.
-	LEAN_INLINE const_iterator end(void) const { return m_elements + m_count; };
+	LEAN_INLINE const_iterator end(void) const { return m_elementsEnd; };
 
 	/// Gets a copy of the allocator used by this vector.
 	LEAN_INLINE allocator_type get_allocator() const { return m_allocator; };
 
 	/// Returns true if the vector is empty.
-	LEAN_INLINE bool empty(void) const { return (m_count <= 0); };
+	LEAN_INLINE bool empty(void) const { return (m_elements == m_elementsEnd); };
 	/// Returns the number of elements contained by this vector.
-	LEAN_INLINE size_type size(void) const { return m_count; };
+	LEAN_INLINE size_type size(void) const { return m_elementsEnd - m_elements; };
 	/// Returns the number of elements this vector could contain without reallocation.
-	LEAN_INLINE size_type capacity(void) const { return m_capacity; };
+	LEAN_INLINE size_type capacity(void) const { return m_capacityEnd - m_elements; };
 
 	/// Computes a new capacity based on the given number of elements to be stored.
 	LEAN_NOINLINE size_t capacity_hint(size_t count) const
@@ -406,13 +404,16 @@ public:
 		size_t capacityDelta = count / 2;
 
 		// Assume count <= max size, increase by 1.5 or clamp to max_size, mind overflow
-		size_t capacity = (s_max_size - capacityDelta < count)
-			? s_max_size
+		size_t capacity = (s_maxSize - capacityDelta < count)
+			? s_maxSize
 			: count + capacityDelta;
 
 		// Handle cases where count is larger than max size?
-		if (s_max_size < count)
+		if (s_maxSize < count)
 			capacity = count;
+
+		if (capacity < s_minSize)
+			capacity = s_minSize;
 		
 		return capacity;
 	}
@@ -420,7 +421,7 @@ public:
 	/// Estimates the maximum number of elements that may be constructed.
 	LEAN_INLINE size_t max_size() const
 	{
-		return s_max_size;
+		return s_maxSize;
 	}
 
 	/// Swaps the contents of this vector and the given vector.
@@ -428,8 +429,8 @@ public:
 	{
 		std::swap(m_allocator, right.m_allocator);
 		std::swap(m_elements, right.m_elements);
-		std::swap(m_count, right.m_count);
-		std::swap(m_capacity, right.m_capacity);
+		std::swap(m_elementsEnd, right.m_elementsEnd);
+		std::swap(m_capacityEnd, right.m_capacityEnd);
 	}
 };
 

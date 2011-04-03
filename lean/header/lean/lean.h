@@ -41,6 +41,16 @@
 	#define LEAN_NOINLINE inline
 #endif
 
+#if !defined(LEAN_MIN_DEPENDENCY) && !defined(LEAN_BUILD_LIB)
+	/// Inline in header-only library
+	#define LEAN_MAYBE_INLINE inline
+	/// Inlining in header-only library
+	#define LEAN_MAYBE_INLINING 1
+#else
+	/// Do not inline in linked library
+	#define LEAN_MAYBE_INLINE
+#endif
+
 namespace lean
 {
 
@@ -67,5 +77,6 @@ LEAN_INLINE T1 max(T1 a, T2 b)
 
 #include "macros.h"
 #include "cpp0x.h"
+#include "types.h"
 
 #endif

@@ -46,6 +46,9 @@
     <Filter Include="Header Files\time">
       <UniqueIdentifier>{9f2e4440-c4b6-4109-9e9e-05647dcb0f91}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\time">
+      <UniqueIdentifier>{55932d64-8493-457a-aafc-10fc1e06af74}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -219,10 +222,19 @@
     <ClInclude Include="header\lean\io\endianness.h">
       <Filter>Header Files\io</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\time\highres_timer.h">
+      <Filter>Header Files\time</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="header\lean\time\source\highres_timer.cpp">
+      <Filter>Source Files\time</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

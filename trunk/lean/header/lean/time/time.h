@@ -6,5 +6,6 @@
 #define LEAN_TIME_TIME
 
 #include "timer.h"
+#include "highres_timer.h"
 
 #endif

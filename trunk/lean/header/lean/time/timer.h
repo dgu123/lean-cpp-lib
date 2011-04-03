@@ -10,7 +10,7 @@
 
 namespace lean
 {
-namespace platform
+namespace time
 {
 
 /// Default timer class.
@@ -22,13 +22,13 @@ private:
 public:
 	/// Constructs a new timer from the current system time.
 	LEAN_INLINE timer()
-		: m_time(time(nullptr)) { }
+		: m_time(::time(nullptr)) { }
 
-	// Updates the reference time stored by this timer.
-	LEAN_INLINE void tick() { time(&m_time); }
+	/// Updates the reference time stored by this timer.
+	LEAN_INLINE void tick() { ::time(&m_time); }
 
 	/// Gets the time that has elapsed since the last tick.
-	LEAN_INLINE double seconds() const { return difftime(m_time, time(nullptr)); }
+	LEAN_INLINE double seconds() const { return ::difftime(m_time, ::time(nullptr)); }
 	/// Gets the time that has elapsed since the last tick.
 	LEAN_INLINE double milliseconds() const { return seconds() * 1000; }
 };
@@ -47,21 +47,21 @@ private:
 public:
 	/// Constructs a new timer from the current process time.
 	LEAN_INLINE clocktimer()
-		: m_time(clock()) { }
+		: m_time(::clock()) { }
 
-	// Updates the reference time stored by this timer.
-	LEAN_INLINE void tick() { m_time = clock(); }
+	/// Updates the reference time stored by this timer.
+	LEAN_INLINE void tick() { m_time = ::clock(); }
 
 	/// Gets the time that has elapsed since the last tick.
-	LEAN_INLINE double seconds() const { return (double) (clock() - m_time) * (1.0 / CLOCKS_PER_SEC); }
+	LEAN_INLINE double seconds() const { return (double) (::clock() - m_time) * (1.0 / CLOCKS_PER_SEC); }
 	/// Gets the time that has elapsed since the last tick.
-	LEAN_INLINE double milliseconds() const { return (double) (clock() - m_time) * (1000.0 / CLOCKS_PER_SEC); }
+	LEAN_INLINE double milliseconds() const { return (double) (::clock() - m_time) * (1000.0 / CLOCKS_PER_SEC); }
 };
 
 } // namespace
 
-using platform::timer;
-using platform::clocktimer;
+using time::timer;
+using time::clocktimer;
 
 } // namespace
 

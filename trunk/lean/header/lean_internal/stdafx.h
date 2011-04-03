@@ -8,3 +8,5 @@
 #include "lean/depconfig.h"
 #include "lean/lean.h"
 #include "targetver.h"
+
+#include <windows.h>

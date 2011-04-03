@@ -28,7 +28,7 @@
 	/// Instructs the compiler to inline a specific method.
 	#define LEAN_INLINE __forceinline
 	/// Instructs the compiler not to inline a specific method.
-	#define LEAN_NOINLINE __declspec(noinline)
+	#define LEAN_NOINLINE __declspec(noinline) inline
 
 	#ifndef LEAN_DEBUG_BUILD
 		/// Prefer default destructors over empty destructors (limited access control)
@@ -41,7 +41,17 @@
 	#define LEAN_NOINLINE inline
 #endif
 
-#if !defined(LEAN_MIN_DEPENDENCY) && !defined(LEAN_BUILD_LIB)
+#if !defined(LEAN_HEADER_ONLY) || defined(LEAN_BUILD_LIB)
+	/// Do not inline in linked library
+	#define LEAN_MAYBE_LINK
+	/// Using linked library
+	#define LEAN_MAYBE_LINKING 1
+#else
+	/// Inline in header-only library
+	#define LEAN_MAYBE_LINK LEAN_NOINLINE
+#endif
+
+#if (defined(LEAN_HEADER_ONLY) || !defined(LEAN_MIN_DEPENDENCY)) && !defined(LEAN_BUILD_LIB)
 	/// Inline in header-only library
 	#define LEAN_MAYBE_INLINE inline
 	/// Inlining in header-only library

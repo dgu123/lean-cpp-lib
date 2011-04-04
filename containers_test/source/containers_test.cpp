@@ -1,6 +1,7 @@
 // containers_test.cpp : Defines the entry point for the console application.
 //
 
+#define LEAN_FAST_STL
 #include <lean/depconfig.h>
 
 // Use Boost.Test as header-only library

@@ -109,15 +109,15 @@ private:
 	}
 
 	/// Allocates space for the given number of elements.
-	LEAN_NOINLINE void reallocate(size_t newCapacity)
+	void reallocate(size_t newCapacity)
 	{
 		Element *newElements = m_allocator.allocate(newCapacity);
 
 		if (!empty())
 			try
 			{
-//				move_construct(m_elements, m_elementsEnd, newElements);
-				memcpy(newElements, m_elements, size() * sizeof(Element));
+				move_construct(m_elements, m_elementsEnd, newElements);
+//				memcpy(newElements, m_elements, size() * sizeof(Element));
 			}
 			catch(...)
 			{
@@ -136,36 +136,20 @@ private:
 
 		if (oldElements)
 		{
-			try
-			{
-//				destruct(oldElements, oldElementsEnd);
-			}
-			catch(...)
-			{
-				m_allocator.deallocate(oldElements, oldCapacity);
-				throw;
-			}
-
+			// Do nothing on exception, resources leaking anyways!
+			destruct(oldElements, oldElementsEnd);
 			m_allocator.deallocate(oldElements, oldCapacity);
 		}
 	}
 
 	/// Frees the given elements.
-	void free(Element *elements, Element *elementsEnd, size_t capacity)
+	LEAN_INLINE void free()
 	{
-		if (elements)
+		if (m_elements)
 		{
-			try
-			{
-				destruct(elements, elementsEnd);
-			}
-			catch(...)
-			{
-				m_allocator.deallocate(elements, capacity);
-				throw;
-			}
-
-			m_allocator.deallocate(elements, capacity);
+			// Do nothing on exception, resources leaking anyways!
+			destruct(m_elements, m_elementsEnd);
+			m_allocator.deallocate(m_elements, capacity());
 		}
 	}
 
@@ -179,6 +163,17 @@ private:
 	{
 		if (m_elementsEnd <= m_elements + pos)
 			out_of_range();
+	}
+
+	/// Grows vector storage to fit the given new count.
+	void growTo(size_t newCount)
+	{
+		reallocate(capacity_hint(newCount));
+	}
+	/// Grows vector storage to fit the given additional number of elements.
+	LEAN_NOINLINE void grow(size_t count)
+	{
+		growTo(size() + count);
 	}
 
 public:
@@ -241,7 +236,7 @@ public:
 	/// Destroys all elements in this vector.
 	~simple_vector()
 	{
-		free(m_elements, m_elementsEnd, capacity());
+		free();
 	}
 
 	/// Copies all elements of the given vector to this vector.
@@ -257,20 +252,26 @@ public:
 	{
 		if (&right != this)
 		{
-			Element *prevElements = m_elements;
-			Element *prevElementsEnd = m_elementsEnd;
-			size_t prevCapacity = capacity();
+			free();
 
-			m_allocator = std::move(right.m_allocator);
-			m_elements = std::move(right.m_elements);
-			m_elementsEnd = std::move(right.m_elementsEnd);
-			m_capacityEnd = std::move(right.m_capacityEnd);
+			try
+			{
+				m_allocator = std::move(right.m_allocator);
+				m_elements = std::move(right.m_elements);
+				m_elementsEnd = std::move(right.m_elementsEnd);
+				m_capacityEnd = std::move(right.m_capacityEnd);
+			}
+			catch(...)
+			{
+				m_elements = nullptr;
+				m_elementsEnd = nullptr;
+				m_capacityEnd = nullptr;
+				throw;
+			}
 
 			right.m_elements = nullptr;
 			right.m_elementsEnd = nullptr;
 			right.m_capacityEnd = nullptr;
-
-			free(prevElements, prevElementsEnd, prevCapacity);
 		}
 		return *this;
 	}
@@ -284,7 +285,7 @@ public:
 		size_t count = sourceEnd - source;
 
 		if (m_elements + count > m_capacityEnd)
-			reallocate(capacity_hint(count));
+			growTo(count);
 
 		copy_construct(source, sourceEnd, m_elements);
 		m_elementsEnd = m_elements + count;
@@ -293,8 +294,8 @@ public:
 	/// Appends the given element to this vector.
 	LEAN_INLINE void push_back(const value_type &value)
 	{
-		if (m_elementsEnd >= m_capacityEnd)
-			reallocate(capacity_hint(size() + 1));
+		if (m_elementsEnd == m_capacityEnd)
+			grow(1);
 
 		m_allocator.construct(m_elementsEnd, value);
 		++m_elementsEnd;
@@ -303,10 +304,10 @@ public:
 	/// Appends the given element to this vector.
 	LEAN_INLINE void push_back(value_type &&value)
 	{
-		if (m_elementsEnd >= m_capacityEnd)
-			reallocate(capacity_hint(size() + 1));
+		if (m_elementsEnd == m_capacityEnd)
+			grow(1);
 
-		m_allocator.construct(m_elementsEnd, std::forward<value_type>(value));
+		m_allocator.construct(m_elementsEnd, std::move(value));
 		++m_elementsEnd;
 	}
 #endif
@@ -344,7 +345,7 @@ public:
 		{
 			if (newElementsEnd > m_capacityEnd)
 			{
-				reallocate(capacity_hint(newCount));
+				growTo(newCount);
 				// Update pointers!
 				newElementsEnd = m_elements + newCount;
 			}
@@ -399,7 +400,7 @@ public:
 	LEAN_INLINE size_type capacity(void) const { return m_capacityEnd - m_elements; };
 
 	/// Computes a new capacity based on the given number of elements to be stored.
-	LEAN_NOINLINE size_t capacity_hint(size_t count) const
+	size_t capacity_hint(size_t count) const
 	{
 		size_t capacityDelta = count / 2;
 

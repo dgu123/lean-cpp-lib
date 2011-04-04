@@ -209,7 +209,7 @@ private:
 	/// Checks the given position.
 	LEAN_INLINE void check_pos(size_t pos) const
 	{
-		if (m_elementsEnd <= m_elements + pos)
+		if (pos >= size())
 			out_of_range();
 	}
 
@@ -324,7 +324,7 @@ public:
 
 		size_t count = sourceEnd - source;
 
-		if (m_elements + count > m_capacityEnd)
+		if (count > capacity())
 			growToHL(count);
 
 		copy_construct(source, sourceEnd, m_elements);
@@ -382,32 +382,32 @@ public:
 	/// Reserves space for the predicted number of elements given.
 	LEAN_INLINE void reserve(size_t newCapacity)
 	{
-		if (m_elements + newCapacity > m_capacityEnd)
+		if (newCapacity > capacity())
 			reallocate(newCapacity);
 	}
 	/// Resizes this vector, either appending empty elements to or removing elements from the back of this vector.
 	void resize(size_t newCount)
 	{
-		Elements *newElementsEnd = m_elements + newCount;
-
-		if (newElementsEnd > m_elementsEnd)
+		if (newCount > count())
 		{
-			if (newElementsEnd > m_capacityEnd)
-			{
+			if (newCount > capacity())
 				growToHL(newCount);
-				// Update pointers!
-				newElementsEnd = m_elements + newCount;
-			}
 			
+			Elements *newElementsEnd = m_elements + newCount;
 			default_construct(m_elementsEnd, newElementsEnd);
 			m_elementsEnd = newElementsEnd;
 		}
-		// Handle newCount == m_count == 0 (m_elements might still contain nullptr)
-		else if (newElementsEnd < m_elementsEnd)
+		else
 		{
-			Element *oldElementsEnd = m_elementsEnd;
-			m_elementsEnd = newElementsEnd;
-			destruct(newElementsEnd, oldElementsEnd);
+			Elements *newElementsEnd = m_elements + newCount;
+
+			// Handle newCount == m_count == 0 (m_elements might still contain nullptr)!
+			if (newElementsEnd < m_elementsEnd)
+			{
+				Element *oldElementsEnd = m_elementsEnd;
+				m_elementsEnd = newElementsEnd;
+				destruct(newElementsEnd, oldElementsEnd);
+			}
 		}
 	}
 	
@@ -477,7 +477,7 @@ public:
 	/// Swaps the contents of this vector and the given vector.
 	LEAN_INLINE void swap(simple_vector &right) throw()
 	{
-		std::swap(m_allocator, right.m_allocator);
+		swap(m_allocator, right.m_allocator);
 		std::swap(m_elements, right.m_elements);
 		std::swap(m_elementsEnd, right.m_elementsEnd);
 		std::swap(m_capacityEnd, right.m_capacityEnd);

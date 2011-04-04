@@ -1,11 +1,7 @@
 #include "stdafx.h"
 #include <lean/io/endianness.h>
 
-template <class T, class X>
-inline T&& reinterpret_rval(X &&value) { return reinterpret_cast<T&&>(value); };
-template <class T, class X> inline const T& reinterpret_rval(const X &value) { return reinterpret_cast<const T&>(value); };
-
-BOOST_AUTO_TEST_SUITE( aligned )
+BOOST_AUTO_TEST_SUITE( endian )
 
 BOOST_AUTO_TEST_CASE( hword )
 {
@@ -66,6 +62,38 @@ BOOST_AUTO_TEST_CASE( dword )
 	BOOST_CHECK_EQUAL(bb[2], 0xad);
 	BOOST_CHECK_EQUAL(bb[1], 0xbe);
 	BOOST_CHECK_EQUAL(bb[0], 0xef);
+}
+
+BOOST_AUTO_TEST_CASE( bulk )
+{
+	int a[] = { 0xdeadbeefU, 0xdeadbeefU, 0xdeadbeefU, 0xdeadbeefU, 0xdeadbeefU, 0xdeadbeefU };
+	static const size_t count = sizeof(a) / sizeof(int);
+
+	int b[count];
+	lean::byteswap_big(a, a + count, b);
+
+	for (int i = 0; i < count; ++i)
+	{
+		const unsigned char *bb = reinterpret_cast<const unsigned char*>(&b[i]);
+
+		BOOST_CHECK_EQUAL(bb[0], 0xde);
+		BOOST_CHECK_EQUAL(bb[1], 0xad);
+		BOOST_CHECK_EQUAL(bb[2], 0xbe);
+		BOOST_CHECK_EQUAL(bb[3], 0xef);
+	}
+
+	int c[count];
+	lean::byteswap_little(a, a + count, c);
+
+	for (int i = 0; i < count; ++i)
+	{
+		const unsigned char *cb = reinterpret_cast<const unsigned char*>(&c[i]);
+
+		BOOST_CHECK_EQUAL(cb[3], 0xde);
+		BOOST_CHECK_EQUAL(cb[2], 0xad);
+		BOOST_CHECK_EQUAL(cb[1], 0xbe);
+		BOOST_CHECK_EQUAL(cb[0], 0xef);
+	}
 }
 
 BOOST_AUTO_TEST_SUITE_END()

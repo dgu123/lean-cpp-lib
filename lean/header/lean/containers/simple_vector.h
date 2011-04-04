@@ -51,6 +51,9 @@ private:
 	static const size_type_ s_maxSize = static_cast<size_type_>(-1) / sizeof(Element);
 	static const size_type_ s_minSize = (16 < s_maxSize) ? 16 : s_maxSize;
 
+	// Make sure size_type is unsigned
+	LEAN_STATIC_ASSERT(s_maxSize > static_cast<size_type_>(0));
+
 	/// Default constructs an element at the given location.
 	LEAN_INLINE void default_construct(Element *dest)
 	{
@@ -346,18 +349,16 @@ public:
 	{
 		if (m_elementsEnd == m_capacityEnd)
 		{
-			const Element *pValue = addressof(value);
-
-			if (m_elements <= pValue && pValue < m_elementsEnd)
+			size_type index = addressof(value) - m_elements;
+			growHL(1);
+			
+			// Index is unsigned, make use of wrap-around
+			if (index < size())
 			{
-				size_type index = pValue - m_elements;
-				growHL(1);
 				copy_construct(m_elementsEnd, m_elements[index]);
 				++m_elementsEnd;
 				return;
 			}
-			else
-				growHL(1);
 		}
 
 		copy_construct(m_elementsEnd, value);
@@ -369,18 +370,16 @@ public:
 	{
 		if (m_elementsEnd == m_capacityEnd)
 		{
-			Element *pValue = addressof(value);
-
-			if (m_elements <= pValue && pValue < m_elementsEnd)
+			size_type index = addressof(value) - m_elements;
+			growHL(1);
+			
+			// Index is unsigned, make use of wrap-around
+			if (index < size())
 			{
-				size_type index = pValue - m_elements;
-				growHL(1);
-				copy_construct(m_elementsEnd, m_elements[index]);
+				move_construct(m_elementsEnd, m_elements[index]);
 				++m_elementsEnd;
 				return;
 			}
-			else
-				growHL(1);
 		}
 
 		move_construct(m_elementsEnd, value);
@@ -512,8 +511,8 @@ public:
 };
 
 /// Swaps the contents of the given vectors.
-template <class Element, class Allocator>
-LEAN_INLINE void swap(simple_vector<Element, Allocator> &left, simple_vector<Element, Allocator> &right)
+template <class Element, class Policy, class Allocator>
+LEAN_INLINE void swap(simple_vector<Element, Policy, Allocator> &left, simple_vector<Element, Policy, Allocator> &right)
 {
 	left.swap(right);
 }

@@ -47,8 +47,9 @@ private:
 	Element *m_elementsEnd;
 	Element *m_capacityEnd;
 
-	static const size_t s_maxSize = static_cast<size_t>(-1) / sizeof(Element);
-	static const size_t s_minSize = (16 < s_maxSize) ? 16 : s_maxSize;
+	typedef typename allocator_type_::size_type size_type_;
+	static const size_type_ s_maxSize = static_cast<size_type_>(-1) / sizeof(Element);
+	static const size_type_ s_minSize = (16 < s_maxSize) ? 16 : s_maxSize;
 
 	/// Default constructs an element at the given location.
 	LEAN_INLINE void default_construct(Element *dest)
@@ -133,7 +134,7 @@ private:
 	}
 
 	/// Allocates space for the given number of elements.
-	void reallocate(size_t newCapacity)
+	void reallocate(size_type_ newCapacity)
 	{
 		Element *newElements = m_allocator.allocate(newCapacity);
 
@@ -153,7 +154,7 @@ private:
 
 		Element *oldElements = m_elements;
 		Element *oldElementsEnd = m_elementsEnd;
-		size_t oldCapacity = capacity();
+		size_type_ oldCapacity = capacity();
 		
 		// Mind the order, size() based on member variables!
 		m_elementsEnd = newElements + size();
@@ -181,22 +182,22 @@ private:
 	}
 
 	/// Grows vector storage to fit the given new count.
-	LEAN_INLINE void growTo(size_t newCount)
+	LEAN_INLINE void growTo(size_type_ newCount)
 	{
 		reallocate(capacity_hint(newCount));
 	}
 	/// Grows vector storage to fit the given additional number of elements.
-	LEAN_INLINE void grow(size_t count)
+	LEAN_INLINE void grow(size_type_ count)
 	{
 		growTo(size() + count);
 	}
 	/// Grows vector storage to fit the given new count, not inlined.
-	LEAN_NOINLINE void growToHL(size_t newCount)
+	LEAN_NOINLINE void growToHL(size_type_ newCount)
 	{
 		growTo(newCount);
 	}
 	/// Grows vector storage to fit the given additional number of elements, not inlined.
-	LEAN_NOINLINE void growHL(size_t count)
+	LEAN_NOINLINE void growHL(size_type_ count)
 	{
 		grow(count);
 	}
@@ -207,7 +208,7 @@ private:
 		throw std::out_of_range("simple_vector<T> out of range");
 	}
 	/// Checks the given position.
-	LEAN_INLINE void check_pos(size_t pos) const
+	LEAN_INLINE void check_pos(size_type_ pos) const
 	{
 		if (pos >= size())
 			out_of_range();
@@ -220,7 +221,7 @@ public:
 	/// Type of the allocator used by this vector.
 	typedef allocator_type_ allocator_type;
 	/// Type of the size returned by this vector.
-	typedef typename allocator_type::size_type size_type;
+	typedef size_type_ size_type;
 	/// Type of the difference between the addresses of two elements in this vector.
 	typedef typename allocator_type::difference_type difference_type;
 
@@ -322,7 +323,7 @@ public:
 	{
 		clear();
 
-		size_t count = sourceEnd - source;
+		size_type count = sourceEnd - source;
 
 		if (count > capacity())
 			growToHL(count);
@@ -344,7 +345,20 @@ public:
 	LEAN_INLINE void push_back(const value_type &value)
 	{
 		if (m_elementsEnd == m_capacityEnd)
-			growHL(1);
+		{
+			const Element *pValue = addressof(value);
+
+			if (m_elements <= pValue && pValue < m_elementsEnd)
+			{
+				size_type index = pValue - m_elements;
+				growHL(1);
+				copy_construct(m_elementsEnd, m_elements[index]);
+				++m_elementsEnd;
+				return;
+			}
+			else
+				growHL(1);
+		}
 
 		copy_construct(m_elementsEnd, value);
 		++m_elementsEnd;
@@ -354,7 +368,20 @@ public:
 	LEAN_INLINE void push_back(value_type &&value)
 	{
 		if (m_elementsEnd == m_capacityEnd)
-			growHL(1);
+		{
+			Element *pValue = addressof(value);
+
+			if (m_elements <= pValue && pValue < m_elementsEnd)
+			{
+				size_type index = pValue - m_elements;
+				growHL(1);
+				copy_construct(m_elementsEnd, m_elements[index]);
+				++m_elementsEnd;
+				return;
+			}
+			else
+				growHL(1);
+		}
 
 		move_construct(m_elementsEnd, value);
 		++m_elementsEnd;
@@ -380,13 +407,13 @@ public:
 	}
 
 	/// Reserves space for the predicted number of elements given.
-	LEAN_INLINE void reserve(size_t newCapacity)
+	LEAN_INLINE void reserve(size_type newCapacity)
 	{
 		if (newCapacity > capacity())
 			reallocate(newCapacity);
 	}
 	/// Resizes this vector, either appending empty elements to or removing elements from the back of this vector.
-	void resize(size_t newCount)
+	void resize(size_type newCount)
 	{
 		if (newCount > count())
 		{
@@ -449,12 +476,12 @@ public:
 	LEAN_INLINE size_type capacity(void) const { return m_capacityEnd - m_elements; };
 
 	/// Computes a new capacity based on the given number of elements to be stored.
-	size_t capacity_hint(size_t count) const
+	size_type capacity_hint(size_type count) const
 	{
-		size_t capacityDelta = count / 2;
+		size_type capacityDelta = count / 2;
 
 		// Assume count <= max size, increase by 1.5 or clamp to max_size, mind overflow
-		size_t capacity = (s_maxSize - capacityDelta < count)
+		size_type capacity = (s_maxSize - capacityDelta < count)
 			? s_maxSize
 			: count + capacityDelta;
 
@@ -469,7 +496,7 @@ public:
 	}
 
 	/// Estimates the maximum number of elements that may be constructed.
-	LEAN_INLINE size_t max_size() const
+	LEAN_INLINE size_type max_size() const
 	{
 		return s_maxSize;
 	}

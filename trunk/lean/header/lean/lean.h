@@ -78,6 +78,20 @@ LEAN_INLINE T1 max(T1 a, T2 b)
 	return (a < b) ? b : a;
 }
 
+// Returns the address of the given reference.
+template<class Type>
+LEAN_INLINE Type* addressof(Type& value)
+{
+	return reinterpret_cast<Type*>(&reinterpret_cast<char&>(value));
+}
+
+// Returns the address of the given reference.
+template<class Type>
+LEAN_INLINE const Type* addressof(const Type& value)
+{
+	return reinterpret_cast<const Type*>(&reinterpret_cast<const char&>(value));
+}
+
 } // namespace
 
 #ifndef LEAN_NO_MINMAX	

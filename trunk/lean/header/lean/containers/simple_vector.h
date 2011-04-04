@@ -77,7 +77,7 @@ private:
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 		m_allocator.construct(dest, std::move(*source));
 #else
-		m_allocator.construct(dest, *source);
+		copy_construct(dest, source);
 #endif
 	}
 	/// Moves elements from the given source range to the given destination.
@@ -117,8 +117,8 @@ private:
 		if (!empty())
 			try
 			{
-				move_construct(m_elements, m_elementsEnd, newElements);
-//				memcpy(newElements, m_elements, size() * sizeof(Element));
+//				move_construct(m_elements, m_elementsEnd, newElements);
+				memcpy(newElements, m_elements, size() * sizeof(Element));
 			}
 			catch(...)
 			{
@@ -138,7 +138,7 @@ private:
 		if (oldElements)
 		{
 			// Do nothing on exception, resources leaking anyways!
-			destruct(oldElements, oldElementsEnd);
+//			destruct(oldElements, oldElementsEnd);
 			m_allocator.deallocate(oldElements, oldCapacity);
 		}
 	}

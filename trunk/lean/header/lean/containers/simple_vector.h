@@ -14,6 +14,7 @@ namespace lean
 namespace containers
 {
 
+/// Simple and fast vector class, partially implementing the STL vector interface.
 template < class Element, class Allocator = std::allocator<Element> >
 class simple_vector
 {
@@ -153,6 +154,27 @@ private:
 		}
 	}
 
+	/// Grows vector storage to fit the given new count.
+	LEAN_INLINE void growTo(size_t newCount)
+	{
+		reallocate(capacity_hint(newCount));
+	}
+	/// Grows vector storage to fit the given additional number of elements.
+	LEAN_INLINE void grow(size_t count)
+	{
+		growTo(size() + count);
+	}
+	/// Grows vector storage to fit the given new count, not inlined.
+	LEAN_NOINLINE void growToHL(size_t newCount)
+	{
+		growTo(newCount);
+	}
+	/// Grows vector storage to fit the given additional number of elements, not inlined.
+	LEAN_NOINLINE void growHL(size_t count)
+	{
+		grow(count);
+	}
+
 	/// Triggers an out of range error.
 	LEAN_NOINLINE static void out_of_range()
 	{
@@ -163,17 +185,6 @@ private:
 	{
 		if (m_elementsEnd <= m_elements + pos)
 			out_of_range();
-	}
-
-	/// Grows vector storage to fit the given new count.
-	void growTo(size_t newCount)
-	{
-		reallocate(capacity_hint(newCount));
-	}
-	/// Grows vector storage to fit the given additional number of elements.
-	LEAN_NOINLINE void grow(size_t count)
-	{
-		growTo(size() + count);
 	}
 
 public:
@@ -285,19 +296,28 @@ public:
 		size_t count = sourceEnd - source;
 
 		if (m_elements + count > m_capacityEnd)
-			growTo(count);
+			growToHL(count);
 
 		copy_construct(source, sourceEnd, m_elements);
 		m_elementsEnd = m_elements + count;
 	}
 
+	/// Appends a default-constructed element to this vector.
+	LEAN_INLINE value_type& push_back()
+	{
+		if (m_elementsEnd == m_capacityEnd)
+			growHL(1);
+
+		default_construct(m_elementsEnd);
+		return *(m_elementsEnd++);
+	}
 	/// Appends the given element to this vector.
 	LEAN_INLINE void push_back(const value_type &value)
 	{
 		if (m_elementsEnd == m_capacityEnd)
-			grow(1);
+			growHL(1);
 
-		m_allocator.construct(m_elementsEnd, value);
+		copy_construct(m_elementsEnd, &value);
 		++m_elementsEnd;
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
@@ -305,9 +325,9 @@ public:
 	LEAN_INLINE void push_back(value_type &&value)
 	{
 		if (m_elementsEnd == m_capacityEnd)
-			grow(1);
+			growHL(1);
 
-		m_allocator.construct(m_elementsEnd, std::move(value));
+		move_construct(m_elementsEnd, &value);
 		++m_elementsEnd;
 	}
 #endif
@@ -345,7 +365,7 @@ public:
 		{
 			if (newElementsEnd > m_capacityEnd)
 			{
-				growTo(newCount);
+				growToHL(newCount);
 				// Update pointers!
 				newElementsEnd = m_elements + newCount;
 			}

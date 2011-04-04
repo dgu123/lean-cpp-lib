@@ -72,9 +72,9 @@ private:
 		}
 	}
 	/// Copies the given source element to the given destination.
-	LEAN_INLINE void copy_construct(Element *dest, const Element *source)
+	LEAN_INLINE void copy_construct(Element *dest, const Element &source)
 	{
-		m_allocator.construct(dest, *source);
+		m_allocator.construct(dest, source);
 	}
 	/// Copies elements from the given source range to the given destination.
 	void copy_construct(const Element *source, const Element *sourceEnd, Element *dest)
@@ -84,7 +84,7 @@ private:
 		try
 		{
 			for (; source != sourceEnd; ++dest, ++source)
-				copy_construct(dest, source);
+				copy_construct(dest, *source);
 		}
 		catch(...)
 		{
@@ -93,10 +93,10 @@ private:
 		}
 	}
 	/// Moves the given source element to the given destination.
-	LEAN_INLINE void move_construct(Element *dest, Element *source)
+	LEAN_INLINE void move_construct(Element *dest, Element &source)
 	{
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
-		m_allocator.construct(dest, std::move(*source));
+		m_allocator.construct(dest, std::move(source));
 #else
 		copy_construct(dest, source);
 #endif
@@ -109,7 +109,7 @@ private:
 		try
 		{
 			for (; source != sourceEnd; ++dest, ++source)
-				move_construct(dest, source);
+				move_construct(dest, *source);
 		}
 		catch(...)
 		{
@@ -346,7 +346,7 @@ public:
 		if (m_elementsEnd == m_capacityEnd)
 			growHL(1);
 
-		copy_construct(m_elementsEnd, &value);
+		copy_construct(m_elementsEnd, value);
 		++m_elementsEnd;
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
@@ -356,7 +356,7 @@ public:
 		if (m_elementsEnd == m_capacityEnd)
 			growHL(1);
 
-		move_construct(m_elementsEnd, &value);
+		move_construct(m_elementsEnd, value);
 		++m_elementsEnd;
 	}
 #endif

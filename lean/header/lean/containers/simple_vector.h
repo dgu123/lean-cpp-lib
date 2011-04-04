@@ -14,8 +14,29 @@ namespace lean
 namespace containers
 {
 
+/// Defines construction policies for the class simple_vector.
+namespace simple_vector_policies
+{
+	/// Simple vector element construction policy.
+	template <bool RawMove = false, bool NoDestruct = false>
+	struct policy
+	{
+		/// Specifies whether memory containing constructed elements may be moved as a whole, without invoking the contained elements' copy or move constructors.
+		static const bool raw_move = RawMove;
+		/// Specifies whether memory containing constructed elements may be freed as a whole, without invoking the contained elements' destructors.
+		static const bool no_destruct = NoDestruct;
+	};
+
+	/// Default element construction policy.
+	typedef policy<> nonpod;
+	/// Semi-POD element construction policy (raw move, yet proper destruction).
+	typedef policy<true> semipod;
+	/// POD element construction policy.
+	typedef policy<true, true> pod;
+}
+
 /// Simple and fast vector class, partially implementing the STL vector interface.
-template < class Element, class Allocator = std::allocator<Element> >
+template < class Element, class Policy = simple_vector_policies::nonpod, class Allocator = std::allocator<Element> >
 class simple_vector
 {
 private:
@@ -100,13 +121,15 @@ private:
 	/// Destructs the elements in the given range.
 	LEAN_INLINE void destruct(Element *destr)
 	{
-		m_allocator.destroy(destr);
+		if (!Policy::no_destruct)
+			m_allocator.destroy(destr);
 	}
 	/// Destructs the elements in the given range.
 	void destruct(Element *destr, Element *destrEnd)
 	{
-		for (; destr != destrEnd; ++destr)
-			destruct(destr);
+		if (!Policy::no_destruct)
+			for (; destr != destrEnd; ++destr)
+				destruct(destr);
 	}
 
 	/// Allocates space for the given number of elements.
@@ -117,8 +140,10 @@ private:
 		if (!empty())
 			try
 			{
-//				move_construct(m_elements, m_elementsEnd, newElements);
-				memcpy(newElements, m_elements, size() * sizeof(Element));
+				if (Policy::raw_move)
+					memcpy(newElements, m_elements, size() * sizeof(Element));
+				else
+					move_construct(m_elements, m_elementsEnd, newElements);
 			}
 			catch(...)
 			{
@@ -138,7 +163,8 @@ private:
 		if (oldElements)
 		{
 			// Do nothing on exception, resources leaking anyways!
-//			destruct(oldElements, oldElementsEnd);
+			if (!Policy::raw_move)
+				destruct(oldElements, oldElementsEnd);
 			m_allocator.deallocate(oldElements, oldCapacity);
 		}
 	}
@@ -188,6 +214,9 @@ private:
 	}
 
 public:
+	/// Construction policy used.
+	typedef Policy construction_policy;
+
 	/// Type of the allocator used by this vector.
 	typedef allocator_type_ allocator_type;
 	/// Type of the size returned by this vector.
@@ -464,6 +493,7 @@ LEAN_INLINE void swap(simple_vector<Element, Allocator> &left, simple_vector<Ele
 
 } // namespace
 
+namespace simple_vector_policies = containers::simple_vector_policies;
 using containers::simple_vector;
 
 } // namespace

@@ -17,8 +17,8 @@ double perfTestSTL()
 
 	for (int x = 0; x < 1000; ++x)
 	{
-		std::vector<bla> a;
-		a.reserve(10000);
+		std::vector<int> a;
+//		a.reserve(10000);
 
 		for (int i = 0; i < 10000; ++i)
 			a.push_back(i);
@@ -33,8 +33,8 @@ double perfTestLean()
 
 	for (int x = 0; x < 1000; ++x)
 	{
-		lean::simple_vector<bla> a;
-		a.reserve(10000);
+		lean::simple_vector<int, lean::simple_vector_policies::pod> a;
+//		a.reserve(10000);
 
 		for (int i = 0; i < 10000; ++i)
 			a.push_back(i);

@@ -13,7 +13,7 @@
 
 namespace lean
 {
-namespace platform
+namespace concurrent
 {
 	namespace impl
 	{
@@ -85,11 +85,6 @@ namespace platform
 
 	} // namespace
 
-	using platform::impl::atomic_increment;
-	using platform::impl::atomic_decrement;
-	using platform::impl::atomic_test_and_set;
-	using platform::impl::atomic_set;
-
 } // namespace
 } // namespace
 
@@ -101,7 +96,7 @@ namespace platform
 
 namespace lean
 {
-namespace platform
+namespace concurrent
 {
 	//// Integers ////
 
@@ -150,10 +145,10 @@ namespace platform
 
 } // namespace
 
-using platform::atomic_increment;
-using platform::atomic_decrement;
-using platform::atomic_test_and_set;
-using platform::atomic_set;
+using concurrent::atomic_increment;
+using concurrent::atomic_decrement;
+using concurrent::atomic_test_and_set;
+using concurrent::atomic_set;
 
 } // namespace
 

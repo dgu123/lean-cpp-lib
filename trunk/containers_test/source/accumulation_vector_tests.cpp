@@ -1,27 +1,67 @@
 #include "stdafx.h"
-#include <lean/memory/aligned.h>
+#include <lean/containers/simple_vector.h>
+#include <lean/time/highres_timer.h>
+#include <vector>
 
-#include <iostream>
-
-struct aligned_object : public lean::aligned<16>
+struct bla
 {
-	float a[4];
+	int a;
 
-	~aligned_object() { ::std::cout << "dtor"; };
+	bla(int i) : a(i) { }
+	~bla() { }
 };
 
-BOOST_AUTO_TEST_SUITE( aligned )
-
-BOOST_AUTO_TEST_CASE( stack_aligned_array )
+double perfTestSTL()
 {
-	aligned_object a[7];
-	BOOST_CHECK( reinterpret_cast<uintptr_t>(a) % 16 == 0 );
+	lean::highres_timer timer;
+
+	for (int x = 0; x < 1000; ++x)
+	{
+		std::vector<bla> a;
+		a.reserve(10000);
+
+		for (int i = 0; i < 10000; ++i)
+			a.push_back(i);
+	}
+
+	return timer.milliseconds();
 }
 
-BOOST_AUTO_TEST_CASE( aligned_array )
+double perfTestLean()
 {
-	struct { int a, b; } b = { 2 };
-	unsigned int a = reinterpret_cast<const unsigned int&>(b);
+	lean::highres_timer timer;
+
+	for (int x = 0; x < 1000; ++x)
+	{
+		lean::simple_vector<bla> a;
+		a.reserve(10000);
+
+		for (int i = 0; i < 10000; ++i)
+			a.push_back(i);
+	}
+
+	return timer.milliseconds();
+}
+
+BOOST_AUTO_TEST_SUITE( simple_vector )
+
+BOOST_AUTO_TEST_CASE( perf )
+{
+	double lean = perfTestLean();
+	double stl = perfTestSTL();
+	BOOST_CHECK_EQUAL(stl / lean, 1.0);
+
+	stl = perfTestSTL();
+	lean = perfTestLean();
+	BOOST_CHECK_EQUAL(stl / lean, 1.0);
+
+	lean = perfTestLean();
+	stl = perfTestSTL();
+	BOOST_CHECK_EQUAL(stl / lean, 1.0);
+
+	stl = perfTestSTL();
+	lean = perfTestLean();
+	BOOST_CHECK_EQUAL(stl / lean, 1.0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

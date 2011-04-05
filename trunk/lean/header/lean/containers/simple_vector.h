@@ -121,6 +121,21 @@ private:
 			throw;
 		}
 	}
+	/// Moves the given source element to the given destination.
+	LEAN_INLINE void move(Element *dest, Element &source)
+	{
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+		*dest = std::move(source);
+#else
+		*dest = source;
+#endif
+	}
+	/// Moves elements from the given source range to the given destination.
+	void move(Element *source, Element *sourceEnd, Element *dest)
+	{
+		for (; source != sourceEnd; ++dest, ++source)
+			move(dest, *source);
+	}
 
 	/// Destructs the elements in the given range.
 	LEAN_INLINE void destruct(Element *destr)
@@ -250,7 +265,7 @@ public:
 		m_elementsEnd(nullptr),
 		m_capacityEnd(nullptr) { }
 	/// Constructs an empty vector.
-	simple_vector(allocator_type allocator)
+	explicit simple_vector(allocator_type allocator)
 		: m_allocator(allocator),
 		m_elements(nullptr),
 		m_elementsEnd(nullptr),
@@ -262,7 +277,7 @@ public:
 		m_elementsEnd(nullptr),
 		m_capacityEnd(nullptr)
 	{
-		assign(right.begin(), right.end());
+		assign_disj(right.begin(), right.end());
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given vector to this vector.
@@ -287,7 +302,7 @@ public:
 	simple_vector& operator =(const simple_vector &right)
 	{
 		if (&right != this)
-			assign(right.begin(), right.end());
+			assign_disj(right.begin(), right.end());
 		return *this;
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
@@ -298,35 +313,49 @@ public:
 		{
 			free();
 
-			try
-			{
-				m_allocator = std::move(right.m_allocator);
-				m_elements = std::move(right.m_elements);
-				m_elementsEnd = std::move(right.m_elementsEnd);
-				m_capacityEnd = std::move(right.m_capacityEnd);
-			}
-			catch(...)
-			{
-				m_elements = nullptr;
-				m_elementsEnd = nullptr;
-				m_capacityEnd = nullptr;
-				throw;
-			}
+			m_elements = std::move(right.m_elements);
+			m_elementsEnd = std::move(right.m_elementsEnd);
+			m_capacityEnd = std::move(right.m_capacityEnd);
 
 			right.m_elements = nullptr;
 			right.m_elementsEnd = nullptr;
 			right.m_capacityEnd = nullptr;
+
+			m_allocator = std::move(right.m_allocator);
 		}
 		return *this;
 	}
 #endif
 
 	/// Assigns the given range of elements to this vector.
-	void assign(const_iterator source, const_iterator sourceEnd)
+	template <class Iterator>
+	void assign(Iterator source, Iterator sourceEnd)
 	{
-		clear();
+		LEAN_ASSERT(source <= sourceEnd);
 
 		size_type count = sourceEnd - source;
+		size_type index = addressof(*source) - m_elements;
+
+		// Index is unsigned, make use of wrap-around
+		if (index < size())
+		{
+			LEAN_ASSERT(addressof(*sourceEnd) <= m_elementsEnd);
+
+			move(source, sourceEnd, m_elements);
+
+			Element *oldElementsEnd = m_elementsEnd;
+			m_elementsEnd = m_elements + count;
+			destruct(m_elementsEnd, oldElementsEnd);
+		}
+		else
+			assign_disj(source, sourceEnd);
+	}
+	/// Assigns the given disjoint range of elements to this vector.
+	template <class Iterator>
+	void assign_disj(Iterator source, Iterator sourceEnd)
+	{
+		// Clear before reallocation to prevent full-range moves
+		clear();
 
 		if (count > capacity())
 			growToHL(count);

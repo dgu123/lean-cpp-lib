@@ -17,7 +17,13 @@ namespace containers
 template <class Container, int GrowthDenominator = 2>
 class move_reservation_policy
 {
+private:
+	typedef typename Container::iterator iterator;
+
 public:
+	/// Size type used by this policy class.
+	typedef typename Container::size_type size_type;
+
 	/// Reserves memory for the specified number of elements,
 	/// calling a custom move method for every element to be moved.
 	/** Rather than copy constructing all existing elements into the
@@ -26,7 +32,7 @@ public:
 	  * calls to a custom move method for each element in the old block
 	  * of memory afterwards, passing the old elements as arguments to the
 	  * move method of their corresponding new elements. */
-	static void reserve(Container &container, typename Container::size_type newCapacity)
+	static void reserve(Container &container, size_type newCapacity)
 	{
 		if (newCapacity > container.capacity())
 		{
@@ -35,33 +41,36 @@ public:
 			newContainer.reserve(newCapacity);
 			newContainer.resize(container.size());
 
-			for (typename Container::iterator itOld = container.begin(), itNew = newContainer.begin();
-				 itOld != container.end(); ++itOld, ++itNew)
+			for (iterator itOld = container.begin(), itNew = newContainer.begin();
+				 itNew != newContainer.end(); ++itOld, ++itNew)
 				itNew->move(*itOld);
 
-			container.swap(newContainer);
+			swap(container, newContainer);
 		}
+
+		LEAN_ASSERT(newCapacity <= container.capacity());
 	}
 
 	/// Reserves a new block of memory, if the old block of memory can
 	/// no longer serve the given new element count.
-	static void pre_presize(Container &container, typename Container::size_type newCount)
+	static void pre_presize(Container &container, size_type newCount)
 	{
-		typename Container::size_type capacity = container.capacity();
-
-		if (newCount > capacity)
+		if (newCount > container.capacity())
 		{
-			typename Container::size_type capacityDelta = capacity / GrowthDenominator;
+			size_type capacityDelta = newCount / GrowthDenominator;
+			size_type maxSize = container.max_size();
 
-			capacity = (container.max_size() - capacityDelta < capacity)
-				? 0
-				: capacity + capacityDelta;
+			capacity = (maxSize - capacityDelta < newCount)
+				? maxSize
+				: newCount + capacityDelta;
 
-			if (capacity < newCount)
+			if (maxSize < newCount)
 				capacity = newCount;
 
 			reserve(container, capacity);
 		}
+
+		LEAN_ASSERT(newCount <= container.capacity());
 	}
 };
 

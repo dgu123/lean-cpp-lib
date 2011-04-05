@@ -5,6 +5,8 @@
 #ifndef LEAN_CONTAINERS_MOVE_REALLOCATION_POLICY
 #define LEAN_CONTAINERS_MOVE_REALLOCATION_POLICY
 
+#include "../lean.h"
+
 namespace lean
 {
 namespace containers
@@ -15,7 +17,7 @@ namespace containers
   * calling a custom move method for every element to be moved
   * rather than copy constructing all existing elements on reallocation. */
 template <class Container, int GrowthDenominator = 2>
-class move_reservation_policy
+class move_reallocation_policy
 {
 private:
 	typedef typename Container::iterator iterator;
@@ -75,6 +77,9 @@ public:
 };
 
 } // namespace
+
+using containers::move_reallocation_policy;
+
 } // namespace
 
 #endif

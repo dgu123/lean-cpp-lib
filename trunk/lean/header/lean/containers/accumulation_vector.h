@@ -19,7 +19,7 @@ namespace containers
 /** This class stores elements of the given type without destructing them on remove
   * or clear, thus eliminating the overhead incurred by destruction and re-construction
   * of frequently removed elements.
-  * @see lean::containers::unordered_vector */
+  * @see lean::containers::accumulation_map */
 template < class Container, class ReallocationPolicy = default_reallocation_policy<Container> >
 class accumulation_vector
 {
@@ -135,7 +135,7 @@ public:
 		m_size(m_container.size()) { }
 	/// Constructs an accumulation vector from the given range of elements using the given allocator.
 	template<class Iterator>
-	inline accumulation_vector(Iterator itFirst, Iterator itEnd, const allocator_type& allocator)
+	accumulation_vector(Iterator itFirst, Iterator itEnd, const allocator_type& allocator)
 		: m_container(itFirst, itEnd, allocator),
 		m_size(m_container.size()) { }
 
@@ -496,57 +496,57 @@ public:
 };
 
 /// Comparison operator.
-template<class Element, class Policy, class Allocator>
-LEAN_INLINE bool operator ==(const accumulation_vector<Element, Policy, Allocator>& left, 
-	const accumulation_vector<Element, Policy, Allocator>& right)
+template<class Container, class Policy>
+LEAN_INLINE bool operator ==(const accumulation_vector<Container, Policy>& left, 
+	const accumulation_vector<Container, Policy>& right)
 {
 	return (left.size() == right.size()) && std::equal(left.begin(), left.end(), right.begin());
 }
 
 /// Comparison operator.
-template<class Element, class Policy, class Allocator>
-LEAN_INLINE bool operator !=(const accumulation_vector<Element, Policy, Allocator>& left, 
-	const accumulation_vector<Element, Policy, Allocator>& right)
+template<class Container, class Policy>
+LEAN_INLINE bool operator !=(const accumulation_vector<Container, Policy>& left, 
+	const accumulation_vector<Container, Policy>& right)
 {
 	return !(left == right);
 }
 
 /// Comparison operator.
-template<class Element, class Policy, class Allocator>
-LEAN_INLINE bool operator <(const accumulation_vector<Element, Policy, Allocator>& left, 
-	const accumulation_vector<Element, Policy, Allocator>& right)
+template<class Container, class Policy>
+LEAN_INLINE bool operator <(const accumulation_vector<Container, Policy>& left, 
+	const accumulation_vector<Container, Policy>& right)
 {
 	return std::lexicographical_compare(left.begin(), left.end(), right.begin(), right.end());
 }
 
 /// Comparison operator.
-template<class Element, class Policy, class Allocator>
-LEAN_INLINE bool operator >(const accumulation_vector<Element, Policy, Allocator>& left, 
-	const accumulation_vector<Element, Policy, Allocator>& right)
+template<class Container, class Policy>
+LEAN_INLINE bool operator >(const accumulation_vector<Container, Policy>& left, 
+	const accumulation_vector<Container, Policy>& right)
 {
 	return (right < left);
 }
 
 /// Comparison operator.
-template<class Element, class Policy, class Allocator>
-LEAN_INLINE bool operator <=(const accumulation_vector<Element, Policy, Allocator>& left, 
-	const accumulation_vector<Element, Policy, Allocator>& right)
+template<class Container, class Policy>
+LEAN_INLINE bool operator <=(const accumulation_vector<Container, Policy>& left, 
+	const accumulation_vector<Container, Policy>& right)
 {
 	return !(right < left);
 }
 
 /// Comparison operator.
-template<class Element, class Policy, class Allocator>
-LEAN_INLINE bool operator >=(const accumulation_vector<Element, Policy, Allocator>& left, 
-	const accumulation_vector<Element, Policy, Allocator>& right)
+template<class Container, class Policy>
+LEAN_INLINE bool operator >=(const accumulation_vector<Container, Policy>& left, 
+	const accumulation_vector<Container, Policy>& right)
 {
 	return !(left < right);
 }
 
 // Swaps the elements of two accumulation vectors.
-template<class Element, class Policy, class Allocator>
-LEAN_INLINE void swap(accumulation_vector<Element, Policy, Allocator>& left, 
-	accumulation_vector<Element, Policy, Allocator>& right)
+template<class Container, class Policy>
+LEAN_INLINE void swap(accumulation_vector<Container, Policy>& left, 
+	accumulation_vector<Container, Policy>& right)
 {
 	left.swap(right);
 }

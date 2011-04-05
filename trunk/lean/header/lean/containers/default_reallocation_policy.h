@@ -5,6 +5,8 @@
 #ifndef LEAN_CONTAINERS_DEFAULT_REALLOCATION_POLICY
 #define LEAN_CONTAINERS_DEFAULT_REALLOCATION_POLICY
 
+#include "../lean.h"
+
 namespace lean
 {
 namespace containers
@@ -29,6 +31,9 @@ public:
 };
 
 } // namespace
+
+using containers::default_reallocation_policy;
+
 } // namespace
 
 #endif

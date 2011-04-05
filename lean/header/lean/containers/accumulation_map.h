@@ -30,6 +30,13 @@ private:
 	typedef typename container_type::mapped_type mapped_type_;
 	mapped_type_ m_invalidValue;
 
+	/// Assigns an invalid value to the given value object.
+	LEAN_INLINE void invalidate(mapped_type_ &value) const
+	{
+		// Const method modifier makes m_invalidValue const
+		value = m_invalidValue;
+	}
+
 public:
 	/// Type of the container wrapped by this map.
 	typedef container_type_ container_type;
@@ -101,14 +108,43 @@ public:
 		: m_container(itFirst, itEnd, predicate, allocator) { }
 
 	/// Copies all elements from the given map to this map.
-	accumulation_map& operator =(const accumulation_map& right)
+	accumulation_map& operator =(const accumulation_map &right)
 	{
-		m_container = right.m_container;
+		if (this != &right)
+		{
+			m_invalidValue = right.m_invalidValue;
+
+			key_compare keyComp = m_container.key_comp();
+
+			iterator itDest = m_container.begin();
+			const_iterator itSource = right.begin();
+
+			while (itSource != right.end() && itDest != m_container.end())
+			{
+				// Replace old value with new one on exact match
+				if (itSource->first == itDest->first)
+					(itDest++)->second = (itSource++)->second();
+				// Wait for next source element, if still less than dest
+				else if (keyComp(itSource->first, itDest->first))
+					m_container.insert(itDest, *(itSource++));
+				// Source element already greater than dest, invalidate dest
+				else
+					invalidate((itDest++)->second);
+			}
+
+			// Invalidate remaining old elements
+			while (itDest != m_container.end())
+				invalidate((itDest++)->second);
+
+			// Append remaining source elements
+			while (itSource != right.end())
+				m_container.insert(m_container.end(), *(itSource++));
+		}
 		return *this;
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given map to this map.
-	inline accumulation_map& operator =(accumulation_map&& right)
+	inline accumulation_map& operator =(accumulation_map &&right)
 	{
 		m_container = std::move(right.m_container);
 		return *this;
@@ -139,15 +175,48 @@ public:
 	template<class Iterator>
 	LEAN_INLINE void insert(Iterator itFirst, Iterator itEnd) { m_container.insert(itFirst, itEnd); }
 
-	/// Removes an element from this map by key.
-	LEAN_INLINE size_type erase(const key_type &key) { return m_container.erase(key); };
-	/// Removes an element from this map by iterator.
-	LEAN_INLINE iterator erase(iterator itWhere) { return m_container.erase(itWhere); }
-	/// Removes the given range of elements from this map.
-	LEAN_INLINE void erase(iterator itFirst, iterator itEnd) { m_container.erase(itFirst, itEnd); };
+	/// Invalidates an element in this map by key.
+	LEAN_INLINE size_type erase(const key_type &key)
+	{
+		iterator itElem = m_container.find(key);
 
+		if (itElem != m_container.end())
+		{
+			invalidate(itElem->second);
+			return 1;
+		}
+		else
+			return 0;
+	}
+	/// Invalidates an element in this map by iterator.
+	LEAN_INLINE iterator erase(iterator itWhere)
+	{
+		invalidate(itWhere->second);
+		return itWhere;
+	}
+	/// Invalidates the given range of elements in this map.
+	LEAN_INLINE void erase(iterator itFirst, iterator itEnd)
+	{
+		while (itFirst != itEnd)
+			invalidate((itFirst++)->second);
+	}
+
+	/// Removes an element from this map by key.
+	LEAN_INLINE size_type erase_fully(const key_type &key) { return m_container.erase(key); }
+	/// Removes an element from this map by iterator.
+	LEAN_INLINE iterator erase_fully(iterator itWhere) { return m_container.erase(itWhere); }
+	/// Removes the given range of elements from this map.
+	LEAN_INLINE void erase_fully(iterator itFirst, iterator itEnd) { m_container.erase(itFirst, itEnd); }
+
+	/// Invalidates all elements in this map.
+	LEAN_INLINE void clear(void)
+	{
+		// Invalidate all elements
+		for (iterator itElem = begin(); itElem != end(); ++itElem)
+			invalidate(itElem->second);
+	}
 	/// Removes all elements from this map.
-	LEAN_INLINE void clear(void) { m_container.clear(); }
+	LEAN_INLINE void reset(void) { m_container.clear(); }
 
 	/// Gets a comparison object that can be used to compare map keys.
 	LEAN_INLINE key_compare key_comp(void) const { return m_container.key_comp(); }

@@ -17,13 +17,13 @@ class default_reallocation_policy
 {
 public:
 	/// Reserves memory for the specified number of elements using the given container's default reserve method.
-	static inline void reserve(Container &container, typename Container::size_type newCapacity)
+	static LEAN_INLINE void reserve(Container &container, typename Container::size_type newCapacity)
 	{
 		container.reserve(newCapacity);
 	}
 
 	/// Does not reserve anything, entirely leaving element reallocation to the underlying container type.
-	static inline void reallocate(Container &container, typename Container::size_type newCount)
+	static LEAN_INLINE void pre_resize(Container &container, typename Container::size_type newCount)
 	{
 	}
 };

@@ -333,18 +333,15 @@ public:
 	{
 		LEAN_ASSERT(source <= sourceEnd);
 
-		size_type count = sourceEnd - source;
-		size_type index = addressof(*source) - m_elements;
-
 		// Index is unsigned, make use of wrap-around
-		if (index < size())
+		if (static_cast<size_type>(addressof(*source) - m_elements) < size())
 		{
 			LEAN_ASSERT(addressof(*sourceEnd) <= m_elementsEnd);
 
 			move(source, sourceEnd, m_elements);
 
 			Element *oldElementsEnd = m_elementsEnd;
-			m_elementsEnd = m_elements + count;
+			m_elementsEnd = m_elements + (sourceEnd - source);
 			destruct(m_elementsEnd, oldElementsEnd);
 		}
 		else
@@ -356,6 +353,8 @@ public:
 	{
 		// Clear before reallocation to prevent full-range moves
 		clear();
+
+		size_type count = sourceEnd - source;
 
 		if (count > capacity())
 			growToHL(count);
@@ -426,12 +425,9 @@ public:
 	/// Clears all elements from this vector.
 	LEAN_INLINE void clear()
 	{
-		if (!empty())
-		{
-			Element *oldElementsEnd = m_elementsEnd;
-			m_elementsEnd = m_elements;
-			destruct(m_elements, oldElementsEnd);
-		}
+		Element *oldElementsEnd = m_elementsEnd;
+		m_elementsEnd = m_elements;
+		destruct(m_elements, oldElementsEnd);
 	}
 
 	/// Reserves space for the predicted number of elements given.
@@ -454,15 +450,9 @@ public:
 		}
 		else
 		{
-			Elements *newElementsEnd = m_elements + newCount;
-
-			// Handle newCount == m_count == 0 (m_elements might still contain nullptr)!
-			if (newElementsEnd < m_elementsEnd)
-			{
-				Element *oldElementsEnd = m_elementsEnd;
-				m_elementsEnd = newElementsEnd;
-				destruct(newElementsEnd, oldElementsEnd);
-			}
+			Element *oldElementsEnd = m_elementsEnd;
+			m_elementsEnd = m_elements + newCount;
+			destruct(m_elementsEnd, oldElementsEnd);
 		}
 	}
 	

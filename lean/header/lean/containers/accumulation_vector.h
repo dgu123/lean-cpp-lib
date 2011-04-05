@@ -7,6 +7,7 @@
 
 #include "../lean.h"
 #include <vector>
+#include <algorithm>
 #include "default_reallocation_policy.h"
 
 namespace lean
@@ -368,7 +369,7 @@ public:
 	}
 
 	/// Assigns the given number of elements to this vector. Assumes value outside of vector range, copy manually otherwise.
-	LEAN_INLINE void assign(size_type count, const Element& value)
+	void assign(size_type count, const Element& value)
 	{
 		assert_outside(value);
 
@@ -383,7 +384,7 @@ public:
 	}
 	/// Assigns the given range of elements to this vector.
 	template<class Iterator>
-	LEAN_INLINE void assign(Iterator itFirst, Iterator itEnd)
+	void assign(Iterator itFirst, Iterator itEnd)
 	{
 		LEAN_ASSERT(itFirst <= itEnd);
 
@@ -425,7 +426,7 @@ public:
 		reserve_internal(count);
 	}
 	/// Inserts or erases elements to match the new size specified.
-	LEAN_INLINE void resize(size_type count)
+	void resize(size_type count)
 	{
 		if(count > m_container.size())
 		{
@@ -436,7 +437,7 @@ public:
 		m_size = count;
 	}
 	/// Inserts or erases elements to match the new size specified
-	LEAN_INLINE void resize(size_type count, const Element& value)
+	void resize(size_type count, const Element& value)
 	{
 		if(count > m_container.size())
 		{

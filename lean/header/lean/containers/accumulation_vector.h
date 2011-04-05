@@ -5,8 +5,8 @@
 #ifndef LEAN_CONTAINERS_ACCUMULATION_VECTOR
 #define LEAN_CONTAINERS_ACCUMULATION_VECTOR
 
+#include "../lean.h"
 #include <vector>
-#include "../cpp0x.h"
 #include "default_reallocation_policy.h"
 
 namespace lean
@@ -44,6 +44,12 @@ private:
 	inline void grow_internal(size_type_ count)
 	{
 		reallocate_internal(m_size + count);
+	}
+
+	/// Asserts that the given value lies outside this vector's element range.
+	LEAN_INLINE assert_outside(const value& value)
+	{
+		LEAN_ASSERT(addressof(value) < addressof(*m_container.begin()) || addressof(*m_container.end()) <= addressof(value));
 	}
 
 public:
@@ -125,11 +131,11 @@ public:
 	{
 		if (this != &right)
 		{
-			// Short cut
 			if (right.empty())
+				// Clearing is extremely fast for this class
 				clear();
-			// Suppress destruction
 			else
+				// Suppress destruction, assign manually
 				assign(right.begin(), right.end());
 		}
 
@@ -141,13 +147,14 @@ public:
 	{
 		if (this != &right)
 		{
-			// Short cut
 			if (right.empty())
+				// Keep own allocated storage
 				clear();
 			else
 			{
-				m_container = ::std::move(right.m_container);
-				m_size = ::std::move(right.m_size);
+				// Invoke default move operators
+				m_container = std::move(right.m_container);
+				m_size = std::move(right.m_size);
 			}
 		}
 
@@ -171,9 +178,11 @@ public:
 
 		return m_container[m_size++];
 	}
-	/// Appends an element at the back of this vector.
+	/// Appends an element at the back of this vector. Assumes value outside of vector range, copy manually otherwise.
 	LEAN_INLINE void push_back(const value_type& value)
 	{
+		assert_outside(value);
+
 		if (m_size == m_container.size())
 		{
 			grow_internal(1);
@@ -185,9 +194,11 @@ public:
 		++m_size;
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
-	/// Appends an element at the back of this vector.
+	/// Appends an element at the back of this vector. Assumes value outside of vector range, copy manually otherwise.
 	LEAN_INLINE void push_back(value_type&& value)
 	{
+		assert_outside(value);
+
 		if (m_size == m_container.size())
 		{
 			grow_internal(1);
@@ -223,9 +234,11 @@ public:
 		++m_size;
 		return itWhere;
 	}
-	/// Inserts an element into this vector.
+	/// Inserts an element into this vector. Assumes value outside of vector range, copy manually otherwise.
 	iterator insert(iterator itWhere, const value_type& value)
 	{
+		assert_outside(value);
+
 		if (m_size == m_container.size())
 		{
 			size_type index = itWhere - m_container.begin();
@@ -243,9 +256,11 @@ public:
 		return itWhere;
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
-	/// Inserts an element into this vector.
+	/// Inserts an element into this vector. Assumes value outside of vector range, copy manually otherwise.
 	iterator insert(iterator itWhere, value_type&& value)
 	{
+		assert_outside(value);
+
 		if (m_size == m_container.size())
 		{
 			size_type index = itWhere - m_container.begin();
@@ -282,29 +297,45 @@ public:
 
 		return itWhere;
 	}
-	/// Inserts the specified number of elements into this vector.
+	/// Inserts the specified number of elements into this vector. Assumes value outside of vector range, copy manually otherwise.
 	LEAN_INLINE void insert(iterator itWhere, size_type count, const value_type& value)
 	{
+		assert_outside(value);
+
 		std::fill_n(
 			insert(itWhere, count),
 			count, value);
 	}
-	/// Inserts a range of elements into this vector.
+	/// Inserts a range of elements into this vector. Assumes that the given positioning iterator does not split the given range.
 	template<class Iterator>
 	void insert(iterator itWhere, Iterator itFirst, Iterator itEnd)
 	{
-		size_type index = addressof(*itFirst) - addressof(*m_container.begin())
+		LEAN_ASSERT(itFirst <= itEnd);
 
-		// Make use of wrap-around
+		size_type count = itEnd - itFirst;
+		size_type index = addressof(*itFirst) - addressof(*m_container.begin());
+
+		// Index is unsigned, make use of wrap-around
 		if (index < m_size)
 		{
-			size_type endIndex = addressof(*itEnd) - addressof(*m_container.begin())
-			itWhere = insert(itWhere, itEnd - itFirst);
-			std::copy(m_container.begin() + index, m_container.begin() + endIndex, itWhere);
+			size_type endIndex = addressof(*itEnd) - addressof(*m_container.begin());
+			
+			LEAN_ASSERT(itEnd <= itWhere || itWhere <= itFirst);
+
+			if (itWhere <= itFirst)
+			{
+				index += count;
+				endIndex += count;
+			}
+			itWhere = insert(itWhere, count);
+
+			itFirst = m_container.begin() + index;
+			itEnd = m_container.begin() + endIndex;
 		}
 		else
-			std::copy(itFirst, itEnd,
-				insert(itWhere, itEnd - itFirst));
+			itWhere = insert(itWhere, count);
+		
+		std::copy(itFirst, itEnd, itWhere);
 	}
 
 	/// Removes one element by iterator.
@@ -324,32 +355,46 @@ public:
 		m_size -= itEnd - itFirst;
 	}
 
-	/// Assigns the given number of elements to this vector.
+	/// Assigns the given number of elements to this vector. Assumes value outside of vector range, copy manually otherwise.
 	LEAN_INLINE void assign(size_type count, const Element& value)
 	{
+		assert_outside(value);
+
 		if(count > m_container.size())
 		{
 			reallocate_internal(count);
 			m_container.resize(count);
 		}
-		m_size = count;
 
 		std::fill_n(m_container.begin(), count, value);
+		m_size = count;
 	}
 	/// Assigns the given range of elements to this vector.
 	template<class Iterator>
 	LEAN_INLINE void assign(Iterator itFirst, Iterator itEnd)
 	{
+		LEAN_ASSERT(itFirst <= itEnd);
+
 		size_t count = itEnd - itFirst;
 		
 		if(count > m_container.size())
 		{
+			size_type index = addressof(*itFirst) - addressof(*m_container.begin());
+			size_type endIndex = addressof(*itEnd) - addressof(*m_container.begin());
+
 			reallocate_internal(count);
 			m_container.resize(count);
-		}
-		m_size = count;
 
-		std::copy(itFirst, itLast, m_container.begin());
+			// Index is unsigned, make use of wrap-around
+			if (index < m_size)
+			{
+				itFirst = m_container.begin() + index;
+				itEnd = m_container.begin() + endIndex;
+			}
+		}
+
+		std::copy(itFirst, itEnd, m_container.begin());
+		m_size = count;
 	}
 
 	/// Removes all elements from this vector.

@@ -11,4 +11,6 @@
 #include "move_reallocation_policy.h"
 #include "accumulation_vector.h"
 
+#include "accumulation_map.h"
+
 #endif

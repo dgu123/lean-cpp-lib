@@ -52,6 +52,18 @@ private:
 		LEAN_ASSERT(addressof(value) < addressof(*m_container.begin()) || addressof(*m_container.end()) <= addressof(value));
 	}
 
+	/// Triggers an out of range error.
+	LEAN_NOINLINE static void out_of_range()
+	{
+		throw std::out_of_range("accumulation_vector<T> out of range");
+	}
+	/// Checks the given position.
+	LEAN_INLINE void check_pos(size_type_ pos) const
+	{
+		if (pos >= m_size)
+			out_of_range();
+	}
+
 public:
 	/// Type of the container wrapped by this vector.
 	typedef container_type_ container_type;
@@ -410,38 +422,35 @@ public:
 	/// Reserves storage for the specified number of elements.
 	LEAN_INLINE void reserve(size_type count) { reserve_internal(count); }
 	/// Inserts or erases elements to match the new size specified.
-	LEAN_INLINE void resize(size_type _Newsize)
+	LEAN_INLINE void resize(size_type count)
 	{
-		// Resize
-		if(_Newsize > m_container.size())
+		if(count > m_container.size())
 		{
-			reallocate_internal(_Newsize);
-			m_container.resize(_Newsize);
+			reallocate_internal(count);
+			m_container.resize(count);
 		}
-		m_size = _Newsize;
+
+		m_size = count;
 	}
 	/// Inserts or erases elements to match the new size specified
-	LEAN_INLINE void resize(size_type _Newsize, const Element& value)
+	LEAN_INLINE void resize(size_type count, const Element& value)
 	{
-		size_type _Oldsize = m_size;
-
-		// Resize
-		if(_Newsize > m_container.size())
+		if(count > m_container.size())
 		{
-			reallocate_internal(_Newsize);
-			m_container.resize(_Newsize);
+			reallocate_internal(count);
+			m_container.resize(count);
 		}
-		m_size = _Newsize;
 
-		// Set elements
-		if(_Newsize > _Oldsize)
-			::std::fill_n(m_container.begin() + _Oldsize, _Newsize - _Oldsize, value);
-	};
+		if(count > m_size)
+			std::fill_n(end(), count - m_size, value);
+
+		m_size = count;
+	}
 
 	/// Gets an element by position.
-	LEAN_INLINE reference at(size_type pos) { return m_container.at(pos); } // TODO: Exception
+	LEAN_INLINE reference at(size_type pos) { check_pos(pos); return m_container.at(pos); }
 	/// Gets an element by position.
-	LEAN_INLINE const_reference at(size_type pos) const { return m_container.at(pos); } // TODO: Exception
+	LEAN_INLINE const_reference at(size_type pos) const { check_pos(pos); return m_container.at(pos); }
 	/// Gets the first element in the vector.
 	LEAN_INLINE reference front(void) { LEAN_ASSERT(!empty()); return m_container.front(); }
 	/// Gets the first element in the vector.
@@ -483,62 +492,65 @@ public:
 };
 
 /// Comparison operator.
-template<class Element, class reserve_internal, class allocatorloc>
-inline bool operator ==(const accumulation_vector<Element, reserve_internal, allocatorloc>& _Left, 
-	const accumulation_vector<Element, reserve_internal, allocatorloc>& right)
+template<class Element, class Policy, class Allocator>
+LEAN_INLINE bool operator ==(const accumulation_vector<Element, Policy, Allocator>& left, 
+	const accumulation_vector<Element, Policy, Allocator>& right)
 {
-	return _Left.size() == right.size() && ::std::equal(_Left.begin(), _Left.end(), right.begin());
+	return (left.size() == right.size()) && std::equal(left.begin(), left.end(), right.begin());
 }
 
 /// Comparison operator.
-template<class Element, class reserve_internal, class allocatorloc>
-inline bool operator !=(const accumulation_vector<Element, reserve_internal, allocatorloc>& _Left,
-	const accumulation_vector<Element,reserve_internal,  allocatorloc>& right)
+template<class Element, class Policy, class Allocator>
+LEAN_INLINE bool operator !=(const accumulation_vector<Element, Policy, Allocator>& left, 
+	const accumulation_vector<Element, Policy, Allocator>& right)
 {
-	return !(_Left == right);
+	return !(left == right);
 }
 
 /// Comparison operator.
-template<class Element, class reserve_internal, class allocatorloc>
-inline bool operator <(const accumulation_vector<Element, reserve_internal, allocatorloc>& _Left,
-	const accumulation_vector<Element, reserve_internal, allocatorloc>& right)
+template<class Element, class Policy, class Allocator>
+LEAN_INLINE bool operator <(const accumulation_vector<Element, Policy, Allocator>& left, 
+	const accumulation_vector<Element, Policy, Allocator>& right)
 {
-	return ::std::lexicographical_compare(_Left.begin(), _Left.end(), right.begin(), right.end());
+	return std::lexicographical_compare(left.begin(), left.end(), right.begin(), right.end());
 }
 
 /// Comparison operator.
-template<class Element, class reserve_internal, class allocatorloc>
-inline bool operator >(const accumulation_vector<Element, reserve_internal, allocatorloc>& _Left,
-	const accumulation_vector<Element, reserve_internal, allocatorloc>& right)
+template<class Element, class Policy, class Allocator>
+LEAN_INLINE bool operator >(const accumulation_vector<Element, Policy, Allocator>& left, 
+	const accumulation_vector<Element, Policy, Allocator>& right)
 {
-	return right < _Left;
+	return (right < left);
 }
 
 /// Comparison operator.
-template<class Element, class reserve_internal, class allocatorloc>
-inline bool operator <=(const accumulation_vector<Element, reserve_internal, allocatorloc>& _Left,
-	const accumulation_vector<Element, reserve_internal, allocatorloc>& right)
+template<class Element, class Policy, class Allocator>
+LEAN_INLINE bool operator <=(const accumulation_vector<Element, Policy, Allocator>& left, 
+	const accumulation_vector<Element, Policy, Allocator>& right)
 {
-	return !(right < _Left);
+	return !(right < left);
 }
 
 /// Comparison operator.
-template<class Element, class reserve_internal, class allocatorloc>
-inline bool operator >=(const accumulation_vector<Element, reserve_internal, allocatorloc>& _Left,
-	const accumulation_vector<Element, reserve_internal, allocatorloc>& right)
+template<class Element, class Policy, class Allocator>
+LEAN_INLINE bool operator >=(const accumulation_vector<Element, Policy, Allocator>& left, 
+	const accumulation_vector<Element, Policy, Allocator>& right)
 {
-	return !(_Left < right);
+	return !(left < right);
 }
 
 // Swaps the elements of two accumulation vectors.
-template<class Element, class reserve_internal, class allocatorloc>
-inline void swap(accumulation_vector<Element, reserve_internal, allocatorloc>& _Left,
-	accumulation_vector<Element, reserve_internal, allocatorloc>& right)
+template<class Element, class Policy, class Allocator>
+LEAN_INLINE void swap(accumulation_vector<Element, Policy, Allocator>& left, 
+	accumulation_vector<Element, Policy, Allocator>& right)
 {
-	_Left.swap(right);
+	left.swap(right);
 }
 
 } // namespace
+
+using containers::accumulation_vector;
+
 } // namespace
 
 #endif

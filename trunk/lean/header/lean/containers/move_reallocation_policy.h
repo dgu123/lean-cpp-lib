@@ -26,7 +26,7 @@ public:
 	  * calls to a custom move method for each element in the old block
 	  * of memory afterwards, passing the old elements as arguments to the
 	  * move method of their corresponding new elements. */
-	static inline void reserve(Container &container, typename Container::size_type newCapacity)
+	static void reserve(Container &container, typename Container::size_type newCapacity)
 	{
 		if (newCapacity > container.capacity())
 		{
@@ -45,7 +45,7 @@ public:
 
 	/// Reserves a new block of memory, if the old block of memory can
 	/// no longer serve the given new element count.
-	static inline void reallocate(Container &container, typename Container::size_type newCount)
+	static void pre_presize(Container &container, typename Container::size_type newCount)
 	{
 		typename Container::size_type capacity = container.capacity();
 

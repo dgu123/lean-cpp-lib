@@ -29,21 +29,21 @@ private:
 
 	typedef typename container_type_::size_type size_type_;
 	size_type_ m_size;
-
-	/// Reserves memory for the given number of elements.
-	inline void reserve_internal(size_type_ newCount)
+	
+	/// Reserves space for the given number of elements.
+	LEAN_INLINE void reserve_internal(size_type_ newCount)
 	{
 		ReallocationPolicy::reserve(m_container, newCount);
 	}
-	/// Reserves memory for the given number of elements.
-	inline void reallocate_internal(size_type_ newCount)
+	/// Grows vector storage to fit the given new count.
+	LEAN_INLINE void growTo(size_type_ newCount)
 	{
-		ReallocationPolicy::pro_reserve(m_container, newCount);
+		ReallocationPolicy::pre_resize(m_container, newCount);
 	}
-	/// Grows the reserved memory of this vector by the given number of elements.
-	inline void grow_internal(size_type_ count)
+	/// Grows vector storage to fit the given additional number of elements.
+	LEAN_INLINE void grow(size_type_ count)
 	{
-		reallocate_internal(m_size + count);
+		growTo(m_size + count);
 	}
 
 	/// Asserts that the given value lies outside this vector's element range.
@@ -184,7 +184,7 @@ public:
 	{
 		if (m_size == m_container.size())
 		{
-			grow_internal(1);
+			grow(1);
 			m_container.push_back(Element());
 		}
 
@@ -197,7 +197,7 @@ public:
 
 		if (m_size == m_container.size())
 		{
-			grow_internal(1);
+			grow(1);
 			m_container.push_back(value);
 		}
 		else
@@ -213,7 +213,7 @@ public:
 
 		if (m_size == m_container.size())
 		{
-			grow_internal(1);
+			grow(1);
 			m_container.push_back(std::move(value));
 		}
 		else
@@ -237,7 +237,7 @@ public:
 		if (m_size == m_container.size())
 		{
 			size_type index = itWhere - m_container.begin();
-			grow_internal(1);
+			grow(1);
 			itWhere = m_container.insert(m_container.begin() + index, Element());
 		}
 		else
@@ -254,7 +254,7 @@ public:
 		if (m_size == m_container.size())
 		{
 			size_type index = itWhere - m_container.begin();
-			grow_internal(1);
+			grow(1);
 			itWhere = m_container.insert(m_container.begin() + index, value);
 			++m_size;
 		}
@@ -276,7 +276,7 @@ public:
 		if (m_size == m_container.size())
 		{
 			size_type index = itWhere - m_container.begin();
-			grow_internal(1);
+			grow(1);
 			itWhere = m_container.insert(m_container.begin() + index, std::move(value));
 			++m_size;
 		}
@@ -299,7 +299,7 @@ public:
 		if(newSize > m_container.size())
 		{
 			size_type index = itWhere - m_container.begin();
-			reallocate_internal(newSize);
+			growTo(newSize);
 			m_container.resize(newSize);
 			itWhere = m_container.begin() + index;
 		}
@@ -374,7 +374,7 @@ public:
 
 		if(count > m_container.size())
 		{
-			reallocate_internal(count);
+			growTo(count);
 			m_container.resize(count);
 		}
 
@@ -394,7 +394,7 @@ public:
 			size_type index = addressof(*itFirst) - addressof(*m_container.begin());
 			size_type endIndex = addressof(*itEnd) - addressof(*m_container.begin());
 
-			reallocate_internal(count);
+			growTo(count);
 			m_container.resize(count);
 
 			// Index is unsigned, make use of wrap-around
@@ -420,13 +420,16 @@ public:
 	/// Returns the number of elements this vector could contain without reallocation.
 	LEAN_INLINE size_type capacity(void) const { return m_container.capacity(); }
 	/// Reserves storage for the specified number of elements.
-	LEAN_INLINE void reserve(size_type count) { reserve_internal(count); }
+	LEAN_INLINE void reserve(size_type count)
+	{
+		reserve_internal(count);
+	}
 	/// Inserts or erases elements to match the new size specified.
 	LEAN_INLINE void resize(size_type count)
 	{
 		if(count > m_container.size())
 		{
-			reallocate_internal(count);
+			growTo(count);
 			m_container.resize(count);
 		}
 
@@ -437,7 +440,7 @@ public:
 	{
 		if(count > m_container.size())
 		{
-			reallocate_internal(count);
+			growTo(count);
 			m_container.resize(count);
 		}
 

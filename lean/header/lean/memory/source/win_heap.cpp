@@ -22,7 +22,7 @@ inline HANDLE get_win_process_heap()
 }
 
 /// Throws a bad_alloc exception.
-LEAN_NOINLINE void win_bad_alloc()
+LEAN_NEVER_INLINE void win_bad_alloc()
 {
 	static const std::bad_alloc exception;
 	throw exception;

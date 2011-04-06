@@ -52,6 +52,9 @@
     <Filter Include="Header Files\config">
       <UniqueIdentifier>{3db40b34-971a-44d1-8974-4feba0791229}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\memory">
+      <UniqueIdentifier>{ebee2943-0548-4022-927e-a3c3e69c68bd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -240,6 +243,9 @@
     <ClInclude Include="header\lean\containers\accumulation_map.h">
       <Filter>Header Files\containers</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\memory\win_heap.h">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">
@@ -247,6 +253,9 @@
     </ClCompile>
     <ClCompile Include="header\lean\time\source\highres_timer.cpp">
       <Filter>Source Files\time</Filter>
+    </ClCompile>
+    <ClCompile Include="header\lean\memory\source\win_heap.cpp">
+      <Filter>Source Files\memory</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

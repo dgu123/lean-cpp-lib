@@ -8,6 +8,17 @@
 #include "../lean.h"
 #include "alignment.h"
 
+#ifndef LEAN_ASSUME_CRT_ALIGNMENT
+	// MONITOR: Seems to be guaranteed for MSC & GCC
+	#ifdef LEAN_64_BIT
+		/// Specifies alignment requirements that are assumed to always be met by the CRT
+		#define LEAN_ASSUME_CRT_ALIGNMENT 16
+	#else
+		/// Specifies alignment requirements that are assumed to always be met by the CRT
+		#define LEAN_ASSUME_CRT_ALIGNMENT 8
+	#endif
+#endif
+
 namespace lean
 {
 namespace memory
@@ -28,28 +39,33 @@ struct crt_heap
 	template <size_t Alignment>
 	static LEAN_INLINE void* allocate(size_type size)
 	{
-		LEAN_STATIC_ASSERT_MSG_ALT(Alignment < static_cast<unsigned char>(-1),
-			"Alignment > max unsigned char unsupported.",
-			Alignment_bigger_than_max_unsigned_char_unsupported);
+		if (Alignment <= LEAN_ASSUME_CRT_ALIGNMENT && check_alignment<Alignment>::valid)
+			return allocate(size);
+		else
+		{
+			LEAN_STATIC_ASSERT_MSG_ALT(Alignment < static_cast<unsigned char>(-1),
+				"Alignment > max unsigned char unsupported.",
+				Alignment_bigger_than_max_unsigned_char_unsupported);
 
-		unsigned char *unaligned = reinterpret_cast<unsigned char*>( ::operator new(size + Alignment) );
-		unsigned char *aligned = upper_align<Alignment>(unaligned);
-		aligned[-1] = static_cast<unsigned char>(aligned - unaligned);
-		return aligned;
+			unsigned char *unaligned = reinterpret_cast<unsigned char*>( allocate(size + Alignment) );
+			unsigned char *aligned = upper_align<Alignment>(unaligned);
+			aligned[-1] = static_cast<unsigned char>(aligned - unaligned);
+			return aligned;
+		}
 	}
 	/// Frees the given aligned block of memory.
 	template <size_t Alignment>
 	static LEAN_INLINE void free(void *memory)
 	{
-		if (memory)
-			::operator delete( reinterpret_cast<void*>(
-				reinterpret_cast<unsigned char*>(memory) - reinterpret_cast<unsigned char*>(memory)[-1] ) );
+		if (Alignment <= LEAN_ASSUME_CRT_ALIGNMENT && check_alignment<Alignment>::valid)
+			free(memory);
+		else
+		{
+			if (memory)
+				free( reinterpret_cast<void*>(
+					reinterpret_cast<unsigned char*>(memory) - reinterpret_cast<unsigned char*>(memory)[-1] ) );
+		}
 	}
-
-	template <>
-	static LEAN_INLINE void* allocate<1>(size_type size) { return allocate(size); }
-	template <>
-	static LEAN_INLINE void free<1>(void *memory) { free(memory); }
 };
 
 } // namespace

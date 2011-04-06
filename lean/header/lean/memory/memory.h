@@ -7,9 +7,11 @@
 
 #include "alignment.h"
 #include "crt_heap.h"
-#include "heap_bound.h"
-#include "aligned.h"
+#include "default_heap.h"
 
 #include "heap_allocator.h"
+
+#include "heap_bound.h"
+#include "aligned.h"
 
 #endif

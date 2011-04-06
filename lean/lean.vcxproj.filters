@@ -249,6 +249,9 @@
     <ClInclude Include="header\lean\memory\heap_bound.h">
       <Filter>Header Files\memory</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\memory\default_heap.h">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

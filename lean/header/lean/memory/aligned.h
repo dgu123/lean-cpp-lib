@@ -7,7 +7,7 @@
 
 #include "../lean.h"
 #include "alignment.h"
-#include "crt_heap.h"
+#include "default_heap.h"
 
 namespace lean
 {
@@ -15,7 +15,7 @@ namespace memory
 {
 	/// Aligns derived classes according to the given alignment template argument.
 	/// @see lean::memory::heap_bound
-	template <size_t Alignment, class Heap = crt_heap>
+	template <size_t Alignment, class Heap = default_heap>
 	class aligned : public stack_aligned<Alignment>
 	{
 	private:

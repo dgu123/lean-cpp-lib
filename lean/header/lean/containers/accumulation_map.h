@@ -123,7 +123,7 @@ public:
 			{
 				// Replace old value with new one on exact match
 				if (itSource->first == itDest->first)
-					(itDest++)->second = (itSource++)->second();
+					(itDest++)->second = (itSource++)->second;
 				// Wait for next source element, if still less than dest
 				else if (keyComp(itSource->first, itDest->first))
 					m_container.insert(itDest, *(itSource++));

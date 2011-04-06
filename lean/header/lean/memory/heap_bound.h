@@ -6,6 +6,7 @@
 #define LEAN_MEMORY_HEAP_BOUND
 
 #include "../lean.h"
+#include "default_heap.h"
 
 namespace lean
 {
@@ -13,7 +14,7 @@ namespace memory
 {
 	/// Always allocates space for derived classes on the same specified heap.
 	/// @see lean::memory::aligned
-	template <class Heap>
+	template <class Heap = default_heap>
 	class heap_bound
 	{
 	protected:

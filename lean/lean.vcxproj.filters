@@ -252,6 +252,9 @@
     <ClInclude Include="header\lean\memory\default_heap.h">
       <Filter>Header Files\memory</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\memory\new_handler.h">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">
@@ -261,6 +264,9 @@
       <Filter>Source Files\time</Filter>
     </ClCompile>
     <ClCompile Include="header\lean\memory\source\win_heap.cpp">
+      <Filter>Source Files\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="header\lean\memory\source\new_handler.cpp">
       <Filter>Source Files\memory</Filter>
     </ClCompile>
   </ItemGroup>

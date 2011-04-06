@@ -32,9 +32,9 @@ struct win_heap
 	typedef size_t size_type;
 
 	/// Allocates the given amount of memory.
-	static LEAN_MAYBE_INLINE void* allocate(size_type size);
+	static void* allocate(size_type size);
 	/// Frees the given block of memory.
-	static LEAN_MAYBE_INLINE void free(void *memory);
+	static void free(void *memory);
 
 	/// Allocates the given amount of memory respecting the given alignment.
 	template <size_t Alignment>
@@ -61,7 +61,7 @@ using memory::win_heap;
 
 } // namespace
 
-#ifdef LEAN_INLINING
+#ifndef LEAN_LINKING
 #include "source/win_heap.cpp"
 #endif
 

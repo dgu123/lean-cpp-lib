@@ -35,22 +35,22 @@ namespace lean
 		/// Allocates memory using the previously defined default_heap.
 		inline void* operator new(size_t size)
 		{
-			return default_heap::allocate(size);
+			return lean::memory::default_heap::allocate(size);
 		}
 		/// Frees memory using the previously defined default_heap heap.
 		inline void operator delete(void *memory)
 		{
-			default_heap::free(memory);
+			lean::memory::default_heap::free(memory);
 		}
 		/// Allocates memory using the previously defined default_heap.
 		inline void* operator new[](size_t size)
 		{
-			return default_heap::allocate(size);
+			return lean::memory::default_heap::allocate(size);
 		}
 		/// Frees memory using the previously defined default_heap heap.
 		inline void operator delete[](void *memory)
 		{
-			default_heap::free(memory);
+			lean::memory::default_heap::free(memory);
 		}
 	#endif
 

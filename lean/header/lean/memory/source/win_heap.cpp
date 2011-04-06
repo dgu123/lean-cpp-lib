@@ -3,6 +3,7 @@
 #endif
 
 #include "../win_heap.h"
+#include "../new_handler.h"
 #include <windows.h>
 #include <stdexcept>
 
@@ -22,7 +23,7 @@ inline HANDLE get_win_process_heap()
 }
 
 /// Throws a bad_alloc exception.
-LEAN_NEVER_INLINE void win_bad_alloc()
+LEAN_ALWAYS_LINK void win_bad_alloc()
 {
 	static const std::bad_alloc exception;
 	throw exception;
@@ -33,12 +34,14 @@ LEAN_NEVER_INLINE void win_bad_alloc()
 } // namespace
 
 // Allocates the given amount of memory.
-LEAN_MAYBE_INLINE void* lean::memory::win_heap::allocate(size_type size)
+LEAN_MAYBE_LINK void* lean::memory::win_heap::allocate(size_type size)
 {
-	void *memory = ::HeapAlloc(impl::get_win_process_heap(), 0, size);
+	void *memory;
 
-	if (!memory)
-		impl::win_bad_alloc();
+	// Try to allocate memory until new handler returns false
+	while ( !(memory = ::HeapAlloc(impl::get_win_process_heap(), 0, size)) )
+		if (!call_new_handler())
+			impl::win_bad_alloc();
 
 	// Optimization might skip subsequent pointer checking branches with pMemory != nullptr asserted
 	LEAN_ASSERT(memory);
@@ -46,7 +49,7 @@ LEAN_MAYBE_INLINE void* lean::memory::win_heap::allocate(size_type size)
 }
 
 // Frees the given block of memory.
-LEAN_MAYBE_INLINE void lean::memory::win_heap::free(void *memory)
+LEAN_MAYBE_LINK void lean::memory::win_heap::free(void *memory)
 {
 	if (memory)
 		::HeapFree(impl::get_win_process_heap(), 0, memory);

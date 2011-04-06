@@ -38,7 +38,7 @@ using time::highres_timer;
 
 } // namespace
 
-#ifdef LEAN_MAYBE_INLINING
+#ifdef LEAN_INLINING
 #include "source/highres_timer.cpp"
 #endif
 

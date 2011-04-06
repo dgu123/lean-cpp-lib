@@ -61,7 +61,7 @@ using memory::win_heap;
 
 } // namespace
 
-#ifdef LEAN_MAYBE_INLINING
+#ifdef LEAN_INLINING
 #include "source/win_heap.cpp"
 #endif
 

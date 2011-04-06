@@ -101,6 +101,7 @@
     <ClInclude Include="header\lean\macros.h" />
     <ClInclude Include="header\lean\memory\alignment.h" />
     <ClInclude Include="header\lean\memory\heap_allocator.h" />
+    <ClInclude Include="header\lean\memory\heap_bound.h" />
     <ClInclude Include="header\lean\memory\win_heap.h" />
     <ClInclude Include="header\lean\meta\complete_type_or_base.h" />
     <ClInclude Include="header\lean\meta\conditional_type.h" />

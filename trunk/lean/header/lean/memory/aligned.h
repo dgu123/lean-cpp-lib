@@ -14,6 +14,7 @@ namespace lean
 namespace memory
 {
 	/// Aligns derived classes according to the given alignment template argument.
+	/// @see lean::memory::heap_bound
 	template <size_t Alignment, class Heap = crt_heap>
 	class aligned : public stack_aligned<Alignment>
 	{
@@ -42,10 +43,10 @@ namespace memory
 		{
 			return Heap::allocate<Alignment>(size);
 		}
-		/// Frees an aligned block of memory of the given size.
+		/// Frees the given block of memory.
 		LEAN_INLINE void operator delete(void *memory)
 		{
-			return Heap::free<Alignment>(memory);
+			Heap::free<Alignment>(memory);
 		}
 	};
 

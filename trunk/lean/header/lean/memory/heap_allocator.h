@@ -8,6 +8,7 @@
 #include "../lean.h"
 #include "../meta/strip.h"
 #include "alignment.h"
+#include "default_heap.h"
 
 namespace lean
 {
@@ -15,7 +16,7 @@ namespace memory
 {
 
 /// STL allocator heap adapter.
-template<class Element, class Heap, size_t Alignment = alignof(Element)>
+template<class Element, class Heap = default_heap, size_t Alignment = alignof(Element)>
 class heap_allocator
 {
 public:

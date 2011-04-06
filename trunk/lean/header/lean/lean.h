@@ -27,7 +27,7 @@
 #ifdef _MSC_VER
 	/// Instructs the compiler to inline a specific method.
 	#define LEAN_INLINE __forceinline
-	/// Instructs the compiler not to inline a specific method.
+	/// Instructs the compiler not to inline a specific method in a header file.
 	#define LEAN_NOINLINE __declspec(noinline) inline
 	/// Instructs the compiler not to inline a specific method at link time.
 	#define LEAN_NOLTINLINE __declspec(noinline)
@@ -39,35 +39,41 @@
 #else
 	/// Instructs the compiler to inline a specific method.
 	#define LEAN_INLINE inline
-	/// Instructs the compiler not to inline a specific method.
+	/// Instructs the compiler not to inline a specific method in a header file.
 	#define LEAN_NOINLINE inline
 	/// Instructs the compiler not to inline a specific method at link time.
 	#define LEAN_NOLTINLINE
 #endif
 
-#if !defined(LEAN_HEADER_ONLY) || defined(LEAN_BUILD_LIB)
-	/// Do not inline in linked library
-	#define LEAN_MAYBE_LINK
-	/// Using linked library
-	#define LEAN_MAYBE_LINKING 1
+#if defined(LEAN_HEADER_ONLY) && !defined(LEAN_BUILD_LIB)
+	/// Picks the first argument in a linked library, the second one in a header-only library.
+	#define LEAN_LINK_SELECT(linklib, headeronly) headeronly
 #else
-	/// Try to not inline in header-only library
-	#define LEAN_MAYBE_LINK LEAN_NOINLINE
+	/// Picks the first argument in a linked library, the second one in a header-only library.
+	#define LEAN_LINK_SELECT(linklib, headeronly) linklib
+	/// Using a linked library.
+	#define LEAN_LINKING 1
 #endif
 
+/// Trys to avoid inlining in a header-only library.
+#define LEAN_MAYBE_LINK LEAN_LINK_SELECT(, LEAN_NOINLINE)
+/// Trys to avoid inlining in a header-only library as well as at link time.
+#define LEAN_ALWAYS_LINK LEAN_LINK_SELECT(LEAN_NOLTINLINE, LEAN_NOINLINE)
+
 #if (defined(LEAN_HEADER_ONLY) || !defined(LEAN_MIN_DEPENDENCY)) && !defined(LEAN_BUILD_LIB)
-	/// Try to avoid inlining in header-only library
-	#define LEAN_NEVER_INLINE LEAN_NOINLINE
-	/// Inline in header-only library
-	#define LEAN_MAYBE_INLINE inline
+	/// Picks the first argument in a header-only / non-min-dependency library, the second one in a min-dependency / linked library.
+	#define LEAN_INLINE_SELECT(maxdep, mindep) maxdep
 	/// Inlining in header-only library
-	#define LEAN_MAYBE_INLINING 1
+	#define LEAN_INLINING 1
 #else
-	/// Do not inline in linked library, not even at link time
-	#define LEAN_NEVER_INLINE LEAN_NOLTINLINE
-	/// Do not inline in linked library
-	#define LEAN_MAYBE_INLINE
+	/// Picks the first argument in a header-only / non-min-dependency library, the second one in a min-dependency / linked library.
+	#define LEAN_INLINE_SELECT(maxdep, mindep) mindep
 #endif
+
+/// Inlines in a header-only / non-min-dependency library.
+#define LEAN_MAYBE_INLINE LEAN_INLINE_SELECT(inline, )
+/// Trys to avoid inlining in header-only / non-min-dependency library as well as at link time.
+#define LEAN_NEVER_INLINE LEAN_INLINE_SELECT(LEAN_NOINLINE, LEAN_NOLTINLINE)
 
 namespace lean
 {

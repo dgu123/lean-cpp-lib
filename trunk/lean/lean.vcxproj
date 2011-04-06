@@ -101,6 +101,7 @@
     <ClInclude Include="header\lean\macros.h" />
     <ClInclude Include="header\lean\memory\alignment.h" />
     <ClInclude Include="header\lean\memory\heap_allocator.h" />
+    <ClInclude Include="header\lean\memory\win_heap.h" />
     <ClInclude Include="header\lean\meta\complete_type_or_base.h" />
     <ClInclude Include="header\lean\meta\conditional_type.h" />
     <ClInclude Include="header\lean\meta\dereference.h" />
@@ -137,6 +138,10 @@
     <ClInclude Include="header\lean\memory\memory.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="header\lean\memory\source\win_heap.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="header\lean\time\source\highres_timer.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>

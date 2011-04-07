@@ -9,5 +9,7 @@
 #include "conditional_type.h"
 #include "complete_type_or_base.h"
 #include "dereference.h"
+#include "is_equal.h"
+#include "non_void.h"
 
 #endif

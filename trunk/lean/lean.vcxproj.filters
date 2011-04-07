@@ -255,6 +255,12 @@
     <ClInclude Include="header\lean\memory\new_handler.h">
       <Filter>Header Files\memory</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\meta\is_equal.h">
+      <Filter>Header Files\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\meta\non_void.h">
+      <Filter>Header Files\meta</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

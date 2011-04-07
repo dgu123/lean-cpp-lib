@@ -58,6 +58,9 @@
     <Filter Include="Documentation">
       <UniqueIdentifier>{8ea723b4-653e-4aad-9e14-e8585ec6c5e8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\logging">
+      <UniqueIdentifier>{eb28dd72-a392-46f9-9faf-3d1af0d5b5cf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -267,6 +270,9 @@
     <ClInclude Include="header\lean\meta\non_void.h">
       <Filter>Header Files\meta</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\logging\exceptions.h">
+      <Filter>Header Files\logging</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">
@@ -280,6 +286,9 @@
     </ClCompile>
     <ClCompile Include="header\lean\memory\source\new_handler.cpp">
       <Filter>Source Files\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="header\lean\logging\source\exceptions.cpp">
+      <Filter>Source Files\logging</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

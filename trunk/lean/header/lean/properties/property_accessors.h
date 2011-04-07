@@ -57,12 +57,18 @@ public:
 		m_count(count) { };
 
 	/// Copies the given number of values of the given type from the constant value array held, if available.
-	void operator ()(const Class &object, const type_info &type, void *values, size_t count) const
+	bool operator ()(const Class &object, const type_info &type, void *values, size_t count) const
 	{
 		if (type == typeid(value_type))
+		{
 			std::copy_n(m_constantValues, min(count, m_count), static_cast<value_type*>(values));
+			return true;
+		}
 		else
+		{
 			impl::property_error_policy::type_mismatch<value_type>(type);
+			return false;
+		}
 	}
 
 	property_constant* clone() const { return new property_constant(*this); }
@@ -115,17 +121,23 @@ public:
 	typedef typename strip_modifiers<UnionValue>::type union_type;
 
 	/// Passes the given number of values of the given type to the given object using the stored setter method, if the value types are matching.
-	void operator ()(Class &object, const type_info &type, const void *values, size_t count)
+	bool operator ()(Class &object, const type_info &type, const void *values, size_t count)
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
 
 		if (type == typeid(value_type))
+		{
 			(object.*Setter)(
 					static_cast<const union_type*>( values ),
 					static_cast<Count>( union_helper::union_count(count) )
 				);
+			return true;
+		}
 		else
+		{
 			impl::property_error_policy::type_mismatch<value_type>(type);
+			return false;
+		}
 	}
 
 	property_n_setter* clone() const { return new property_n_setter(*this); }
@@ -143,17 +155,23 @@ public:
 	typedef typename strip_modifiers<UnionValue>::type union_type;
 	
 	/// Retrieves the given number of values of the given type from the given object using the stored getter method, if available.
-	void operator ()(const Class &object, const type_info &type, void *values, size_t count) const
+	bool operator ()(const Class &object, const type_info &type, void *values, size_t count) const
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
 
 		if (type == typeid(value_type))
+		{
 			(object.*Getter)(
 					static_cast<union_type*>( values ),
 					static_cast<Count>( union_helper::union_count(count) )
 				);
+			return true;
+		}
 		else
+		{
 			impl::property_error_policy::type_mismatch<value_type>(type);
+			return false;
+		}
 	}
 
 	property_n_getter* clone() const { return new property_n_getter(*this); }
@@ -312,7 +330,7 @@ public:
 	typedef typename strip_modifiers<typename strip_reference<UnionValueArg>::type>::type union_type;
 
 	/// Passes the given number of values of the given type to the given object using the stored setter method, if the value types are matching.
-	void operator ()(Class &object, const type_info &type, const void *values, size_t count)
+	bool operator ()(Class &object, const type_info &type, const void *values, size_t count)
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
 		
@@ -321,12 +339,17 @@ public:
 			size_t unionCount = union_helper::union_count(count);
 
 			if (unionCount >= setter_helper::argument_count)
+			{
 				setter_helper::set(object, Setter, static_cast<const union_type*>(values));
+				return true;
+			}
 			else
 				impl::property_error_policy::count_mismatch(setter_helper::argument_count, unionCount);
 		}
 		else
 			impl::property_error_policy::type_mismatch<value_type>(type);
+
+		return false;
 	}
 
 	property_c_setter* clone() const { return new property_c_setter(*this); }
@@ -347,7 +370,7 @@ public:
 	typedef typename strip_modifiers<typename strip_reference<UnionValueArg>::type>::type union_type;
 
 	/// Retrieves the given number of values of the given type from the given object using the stored getter method, if available.
-	void operator ()(const Class &object, const type_info &type, void *values, size_t count) const
+	bool operator ()(const Class &object, const type_info &type, void *values, size_t count) const
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
 
@@ -356,12 +379,17 @@ public:
 			size_t unionCount = union_helper::union_count(count);
 
 			if (unionCount >= getter_helper::argument_count)
+			{
 				getter_helper::get(object, Getter, static_cast<union_type*>(values));
+				return true;
+			}
 			else
 				impl::property_error_policy::count_mismatch(getter_helper::argument_count, unionCount);
 		}
 		else
 			impl::property_error_policy::type_mismatch<value_type>(type);
+
+		return false;
 	}
 
 	property_c_getter* clone() const { return new property_c_getter(*this); }
@@ -505,7 +533,7 @@ public:
 	typedef typename strip_modifiers<typename strip_reference<UnionValueReturn>::type>::type union_type;
 
 	/// Retrieves the given number of values of the given type from the given object using the stored getter method, if available.
-	void operator ()(const Class &object, const type_info &type, void *values, size_t count) const
+	bool operator ()(const Class &object, const type_info &type, void *values, size_t count) const
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
 
@@ -514,12 +542,17 @@ public:
 			size_t unionCount = union_helper::union_count(count);
 
 			if (unionCount >= 1)
+			{
 				*static_cast<union_type*>(values) = (object.*Getter)();
+				return true;
+			}
 			else
 				impl::property_error_policy::count_mismatch(1, unionCount);
 		}
 		else
 			impl::property_error_policy::type_mismatch<value_type>(type);
+
+		return false;
 	}
 
 	property_r_getter* clone() const { return new property_r_getter(*this); }

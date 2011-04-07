@@ -57,42 +57,34 @@ public:
 		return m_properties.end();
 	}
 
-	/// Assigns the given value to the property identified by the given id, fails silently.
+	/// Assigns the given value to the property identified by the given id, fails silently returning false.
 	template <class Value>
-	LEAN_INLINE void set(Class &object, size_t id, const Value &value) const
+	LEAN_INLINE bool set(Class &object, size_t id, const Value &value) const
 	{
-		set(object, id, &value, 1);
+		return set(object, id, &value, 1);
 	}
-	/// Assigns the given values to the property identified by the given id, fails silently.
+	/// Assigns the given values to the property identified by the given id, fails silently returning false.
 	template <class Value>
-	LEAN_INLINE void set(Class &object, size_t id, const Value *values, size_t count) const
+	LEAN_INLINE bool set(Class &object, size_t id, const Value *values, size_t count) const
 	{
-		if (id < m_properties.size())
-		{
-			const Description &desc = m_properties[id];
-			
-			if (desc.setter.valid())
-				(*desc.setter)(object, typeid(Value), values, count);
-		}
+		return (id < m_properties.size())
+			? set_property(object, m_properties[id].setter, values, count)
+			: false;
 	}
 
-	/// Reads a value from the property identified by the given id, fails silently.
+	/// Reads a value from the property identified by the given id, fails silently returning false.
 	template <class Value>
-	LEAN_INLINE void get(const Class &object, size_t id, Value &value) const
+	LEAN_INLINE bool get(const Class &object, size_t id, Value &value) const
 	{
-		get(object, id, &value, 1);
+		return get(object, id, &value, 1);
 	}
-	/// Reads values from the property identified by the given id, fails silently.
+	/// Reads values from the property identified by the given id, fails silently returning false.
 	template <class Value>
-	LEAN_INLINE void get(const Class &object, size_t id, Value *values, size_t count) const
+	LEAN_INLINE bool get(const Class &object, size_t id, Value *values, size_t count) const
 	{
-		if (id < m_properties.size())
-		{
-			const Description &desc = m_properties[id];
-
-			if (desc.getter.valid())
-				(*desc.getter)(object, typeid(Value), values, count);
-		}
+		return (id < m_properties.size())
+			? get_property(object, m_properties[id].getter, values, count)
+			: false;
 	}
 
 };

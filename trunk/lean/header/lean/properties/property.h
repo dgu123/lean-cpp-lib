@@ -22,7 +22,14 @@ class property_setter : public cloneable
 {
 public:
 	/// Passes the given values of the given type to the given object.
-	virtual void operator ()(Class &object, const type_info &type, const void *values, size_t count) = 0;
+	virtual bool operator ()(Class &object, const type_info &type, const void *values, size_t count) = 0;
+
+	/// Passes the given values to the given object.
+	template <class Value>
+	LEAN_INLINE bool operator ()(Class &object, const Value *values, size_t count)
+	{
+		return (*this)(object, typeid(Value), values, count);
+	}
 };
 
 /// Fetches data from a specific source.
@@ -31,7 +38,14 @@ class property_getter : public cloneable
 {
 public:
 	/// Fetches the given number of values of the given type from the given object.
-	virtual void operator ()(const Class &object, const type_info &type, void *values, size_t count) const = 0;
+	virtual bool operator ()(const Class &object, const type_info &type, void *values, size_t count) const = 0;
+
+	/// Fetches the given number of values from the given object.
+	template <class Value>
+	LEAN_INLINE bool operator ()(const Class &object, Value *values, size_t count) const
+	{
+		return (*this)(object, typeid(Value), values, count);
+	}
 };
 
 /// Destribes a property.
@@ -125,6 +139,40 @@ struct ui_property_desc : public named_property_desc<Class, Derived>
 	Derived& set_max_value(const value_type &getter) { this->max_value = getter; return static_cast<Derived&>(*this); }
 };
 
+/// Passes the given values to the given object using the given setter.
+template <class Class, class Value>
+LEAN_INLINE bool set_property(Class &object, property_setter<Class> *setter, const Value *values, size_t count)
+{
+	return (setter) ? (*setter)(object, values, count) : false;
+}
+/// Passes the given values to the given object using the given setter.
+template <class Class, class Value>
+LEAN_INLINE bool set_property(Class &object, cloneable_obj<property_setter<Class>, false> &setter, const Value *values, size_t count)
+{
+	return (*setter)(object, values, count);
+}
+/// Passes the given values to the given object using the given setter.
+template <class Class, class Value>
+LEAN_INLINE bool set_property(Class &object, const cloneable_obj<property_setter<Class>, true> &setter, const Value *values, size_t count)
+{
+	return set_property(object, setter.getptr(), values, count);
+}
+
+/// Fetches the given number of values from the given object.
+template <class Class, class Value>
+LEAN_INLINE bool get_property(const Class &object, const property_getter<Class> *getter, Value *values, size_t count)
+{
+	return (getter) ? (*getter)(object, values, count) : false;
+}
+/// Fetches the given number of values from the given object.
+template <class Class, class Value, bool PointerSem>
+LEAN_INLINE bool get_property(const Class &object, const cloneable_obj<property_getter<Class>, PointerSem> &getter, Value *values, size_t count)
+{
+	return (PointerSem)
+		? get_property(object, getter.getptr(), values, count)
+		: (*getter)(object, values, count);
+}
+
 } // namespace
 
 using properties::property_setter;
@@ -133,6 +181,9 @@ using properties::property_getter;
 using properties::property_desc;
 using properties::named_property_desc;
 using properties::ui_property_desc;
+
+using properties::get_property;
+using properties::set_property;
 
 } // namespace
 

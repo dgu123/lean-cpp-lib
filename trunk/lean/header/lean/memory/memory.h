@@ -5,6 +5,8 @@
 #ifndef LEAN_MEMORY
 #define LEAN_MEMORY
 
+#include "new_handler.h"
+
 #include "alignment.h"
 #include "crt_heap.h"
 #include "default_heap.h"

@@ -131,6 +131,8 @@ public:
 	value_type* getptr(void) { return m_cloneable; };
 	/// Gets the value stored by this cloneable object.
 	maybe_const_value_type* getptr(void) const { return m_cloneable; };
+	/// Gets whether this cloneable object is currently storing a value.
+	bool valid() const { return (m_cloneable != nullptr); };
 
 	/// Gets the value stored by this cloneable object.
 	value_type& operator *() { return get(); };

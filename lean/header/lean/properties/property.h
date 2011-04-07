@@ -35,23 +35,95 @@ public:
 };
 
 /// Destribes a property.
-template <class Class>
+template <class Class, class Derived = property_desc>
 struct property_desc
 {
-	const std::type_info *type;							///< Element type.
-	size_t count;										///< Number of elements.
-	
-	cloneable_obj<property_setter<Class>, true> setter;		///< Value setter.
-	cloneable_obj<property_getter<Class>, true> getter;		///< Value getter.
+	const std::type_info *type;					///< Element type.
+	size_t count;								///< Number of elements.
+
+	/// Setter type.
+	typedef property_setter<Class> setter_type;
+	typedef cloneable_obj<setter_type, true> setter_storage_type;
+	/// Getter type.
+	typedef property_getter<Class> getter_type;
+	typedef cloneable_obj<getter_type, true> getter_storage_type;
+
+	setter_storage_type setter;	///< Value setter.
+	getter_storage_type getter;	///< Value getter.
+
+	/// Constructs an empty property destriction.
+	property_desc()
+		: type(nullptr),
+		count(0),
+		setter(setter_storage_type::null()),
+		getter(getter_storage_type::null()) { }
+	/// Constructs a property destriction from the given parameters.
+	property_desc(const std::type_info *type, size_t count)
+		: type(type),
+		count(count),
+		setter(setter_storage_type::null()),
+		getter(getter_storage_type::null()) { }
+
+	/// Sets the setter.
+	Derived& set_setter(const setter_type &setter) { this->setter = setter; return static_cast<Derived&>(*this); }
+	/// Sets the getter.
+	Derived& set_getter(const getter_type &getter) { this->getter = getter; return static_cast<Derived&>(*this); }
 };
 
 /// Describes a named property.
-template <class Class>
-struct named_property_desc : public property_desc<Class>
+template <class Class, class Derived = named_property_desc>
+struct named_property_desc : public property_desc<Class, Derived>
 {
 	std::wstring name;	///< Property name.
+
+	/// Constructs an empty property destriction.
+	named_property_desc() { }
+	/// Constructs a property destriction from the given parameters.
+	named_property_desc(const std::wstring &name, const std::type_info *type, size_t count)
+		: property_desc<Class, Derived>(type, count)
+		name(name) { }
 };
 
+/// Describes a UI property.
+template <class Class, class Widget, class Derived = ui_property_desc>
+struct ui_property_desc : public named_property_desc<Class, Derived>
+{
+	Widget widget;	///< UI widget used to display/edit this property.
+
+	/// Value getter type.
+	typedef property_getter<Class> value_type;
+	typedef cloneable_obj<value_type, true> value_storage_type;
+
+	value_storage_type default_value;	///< Default value getter.
+
+	value_storage_type min_value;		///< Min value getter.
+	value_storage_type value_step;		///< Value step getter.
+	value_storage_type max_value;		///< Max value getter.
+
+	/// Constructs an empty property destriction.
+	ui_property_desc()
+		: default_value(value_storage_type::null()),
+		min_value(value_storage_type::null()),
+		value_step(value_storage_type::null()),
+		max_value(value_storage_type::null()) { }
+	/// Constructs a property destriction from the given parameters.
+	ui_property_desc(const std::wstring &name, const std::type_info *type, size_t count, const Widget &widget)
+		: named_property_desc<Class, Derived>(name, type, count),
+		widget(widget),
+		default_value(value_storage_type::null()),
+		min_value(value_storage_type::null()),
+		value_step(value_storage_type::null()),
+		max_value(value_storage_type::null()) { }
+
+	/// Sets the default value getter.
+	Derived& set_default_value(const value_type &getter) { this->default_value = getter; return static_cast<Derived&>(*this); }
+	/// Sets the min value getter.
+	Derived& set_min_value(const value_type &getter) { this->min_value = getter; return static_cast<Derived&>(*this); }
+	/// Sets the value step getter.
+	Derived& set_value_step(const value_type &getter) { this->value_step = getter; return static_cast<Derived&>(*this); }
+	/// Sets the max value getter.
+	Derived& set_max_value(const value_type &getter) { this->max_value = getter; return static_cast<Derived&>(*this); }
+};
 
 } // namespace
 
@@ -60,6 +132,7 @@ using properties::property_getter;
 
 using properties::property_desc;
 using properties::named_property_desc;
+using properties::ui_property_desc;
 
 } // namespace
 

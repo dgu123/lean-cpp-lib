@@ -25,6 +25,8 @@ public:
 	typedef Description property_desc;
 	/// Iterator type.
 	typedef typename property_vector::const_iterator iterator;
+	/// Iterator type.
+	typedef typename property_vector::const_iterator const_iterator;
 
 	/// Adds a property created from the given property description.
 	LEAN_INLINE size_t add(const property_desc& propertyDesc)
@@ -45,12 +47,12 @@ public:
 	}
 
 	/// Gets a const iterator to the first property description.
-	LEAN_INLINE iterator begin() const
+	LEAN_INLINE const_iterator begin() const
 	{
 		return m_properties.begin();
 	}
 	/// Gets a const iterator one past the last property description.
-	LEAN_INLINE iterator end() const
+	LEAN_INLINE const_iterator end() const
 	{
 		return m_properties.end();
 	}
@@ -69,8 +71,8 @@ public:
 		{
 			const Description &desc = m_properties[id];
 			
-			if (desc.setter.getptr())
-				*desc.setter(object, typeid(Value), values, count);
+			if (desc.setter.valid())
+				(*desc.setter)(object, typeid(Value), values, count);
 		}
 	}
 
@@ -88,8 +90,8 @@ public:
 		{
 			const Description &desc = m_properties[id];
 
-			if (desc.getter.getptr())
-				*desc.getter(object, typeid(Value), values, count);
+			if (desc.getter.valid())
+				(*desc.getter)(object, typeid(Value), values, count);
 		}
 	}
 

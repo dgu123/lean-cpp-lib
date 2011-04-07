@@ -85,6 +85,9 @@ using pimpl::opaque_val;
 
 } // namespace
 
+/// @addtogroup PImplMacros PImpl macros
+/// @{
+
 /// Declares an opaque type of the given name, setting its internal opaque
 /// value type to the given opaque type.
 #define DECLARE_OPAQUE_TYPE(NAME, OPAQUE_TYPE)	\
@@ -107,5 +110,7 @@ using pimpl::opaque_val;
 	{																		\
 		typedef ACTUAL_TYPE type;											\
 	};
+
+/// @}
 
 #endif

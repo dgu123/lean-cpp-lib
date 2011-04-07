@@ -651,6 +651,9 @@ using properties::make_property_constant;
 
 } // namespace
 
+/// @addtogroup PropertyMacros Property macros
+/// @{
+
 /// Constructs a property getter that provides access to the given number of the given values.
 #define LEAN_MAKE_PROPERTY_CONSTANT(constants, count) lean::properties::make_property_constant(constants, count)
 
@@ -663,5 +666,7 @@ using properties::make_property_constant;
 #define LEAN_MAKE_PROPERTY_SETTER_UNION(setter, value_type) lean::properties::impl::deduce_accessor_binder<value_type>(setter).bind_setter<setter>()
 /// Constructs a property getter that provides access to object values using the given getter method, splitting or merging values of the given type to values of the getter parameter (return) type.
 #define LEAN_MAKE_PROPERTY_GETTER_UNION(getter, value_type) lean::properties::impl::deduce_accessor_binder<value_type>(getter).bind_getter<getter>()
+
+/// @}
 
 #endif

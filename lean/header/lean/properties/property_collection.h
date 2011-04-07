@@ -14,6 +14,7 @@ namespace lean
 namespace properties
 {
 
+/// Container class that may be used to store information on class / object properties.
 template <class Class, class Description>
 class property_collection
 {

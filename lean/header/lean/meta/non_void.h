@@ -18,6 +18,8 @@ struct non_void
 	typedef Type1 type;
 };
 
+#ifndef DOXYGEN_SKIP_THIS
+
 template <class Type2>
 struct non_void<void, Type2>
 {
@@ -26,6 +28,8 @@ struct non_void<void, Type2>
 
 template <>
 struct non_void<void, void>;
+
+#endif
 
 } // namespace
 

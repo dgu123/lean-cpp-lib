@@ -22,6 +22,8 @@ struct strip_reference
 	static const bool stripped = false;
 };
 
+#ifndef DOXYGEN_SKIP_THIS
+
 template <class Type>
 struct strip_reference<Type&>
 {
@@ -38,6 +40,8 @@ struct strip_reference<Type&&>
 };
 #endif
 
+#endif
+
 /// Strips a const modifier from the given type.
 template <class Type>
 struct strip_const
@@ -48,12 +52,16 @@ struct strip_const
 	static const bool stripped = false;
 };
 
+#ifndef DOXYGEN_SKIP_THIS
+
 template <class Type>
 struct strip_const<const Type>
 {
 	typedef Type type;
 	static const bool stripped = true;
 };
+
+#endif
 
 /// Strips a volatile modifier from the given type.
 template <class Type>
@@ -65,12 +73,16 @@ struct strip_volatile
 	static const bool stripped = false;
 };
 
+#ifndef DOXYGEN_SKIP_THIS
+
 template <class Type>
 struct strip_volatile<volatile Type>
 {
 	typedef Type type;
 	static const bool stripped = true;
 };
+
+#endif
 
 /// Strips a volatile modifier from the given type.
 template <class Type>

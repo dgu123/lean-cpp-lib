@@ -76,7 +76,7 @@ template <class Value, class Pointer>
 struct maybe_dereference_once<Value*, Pointer>
 	: public maybe_dereference_pointer<typename strip_modifiers<Value>::type, Value> { };
 
-}
+} // namespace
 
 /// Dereferences a given value type once, if the value type is a pointer type.
 template <class Type>

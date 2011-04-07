@@ -7,12 +7,26 @@
 
 #include "macros.h"
 
+/// @addtogroup CPP0X C++0x-related macros
+/// @{
+
+#ifdef DOXYGEN_READ_THIS
+	/// @ingroup GlobalSwitches
+	/// Define this to disable all C++0x features
+	#define LEAN0X_DISABLE
+#endif
+
 // Disable all C++0x features by default when working with older C++ standards
 #if (201100L > __cplusplus) || defined(LEAN0X_DISABLE)
+	/// Indicates that built-in nullptr is not available.
 	#define LEAN0X_NO_NULLPTR
+	/// Indicates that r-value references are not available.
 	#define LEAN0X_NO_RVALUE_REFERENCES
+	/// Indicates that built-in static_assert is not available.
 	#define LEAN0X_NO_STATIC_ASSERT
+	/// Indicates that built-in alignment modifiers are not available.
 	#define LEAN0X_NO_ALIGN
+	/// Indicates that default / delete method specifiers not available.
 	#define LEAN0X_NO_DELETE_METHODS
 #endif
 
@@ -35,6 +49,7 @@
 // Emulate static_assert
 #if defined(LEAN0X_NO_STATIC_ASSERT) && !defined(static_assert)
 
+#ifndef DOXYGEN_SKIP_THIS
 	namespace lean
 	{
 		struct static_assertion_error;
@@ -59,6 +74,7 @@
 			};
 		}
 	}
+#endif
 	
 	/// Static assertion triggering a compiler error on failure.
 	#define LEAN_STATIC_ASSERT(expr) typedef \
@@ -95,6 +111,13 @@
 // Automatically include utility for move semantics
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	#include <utility>
+#endif
+
+/// @}
+
+#ifdef DOXYGEN_READ_THIS
+	// Re-enable move semantics for documentation
+	#undef LEAN0X_DISABLE LEAN0X_NO_RVALUE_REFERENCES
 #endif
 
 #endif

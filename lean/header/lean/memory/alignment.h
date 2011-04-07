@@ -36,6 +36,8 @@ namespace memory
 		static const bool valid = false;
 	};
 
+#ifndef DOXYGEN_SKIP_THIS
+
 	template <> struct check_alignment<1> { static const bool valid = true; };
 	template <> struct check_alignment<2> { static const bool valid = true; };
 	template <> struct check_alignment<4> { static const bool valid = true; };
@@ -44,6 +46,8 @@ namespace memory
 	template <> struct check_alignment<32> { static const bool valid = true; };
 	template <> struct check_alignment<64> { static const bool valid = true; };
 	template <> struct check_alignment<128> { static const bool valid = true; };
+
+#endif
 
 	/// Aligns the given unsigned integer on the given alignment boundaries.
 	template <size_t Alignment, class Integer>
@@ -93,6 +97,8 @@ namespace memory
 			Alignment_is_required_to_be_power_of_two);
 	};
 
+#ifndef DOXYGEN_SKIP_THIS
+
 	template <> struct alignas(1) stack_aligned<1> { };
 	template <> struct alignas(2) stack_aligned<2> { };
 	template <> struct alignas(4) stack_aligned<4> { };
@@ -101,6 +107,8 @@ namespace memory
 	template <> struct alignas(32) stack_aligned<32> { };
 	template <> struct alignas(64) stack_aligned<64> { };
 	template <> struct alignas(128) stack_aligned<128> { };
+
+#endif
 
 } // namespace
 

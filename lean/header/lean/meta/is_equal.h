@@ -18,11 +18,15 @@ struct is_equal
 	static const bool value = false;
 };
 
+#ifndef DOXYGEN_SKIP_THIS
+
 template <class Type>
 struct is_equal<Type, Type>
 {
 	static const bool value = true;
 };
+
+#endif
 
 } // namespace
 

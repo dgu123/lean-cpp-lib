@@ -5,6 +5,12 @@
 #ifndef LEAN_PIMPL_PIMPL
 #define LEAN_PIMPL_PIMPL
 
+namespace lean
+{
+	/// Defines classes that allow for the decoupling of modules, especially when it comes to the hiding of private dependencies.
+	namespace pimpl { }
+}
+
 #include "safe_pimpl_base.h"
 #include "unsafe_pimpl_base.h"
 #include "pimpl_ptr.h"

@@ -55,9 +55,15 @@
     <Filter Include="Source Files\memory">
       <UniqueIdentifier>{ebee2943-0548-4022-927e-a3c3e69c68bd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Documentation">
+      <UniqueIdentifier>{8ea723b4-653e-4aad-9e14-e8585ec6c5e8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
+    <None Include="doc\mainpage.h">
+      <Filter>Documentation</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="header\lean\containers\accumulation_vector.h">

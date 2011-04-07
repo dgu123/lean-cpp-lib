@@ -71,6 +71,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="doc\mainpage.h" />
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>

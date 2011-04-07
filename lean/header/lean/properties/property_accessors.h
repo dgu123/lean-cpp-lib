@@ -655,17 +655,17 @@ using properties::make_property_constant;
 /// @{
 
 /// Constructs a property getter that provides access to the given number of the given values.
-#define LEAN_MAKE_PROPERTY_CONSTANT(constants, count) lean::properties::make_property_constant(constants, count)
+#define LEAN_MAKE_PROPERTY_CONSTANT(constants, count) ::lean::properties::make_property_constant(constants, count)
 
 /// Constructs a property setter that provides access to object values using the given setter method.
-#define LEAN_MAKE_PROPERTY_SETTER(setter) lean::properties::impl::deduce_accessor_binder(setter).bind_setter<setter>()
+#define LEAN_MAKE_PROPERTY_SETTER(setter) ::lean::properties::impl::deduce_accessor_binder(setter).bind_setter<setter>()
 /// Constructs a property setter that provides access to object values using the given getter method.
-#define LEAN_MAKE_PROPERTY_GETTER(getter) lean::properties::impl::deduce_accessor_binder(getter).bind_getter<getter>()
+#define LEAN_MAKE_PROPERTY_GETTER(getter) ::lean::properties::impl::deduce_accessor_binder(getter).bind_getter<getter>()
 
 /// Constructs a property setter that provides access to object values using the given setter method, splitting or merging values of the given type to values of the setter parameter type.
-#define LEAN_MAKE_PROPERTY_SETTER_UNION(setter, value_type) lean::properties::impl::deduce_accessor_binder<value_type>(setter).bind_setter<setter>()
+#define LEAN_MAKE_PROPERTY_SETTER_UNION(setter, value_type) ::lean::properties::impl::deduce_accessor_binder<value_type>(setter).bind_setter<setter>()
 /// Constructs a property getter that provides access to object values using the given getter method, splitting or merging values of the given type to values of the getter parameter (return) type.
-#define LEAN_MAKE_PROPERTY_GETTER_UNION(getter, value_type) lean::properties::impl::deduce_accessor_binder<value_type>(getter).bind_getter<getter>()
+#define LEAN_MAKE_PROPERTY_GETTER_UNION(getter, value_type) ::lean::properties::impl::deduce_accessor_binder<value_type>(getter).bind_getter<getter>()
 
 /// @}
 

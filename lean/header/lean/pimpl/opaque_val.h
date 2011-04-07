@@ -98,7 +98,7 @@ using pimpl::opaque_val;
 												\
 	struct NAME##_actual_type_wrapper;			\
 												\
-	typedef lean::opaque_val<					\
+	typedef ::lean::opaque_val<					\
 		NAME##_actual_type_wrapper,				\
 		NAME##_opaque_type_wrapper> NAME;
 

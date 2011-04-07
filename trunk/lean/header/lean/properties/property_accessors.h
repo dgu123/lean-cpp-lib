@@ -128,8 +128,16 @@ public:
 		if (type == typeid(value_type))
 		{
 			(object.*Setter)(
-					static_cast<const union_type*>( values ),
+					reinterpret_cast<const union_type*>( static_cast<const value_type*>(values) ),
 					static_cast<Count>( union_helper::union_count(count) )
+				);
+			return true;
+		}
+		else if (type == typeid(union_type))
+		{
+			(object.*Setter)(
+					static_cast<const union_type*>( values ),
+					static_cast<Count>( count )
 				);
 			return true;
 		}
@@ -162,8 +170,16 @@ public:
 		if (type == typeid(value_type))
 		{
 			(object.*Getter)(
-					static_cast<union_type*>( values ),
+					reinterpret_cast<union_type*>( static_cast<value_type*>(values) ),
 					static_cast<Count>( union_helper::union_count(count) )
+				);
+			return true;
+		}
+		else if (type == typeid(union_type))
+		{
+			(object.*Getter)(
+					static_cast<union_type*>( values ),
+					static_cast<Count>( count )
 				);
 			return true;
 		}
@@ -246,12 +262,12 @@ struct property_c_helper<Class, ValueArg, 1, Return>
 	static const int argument_count = 1;
 
 	template <class Value>
-	static void set(Class &object, setter_type setter, const Value *values)
+	static LEAN_INLINE void set(Class &object, setter_type setter, const Value *values)
 	{
 		(object.*setter)(*values);
 	}
 	template <class Value>
-	static void get(const Class &object, getter_type getter, Value *values)
+	static LEAN_INLINE void get(const Class &object, getter_type getter, Value *values)
 	{
 		(object.*getter)(*values);
 	}
@@ -265,12 +281,12 @@ struct property_c_helper<Class, ValueArg, 2, Return>
 	static const int argument_count = 2;
 
 	template <class Value>
-	static void set(Class &object, setter_type setter, const Value *values)
+	static LEAN_INLINE void set(Class &object, setter_type setter, const Value *values)
 	{
 		(object.*setter)(*values, values[1]);
 	}
 	template <class Value>
-	static void get(const Class &object, getter_type getter, Value *values)
+	static LEAN_INLINE void get(const Class &object, getter_type getter, Value *values)
 	{
 		(object.*getter)(*values, values[1]);
 	}
@@ -284,12 +300,12 @@ struct property_c_helper<Class, ValueArg, 3, Return>
 	static const int argument_count = 3;
 
 	template <class Value>
-	static void set(Class &object, setter_type setter, const Value *values)
+	static LEAN_INLINE void set(Class &object, setter_type setter, const Value *values)
 	{
 		(object.*setter)(*values, values[1], values[2]);
 	}
 	template <class Value>
-	static void get(const Class &object, getter_type getter, Value *values)
+	static LEAN_INLINE void get(const Class &object, getter_type getter, Value *values)
 	{
 		(object.*getter)(*values, values[1], values[2]);
 	}
@@ -303,12 +319,12 @@ struct property_c_helper<Class, ValueArg, 4, Return>
 	static const int argument_count = 4;
 
 	template <class Value>
-	static void set(Class &object, setter_type setter, const Value *values)
+	static LEAN_INLINE void set(Class &object, setter_type setter, const Value *values)
 	{
 		(object.*setter)(*values, values[1], values[2], values[3]);
 	}
 	template <class Value>
-	static void get(const Class &object, getter_type getter, Value *values)
+	static LEAN_INLINE void get(const Class &object, getter_type getter, Value *values)
 	{
 		(object.*getter)(*values, values[1], values[2], values[3]);
 	}
@@ -340,11 +356,25 @@ public:
 
 			if (unionCount >= setter_helper::argument_count)
 			{
-				setter_helper::set(object, Setter, static_cast<const union_type*>(values));
+				setter_helper::set(
+					object, Setter,
+					reinterpret_cast<const union_type*>( static_cast<const value_type*>(values) ) );
 				return true;
 			}
 			else
 				impl::property_error_policy::count_mismatch(setter_helper::argument_count, unionCount);
+		}
+		else if (type == typeid(union_type))
+		{
+			if (count >= setter_helper::argument_count)
+			{
+				setter_helper::set(
+					object, Setter,
+					static_cast<const union_type*>(values) );
+				return true;
+			}
+			else
+				impl::property_error_policy::count_mismatch(setter_helper::argument_count, count);
 		}
 		else
 			impl::property_error_policy::type_mismatch<value_type>(type);
@@ -380,11 +410,25 @@ public:
 
 			if (unionCount >= getter_helper::argument_count)
 			{
-				getter_helper::get(object, Getter, static_cast<union_type*>(values));
+				getter_helper::get(
+					object, Getter,
+					reinterpret_cast<union_type*>( static_cast<value_type*>(values) ) );
 				return true;
 			}
 			else
 				impl::property_error_policy::count_mismatch(getter_helper::argument_count, unionCount);
+		}
+		else if (type == typeid(union_type))
+		{
+			if (count >= getter_helper::argument_count)
+			{
+				getter_helper::get(
+					object, Getter,
+					static_cast<union_type*>(values) );
+				return true;
+			}
+			else
+				impl::property_error_policy::count_mismatch(getter_helper::argument_count, count);
 		}
 		else
 			impl::property_error_policy::type_mismatch<value_type>(type);
@@ -543,11 +587,21 @@ public:
 
 			if (unionCount >= 1)
 			{
-				*static_cast<union_type*>(values) = (object.*Getter)();
+				*reinterpret_cast<union_type*>( static_cast<value_type*>(values) ) = (object.*Getter)();
 				return true;
 			}
 			else
 				impl::property_error_policy::count_mismatch(1, unionCount);
+		}
+		else if (type == typeid(union_type))
+		{
+			if (count >= 1)
+			{
+				*static_cast<union_type*>(values) = (object.*Getter)();
+				return true;
+			}
+			else
+				impl::property_error_policy::count_mismatch(1, count);
 		}
 		else
 			impl::property_error_policy::type_mismatch<value_type>(type);

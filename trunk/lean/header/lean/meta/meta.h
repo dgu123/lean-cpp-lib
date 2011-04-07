@@ -5,6 +5,12 @@
 #ifndef LEAN_META_META
 #define LEAN_META_META
 
+namespace lean
+{
+	/// Defines helper templates that may be useful in a meta-programming context.
+	namespace meta { }
+}
+
 #include "strip.h"
 #include "conditional_type.h"
 #include "complete_type_or_base.h"

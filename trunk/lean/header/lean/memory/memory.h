@@ -5,6 +5,12 @@
 #ifndef LEAN_MEMORY
 #define LEAN_MEMORY
 
+namespace lean
+{
+	/// Provides a flexible heap concept, memory alignment facilities and a comprehensive way of handling out-of-memory situations.
+	namespace memory { }
+}
+
 #include "new_handler.h"
 
 #include "alignment.h"

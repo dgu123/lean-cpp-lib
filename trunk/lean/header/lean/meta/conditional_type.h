@@ -18,13 +18,15 @@ struct conditional_type
 	typedef FalseType type;
 };
 
-/// Redefines TrueType if condition fulfilled, FalseType otherwise.
+#ifndef DOXYGEN_SKIP_THIS
+
 template <class TrueType, class FalseType>
 struct conditional_type<true, TrueType, FalseType>
 {
-	/// TrueType if condition fulfilled, FalseType otherwise.
 	typedef TrueType type;
 };
+
+#endif
 
 } // namespace
 

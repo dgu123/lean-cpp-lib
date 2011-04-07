@@ -5,12 +5,47 @@
 #ifndef LEAN
 #define LEAN
 
+/// @addtogroup GlobalSwitches Global switches used for configuration
+/// @{
+
+#ifdef DOXYGEN_READ_THIS
+	/// Define this when building a linked library from the lean sources.
+	#define LEAN_BUILD_LIB
+	#undef LEAN_BUILD_LIB
+	
+	/// Define this to use lean as a header-only library.
+	#define LEAN_HEADER_ONLY
+	#undef LEAN_HEADER_ONLY
+	
+	/// Define this to minimize lean header dependencies (compiles more source code into the link libray).
+	#define LEAN_MIN_DEPENDENCY
+	#undef LEAN_MIN_DEPENDENCY
+#endif
+
+/// @}
+
+/// @addtogroup GlobalMacros Global macros
+/// @{
+
+#ifdef DOXYGEN_READ_THIS
+
+	/// Defined in debug builds.
+	#define LEAN_DEBUG_BUILD
+	#undef LEAN_DEBUG_BUILD
+	/// Defined in release builds.
+	#define LEAN_RELEASE_BUILD
+	#undef LEAN_RELEASE_BUILD
+
+#else
+
 #ifdef _DEBUG
-	/// Defined in debug builds
+	/// Defined in debug builds.
 	#define LEAN_DEBUG_BUILD
 #else
-	/// Defined in release builds
+	/// Defined in release builds.
 	#define LEAN_RELEASE_BUILD
+#endif
+
 #endif
 
 #ifdef LEAN_DEBUG_BUILD
@@ -75,6 +110,13 @@
 /// Trys to avoid inlining in header-only / non-min-dependency library as well as at link time.
 #define LEAN_NEVER_INLINE LEAN_INLINE_SELECT(LEAN_NOINLINE, LEAN_NOLTINLINE)
 
+/// @}
+
+/// @addtogroup Libray Lean cpp library
+/// For a better overview, see <a href="namespaces.html">namespaces</a>.
+/// @{
+
+/// Main namespace of the lean library.
 namespace lean
 {
 
@@ -92,14 +134,14 @@ LEAN_INLINE T1 max(T1 a, T2 b)
 	return (a < b) ? b : a;
 }
 
-// Returns the address of the given reference.
+/// Returns the address of the given reference.
 template<class Type>
 LEAN_INLINE Type* addressof(Type& value)
 {
 	return reinterpret_cast<Type*>(&reinterpret_cast<char&>(value));
 }
 
-// Returns the address of the given reference.
+/// Returns the address of the given reference.
 template<class Type>
 LEAN_INLINE const Type* addressof(const Type& value)
 {
@@ -107,6 +149,15 @@ LEAN_INLINE const Type* addressof(const Type& value)
 }
 
 } // namespace
+
+/// @}
+
+#ifdef DOXYGEN_READ_THIS
+	/// @ingroup GlobalSwitches
+	/// Define this to disable global min/max templates.
+	#define LEAN_NO_MINMAX
+	#undef LEAN_NO_MINMAX
+#endif
 
 #ifndef LEAN_NO_MINMAX	
 	using lean::min;

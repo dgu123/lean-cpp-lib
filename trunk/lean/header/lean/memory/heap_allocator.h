@@ -122,6 +122,8 @@ public:
 	}
 };
 
+#ifndef DOXYGEN_SKIP_THIS
+
 /// STL allocator heap adapter.
 template<class Heap, size_t Alignment = 1>
 class heap_allocator<void, Heap, Alignment>
@@ -160,6 +162,8 @@ public:
 	template<class Other>
 	LEAN_INLINE heap_allocator& operator=(const heap_allocator<Other, Heap, Alignment> &right) { return *this; }
 };
+
+#endif
 
 /// Checks the given two allocators for equivalence.
 template<class Element, class Heap, size_t Alignment, class Other>

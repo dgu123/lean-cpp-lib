@@ -5,6 +5,12 @@
 #ifndef LEAN_CONTAINERS_CONTAINERS
 #define LEAN_CONTAINERS_CONTAINERS
 
+namespace lean
+{
+	/// Provides optimized container classes and wrappers.
+	namespace containers { }
+}
+
 #include "simple_vector.h"
 
 #include "default_reallocation_policy.h"

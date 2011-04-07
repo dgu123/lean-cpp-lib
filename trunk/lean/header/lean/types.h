@@ -10,6 +10,7 @@
 namespace lean
 {
 
+/// Defines fixed-width and other standard types.
 namespace types
 {
 
@@ -37,6 +38,8 @@ struct int_type
 	typedef void type;
 };
 
+#ifndef DOXYGEN_SKIP_THIS
+
 // Defaults that should work with most compilers
 template<> struct int_type<sign_class::sign, sizeof(char)> { typedef char type; };
 template<> struct int_type<sign_class::sign, sizeof(short)> { typedef short type; };
@@ -47,6 +50,8 @@ template<> struct int_type<sign_class::no_sign, sizeof(unsigned char)> { typedef
 template<> struct int_type<sign_class::no_sign, sizeof(unsigned short)> { typedef unsigned short type; };
 template<> struct int_type<sign_class::no_sign, sizeof(unsigned int)> { typedef unsigned int type; };
 template<> struct int_type<sign_class::no_sign, sizeof(unsigned long long)> { typedef unsigned long long type; };
+
+#endif
 
 // Count bytes rather than bits (number of bits per char undefined)
 
@@ -81,9 +86,13 @@ struct float_type
 	typedef void type;
 };
 
+#ifndef DOXYGEN_SKIP_THIS
+
 // Defaults that should work with most compilers
 template<> struct float_type<sizeof(float)> { typedef float type; };
 template<> struct float_type<sizeof(double)> { typedef double type; };
+
+#endif
 
 /// 4 byte float.
 typedef float_type<4>::type float4;
@@ -105,9 +114,13 @@ struct char_type
 	typedef typename int_type<sign_class::sign, Size>::type type;
 };
 
+#ifndef DOXYGEN_SKIP_THIS
+
 // Defaults that should work with most compilers
 template<> struct char_type<sizeof(char)> { typedef char type; };
 template<> struct char_type<sizeof(wchar_t)> { typedef wchar_t type; };
+
+#endif
 
 /// Character type.
 typedef char_type<1>::type char1;

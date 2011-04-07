@@ -623,7 +623,7 @@ struct property_r_accessor_binder
 	template <UnionValueReturn (Class::*Getter)() const>
 	LEAN_INLINE property_r_getter<Class, UnionValueReturn, Getter, ValueReturn> bind_getter()
 	{
-		return property_c_getter<Class, UnionValueReturn, Getter, ValueReturn>();
+		return property_r_getter<Class, UnionValueReturn, Getter, ValueReturn>();
 	};
 };
 

@@ -87,7 +87,7 @@ public:
 	/// Replaces the stored cloneable value with a clone of the given cloneable value.
 	cloneable_obj& operator =(const value_type &cloneable)
 	{
-		CloneableType *prevCloneable = m_cloneable;
+		Cloneable *prevCloneable = m_cloneable;
 		m_cloneable = acquire(cloneable);
 		release(prevCloneable);
 		
@@ -98,7 +98,7 @@ public:
 	{
 		if (m_cloneable != right.m_cloneable)
 		{
-			CloneableType *prevCloneable = m_cloneable;
+			Cloneable *prevCloneable = m_cloneable;
 			m_cloneable = acquire(right.m_cloneable);
 			release(prevCloneable);
 		}
@@ -111,7 +111,7 @@ public:
 	{
 		if (m_cloneable != right.m_cloneable)
 		{
-			CloneableType *prevCloneable = m_cloneable;
+			Cloneable *prevCloneable = m_cloneable;
 			
 			m_cloneable = std::move(right.m_cloneable);
 			// Warning: this "breaks" the other object

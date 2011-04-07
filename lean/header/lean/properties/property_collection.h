@@ -7,6 +7,7 @@
 
 #include <typeinfo>
 #include <vector>
+#include "../tags/noncopyable.h"
 
 namespace lean
 {
@@ -27,6 +28,58 @@ public:
 	typedef typename property_vector::const_iterator iterator;
 	/// Iterator type.
 	typedef typename property_vector::const_iterator const_iterator;
+
+	/// Constructs an empty property collection.
+	property_collection() { }
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Moves the contents of the given collection to this collection.
+	property_collection(property_collection &&right)
+		: m_properties( std::move(right.m_properties) ) { }
+#endif
+
+	/// Allows for fully inplace construction of whole property collections.
+	template <class Collection = property_collection>
+	class inplace_collection
+	{
+	friend class property_collection;
+
+	protected:
+		/// Temporary collection.
+		Collection m_collection;
+
+	public:
+		/// Adds a property created from the given property description.
+		LEAN_INLINE inplace_collection& operator <<(const property_desc& propertyDesc)
+		{
+			m_collection.add(propertyDesc);
+			return *this;
+		}
+	};
+	/// Moves the contents of the given collection to this collection.
+	property_collection(inplace_collection<> &right)
+	{
+		swap(m_properties, right.m_collection.m_properties);
+	}
+	/// Constructs a new temporary collection that may be filled using operator <<.
+	static LEAN_INLINE inplace_collection<> construct_inplace()
+	{
+		return inplace_collection<>();
+	}
+
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Moves the contents of the given collection to this collection.
+	LEAN_INLINE property_collection& operator =(property_collection &&right)
+	{
+		m_properties = std::move(right.m_properties);
+		return *this;
+	}
+#endif
+	/// Moves the contents of the given collection to this collection.
+	LEAN_INLINE property_collection& operator =(inplace_collection<> &right)
+	{
+		swap(m_properties, right.m_collection.m_properties);
+		return *this;
+	}
 
 	/// Adds a property created from the given property description.
 	LEAN_INLINE size_t add(const property_desc& propertyDesc)

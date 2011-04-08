@@ -56,11 +56,11 @@ public:
 
 	/// Gets whether this character range is currently empty.
 	LEAN_INLINE bool empty() const { return char_traits::empty(m_begin); }
-	/// Gets the length of this character range, in characters (same as size()).
+	/// Gets the length of this character range, in characters (same as size()). O(n).
 	LEAN_INLINE size_type length() const { return char_traits::length(m_begin); }
-	/// Gets the length of this character range, in characters (same as length()).
+	/// Gets the length of this character range, in characters (same as length()). O(n).
 	LEAN_INLINE size_type size() const { return length(); }
-	/// Gets the length of this character range, in code points (might differ from length() and size()).
+	/// Gets the length of this character range, in code points (might differ from length() and size()). O(n).
 	LEAN_INLINE size_type count() const { return char_traits::count(m_begin); }
 	
 	/// Gets an element by position, access violation on failure.
@@ -73,7 +73,7 @@ public:
 
 	/// Returns a constant iterator to the first element contained by this character range.
 	LEAN_INLINE const_iterator begin(void) const { return m_begin; }
-	/// Returns a constant iterator  the last element contained by this character range.
+	/// Returns a constant iterator  the last element contained by this character range. O(n).
 	LEAN_INLINE const_iterator end() const { return m_begin + length(); }
 
 	/// Swaps the contents of this range with the contents of the given range.

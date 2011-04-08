@@ -14,7 +14,9 @@ namespace lean
 namespace memory
 {
 	/// Aligns derived classes according to the given alignment template argument.
-	/// @see lean::memory::heap_bound
+	/** @remarks MSC adds padding to make the size of aligned structures a multiple of their alignment, make sure to specify
+	  * this base class first to allow for empty base class optimization.
+	  * @see lean::memory::heap_bound */
 	template <size_t Alignment, class Heap = default_heap>
 	class aligned : public stack_aligned<Alignment>
 	{

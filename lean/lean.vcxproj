@@ -41,7 +41,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>LEAN_BUILD_LIB;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>lean_internal\StdAfx.h</PrecompiledHeaderFile>
@@ -54,7 +54,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -132,6 +132,9 @@
     <ClInclude Include="header\lean\smart\smart.h" />
     <ClInclude Include="header\lean\smart\cloneable.h" />
     <ClInclude Include="header\lean\smart\weak_resource_ptr.h" />
+    <ClInclude Include="header\lean\strings\char_range.h" />
+    <ClInclude Include="header\lean\strings\char_traits.h" />
+    <ClInclude Include="header\lean\strings\strings.h" />
     <ClInclude Include="header\lean\tags\nonconstructible.h" />
     <ClInclude Include="header\lean\tags\noncopyable.h" />
     <ClInclude Include="header\lean\tags\tags.h" />
@@ -139,6 +142,10 @@
     <ClInclude Include="header\lean\time\time.h" />
     <ClInclude Include="header\lean\time\timer.h" />
     <ClInclude Include="header\lean\types.h" />
+    <ClInclude Include="header\lean\utf8.h" />
+    <ClInclude Include="header\lean\utf8\checked.h" />
+    <ClInclude Include="header\lean\utf8\core.h" />
+    <ClInclude Include="header\lean\utf8\unchecked.h" />
     <ClInclude Include="header\lean_internal\stdafx.h" />
     <ClInclude Include="header\lean_internal\targetver.h" />
     <ClInclude Include="header\lean\pimpl\pimpl_ptr.h" />

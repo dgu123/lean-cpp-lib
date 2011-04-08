@@ -129,6 +129,13 @@ typedef char_type<2>::type char2;
 /// Character type.
 typedef char_type<4>::type char4;
 
+/// Character type.
+typedef char1 utf8_t;
+/// Character type.
+typedef char2 utf16_t;
+/// Character type.
+typedef char4 utf32_t;
+
 }
 
 namespace sign_class = types::sign_class;
@@ -156,6 +163,10 @@ using types::uintptr_t;
 using types::char1;
 using types::char2;
 using types::char4;
+
+using types::utf8_t;
+using types::utf16_t;
+using types::utf32_t;
 
 }
 

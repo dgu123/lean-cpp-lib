@@ -13,6 +13,8 @@ namespace lean
 	namespace strings { }
 }
 
-#include "char_range.h"
+#include "char_traits.h"
+#include "utf_traits.h"
+#include "nullterminated.h"
 
 #endif

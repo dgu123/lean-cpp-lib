@@ -8,6 +8,7 @@
 #include "macros.h"
 
 /// @addtogroup CPP0X C++0x-related macros
+/// @see GlobalMacros
 /// @{
 
 #ifdef DOXYGEN_READ_THIS

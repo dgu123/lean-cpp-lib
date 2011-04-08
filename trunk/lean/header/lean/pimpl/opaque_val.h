@@ -86,6 +86,7 @@ using pimpl::opaque_val;
 } // namespace
 
 /// @addtogroup PImplMacros PImpl macros
+/// @see lean::pimpl
 /// @{
 
 /// Declares an opaque type of the given name, setting its internal opaque

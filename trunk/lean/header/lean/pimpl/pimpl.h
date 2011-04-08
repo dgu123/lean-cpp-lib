@@ -8,6 +8,7 @@
 namespace lean
 {
 	/// Defines classes that allow for the decoupling of modules, especially when it comes to the hiding of private dependencies.
+	/// @see PImplMacros
 	namespace pimpl { }
 }
 

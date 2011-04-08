@@ -652,6 +652,7 @@ using properties::make_property_constant;
 } // namespace
 
 /// @addtogroup PropertyMacros Property macros
+/// @see lean::properties
 /// @{
 
 /// Constructs a property getter that provides access to the given number of the given values.

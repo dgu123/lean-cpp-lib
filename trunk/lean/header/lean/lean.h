@@ -6,6 +6,7 @@
 #define LEAN
 
 /// @addtogroup GlobalSwitches Global switches used for configuration
+/// @see GlobalMacros
 /// @{
 
 #ifdef DOXYGEN_READ_THIS
@@ -25,6 +26,8 @@
 /// @}
 
 /// @addtogroup GlobalMacros Global macros
+/// @see GlobalSwitches
+/// @see CPP0X
 /// @{
 
 #ifdef DOXYGEN_READ_THIS
@@ -113,7 +116,8 @@
 /// @}
 
 /// @addtogroup Libray Lean cpp library
-/// For a better overview, see <a href="namespaces.html">namespaces</a>.
+/// For a better overview, see <a href="namespaces.html">Namespaces</a>.
+/// @see <a href="namespaces.html">Namespaces</a>
 /// @{
 
 /// Main namespace of the lean library.

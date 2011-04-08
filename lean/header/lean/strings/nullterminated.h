@@ -7,6 +7,7 @@
 
 #include "../lean.h"
 #include "../meta/strip.h"
+#include "char_traits.h"
 
 namespace lean
 {

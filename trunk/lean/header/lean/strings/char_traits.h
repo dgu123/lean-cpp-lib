@@ -7,19 +7,21 @@
 
 #include "../lean.h"
 #include <cstring>
+#include <cwchar>
 
 namespace lean
 {
 namespace strings
 {
 
-/// Provides common functionality for the given character type. The default implementation treats characters as arbitrary POD types.
+/// Provides common null-terminated character range functionality for the given character type.
+/// The default implementation treats characters as arbitrary POD types.
 template <class Char>
 struct char_traits
 {
 	/// Character type.
 	typedef Char char_type;
-	/// Corresponding integer type.
+	/// Unsigned integer type of range equal to or greater than char_type's.
 	typedef typename int_type<sign_class::no_sign, sizeof(char_type)>::type int_type;
 	/// Size type.
 	typedef size_t size_type;
@@ -35,7 +37,6 @@ struct char_traits
 	{
 		return null(*begin);
 	}
-
 	/// Gets the length of the given null-terminated range of characters.
 	static size_type length(const char_type *begin)
 	{
@@ -46,63 +47,104 @@ struct char_traits
 
 		return length;
 	}
-
 	/// Gets the number of code points in the given null-terminated range of characters.
 	static LEAN_INLINE size_type count(const char_type *begin)
 	{
 		return length(begin);
 	}
 
-	/// Converts the given integer into a character.
-	static LEAN_INLINE char_type to_char_type(const int_type &integer)
+	/// Compares the characters in the given null-terminated ranges, returning true if equal.
+	static bool equal(const char_type *begin1, const char_type *begin2)
 	{
-		return static_cast<char_type>(integer);
+		while (*begin1 == *(begin2++))
+			if (null(*(begin1++)))
+				return true;
+
+		return false;
 	}
-	/// Converts the given character into an integer.
-	static LEAN_INLINE int_type to_int_type(const char_type &character)
+	/// Compares the characters in the given null-terminated ranges, returning true if the first is less than the second.
+	static bool less(const char_type *begin1, const char_type *begin2)
 	{
-		return static_cast<int_type>(character);
+		while (*begin1 == *begin2)
+		{
+			if (null(*(begin1++)))
+				return false;
+
+			++begin2;
+		}
+
+		// Compare unsigned, correctly handles null (end of string) as smallest number
+		return static_cast<int_type>(*begin1) < static_cast<int_type>(*begin2);
+	}
+};
+
+template <>
+struct char_traits<char>
+{
+	typedef char char_type;
+	typedef int_type<sign_class::no_sign, sizeof(char_type)>::type int_type;
+	typedef size_t size_type;
+	
+	static LEAN_INLINE bool null(const char_type &src)
+	{
+		return (src == static_cast<char_type>(0));
+	}
+	
+	static LEAN_INLINE bool empty(const char_type *begin)
+	{
+		return null(*begin);
+	}
+	static LEAN_INLINE size_type length(const char_type *begin)
+	{
+		return ::strlen(begin);
+	}
+	static LEAN_INLINE size_type count(const char_type *begin)
+	{
+		return length(begin);
 	}
 
-	/// Compares the given number of characters.
-	static LEAN_INLINE int *compare(const char_type *dest, const char_type *source, size_t count)
+	static bool equal(const char_type *begin1, const char_type *begin2)
 	{
-		const char_type *destEnd = dest + count;
+		return (::strcmp(begin1, begin2) == 0);
+	}
+	static bool less(const char_type *begin1, const char_type *begin2)
+	{
+		return (::strcmp(begin1, begin2) < 0);
+	}
+};
 
-		while (dest != destEnd)
-			if (*(dest++) != *(source++))
-				// Handle null (end of string) using unsigned comparison
-				return (static_cast<int_type>(*dest) < static_cast<int_type>(*source)) ? -1 : 1;
-			else if (null(*dest))
-				break;
-		
-		return 0;
+template <>
+struct char_traits<wchar_t>
+{
+	typedef wchar_t char_type;
+	typedef int_type<sign_class::no_sign, sizeof(char_type)>::type int_type;
+	typedef size_t size_type;
+	
+	static LEAN_INLINE bool null(const char_type &src)
+	{
+		return (src == static_cast<char_type>(0));
+	}
+	
+	static LEAN_INLINE bool empty(const char_type *begin)
+	{
+		return null(*begin);
+	}
+	static LEAN_INLINE size_type length(const char_type *begin)
+	{
+		return ::wcslen(begin);
+	}
+	static LEAN_INLINE size_type count(const char_type *begin)
+	{
+		return length(begin);
 	}
 
-	/// Copies the given number of source characters to the given destination characters.
-	static LEAN_INLINE char_type *copy(char_type *dest, const char_type *source, size_t count)
+	static bool equal(const char_type *begin1, const char_type *begin2)
 	{
-		::memcpy(dest, source, count * sizeof(char_type));
+		return (::wcscmp(begin1, begin2) == 0);
 	}
-
-	/// Moves the given number of source characters to the given destination characters (may be overlapping ranges).
-	static LEAN_INLINE char_type *move(char_type *dest, const char_type *source, size_t count)
+	static bool less(const char_type *begin1, const char_type *begin2)
 	{
-		::memmove(dest, source, count * sizeof(char_type));
-	}
-
-	/// Assigns the given source character to the given destination character.
-	static LEAN_INLINE void assign(char_type &dest, const char_type &src)
-	{
-		dest = src;
-	}
-	/// Assigns the given number of source characters to the given destination characters.
-	static LEAN_INLINE void assign(char_type *dest, size_t count, char_type src)
-	{
-		char_type *destEnd = dest + count;
-
-		while (dest != destEnd)
-			*(dest++) = src;
+		return (::wcscmp(begin1, begin2) < 0);
 	}
 };
 

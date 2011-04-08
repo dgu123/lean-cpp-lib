@@ -61,6 +61,12 @@
     <Filter Include="Source Files\logging">
       <UniqueIdentifier>{eb28dd72-a392-46f9-9faf-3d1af0d5b5cf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\utf8">
+      <UniqueIdentifier>{bcce21f4-1a7c-4a5f-9ccf-206a67229440}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\strings">
+      <UniqueIdentifier>{820e9663-92b9-44f0-af14-c844fc566f54}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -272,6 +278,27 @@
     </ClInclude>
     <ClInclude Include="header\lean\logging\exceptions.h">
       <Filter>Header Files\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\utf8.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\utf8\checked.h">
+      <Filter>Header Files\utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\utf8\core.h">
+      <Filter>Header Files\utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\utf8\unchecked.h">
+      <Filter>Header Files\utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\strings\strings.h">
+      <Filter>Header Files\strings</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\strings\char_range.h">
+      <Filter>Header Files\strings</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\strings\char_traits.h">
+      <Filter>Header Files\strings</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

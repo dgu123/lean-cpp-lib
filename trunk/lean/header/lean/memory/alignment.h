@@ -88,6 +88,8 @@ namespace memory
 	}
 
 	/// Aligns derived classes according to the given alignment template argument when instances are created on the stack.
+	/** @remarks MSC adds padding to make the size of aligned structures a multiple of their alignment, make sure to specify
+	  * this base class first to allow for empty base class optimization. */
 	template <size_t Alignment>
 	struct stack_aligned
 	{
@@ -99,6 +101,12 @@ namespace memory
 
 #ifndef DOXYGEN_SKIP_THIS
 
+#ifdef _MSC_VER
+	// MSC adds padding to make the size of aligned structures a multiple of their alignment...
+	#pragma warning(push)
+	#pragma warning(disable : 4324)
+#endif
+
 	template <> struct alignas(1) stack_aligned<1> { };
 	template <> struct alignas(2) stack_aligned<2> { };
 	template <> struct alignas(4) stack_aligned<4> { };
@@ -107,6 +115,10 @@ namespace memory
 	template <> struct alignas(32) stack_aligned<32> { };
 	template <> struct alignas(64) stack_aligned<64> { };
 	template <> struct alignas(128) stack_aligned<128> { };
+
+#ifdef _MSC_VER
+	#pragma warning(pop)
+#endif
 
 #endif
 

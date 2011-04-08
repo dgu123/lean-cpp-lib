@@ -20,8 +20,8 @@ struct utf_traits
 {
 	LEAN_STATIC_ASSERT_MSG_ALT(
 		!(is_equal<Char, Char>::value), // = false, dependent
-		"No UTF traits available for the given character type (only UTF-8 implemented).",
-		NO_UTF_traits_available_for_the_given_character_type__only_UTF8_implemented);
+		"No UTF traits available for the given character type (only UTF-8 implemented, might use char_traits instead).",
+		NO_UTF_traits_available_for_the_given_character_type__only_UTF8_implemented__might_use_char_traits_instead);
 };
 
 /// Provides common null-terminated character range functionality for the given utf character type.
@@ -51,11 +51,21 @@ struct utf_traits<utf8_t>
 	{
 		return ::strlen(begin);
 	}
+	/// Gets the length of the given null-terminated range of characters.
+	static size_type length(const char_type *begin, const char_type *end)
+	{
+		return end - begin;
+	}
 	/// Gets the number of code points in the given null-terminated range of characters.
 	static LEAN_INLINE size_type count(const char_type *begin)
 	{
-		// MONITOR: Looping twice seems a bit suboptimal, wait and see...
-		return utf8::unchecked::distance(begin, begin + length(begin));
+		// MONITOR: Looping twice seems a bit suboptimal...
+		return count(begin, begin + length(begin));
+	}
+	/// Gets the number of code points in the given null-terminated range of characters.
+	static LEAN_INLINE size_type count(const char_type *begin, const char_type *end)
+	{
+		return utf8::unchecked::distance(begin, end);
 	}
 
 	/// Compares the characters in the given null-terminated ranges, returning true if equal.

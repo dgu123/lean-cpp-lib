@@ -18,6 +18,7 @@ namespace logging
 } // namespace
 
 /// @addtogroup LoggingMacros Logging macros
+/// @see lean::logging
 /// @{
 
 /// Logs the given message, prepending the caller's file and line.

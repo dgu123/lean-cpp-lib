@@ -32,6 +32,7 @@ LEAN_ALWAYS_LINK void throw_bad_alloc(const char *source, size_t size);
 } // namespace
 
 /// @addtogroup ExceptionMacros Exception macros
+/// @see lean::logging
 /// @{
 
 /// Throws a runtime_error exception.

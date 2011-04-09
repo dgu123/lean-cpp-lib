@@ -2,8 +2,8 @@
 /* lean Meta                    (c) Tobias Zirr 2011 */
 /*****************************************************/
 
-#ifndef LEAN_META_IS_EQUAL
-#define LEAN_META_IS_EQUAL
+#ifndef LEAN_META_TYPE_TRAITS
+#define LEAN_META_TYPE_TRAITS
 
 namespace lean
 {

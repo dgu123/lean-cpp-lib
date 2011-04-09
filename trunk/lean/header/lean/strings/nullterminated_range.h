@@ -7,7 +7,6 @@
 
 #include "../lean.h"
 #include "../meta/strip.h"
-#include "../meta/dependent_false.h"
 #include "../meta/enable_if.h"
 #include "char_traits.h"
 #include "nullterminated.h"
@@ -102,7 +101,7 @@ public:
 	template <class Compatible>
 	LEAN_INLINE operator Compatible()
 	{
-		typedef assert_nullterminated_compatible<Compatible>::type assert_compatible;
+		typedef typename assert_nullterminated_compatible<Compatible, value_type, traits_type>::type assert_compatible;
 		return nullterminated_compatible<Compatible, value_type, traits_type>::to(m_begin, m_end);
 	}
 };

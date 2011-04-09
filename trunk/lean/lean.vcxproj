@@ -107,14 +107,12 @@
     <ClInclude Include="header\lean\memory\heap_bound.h" />
     <ClInclude Include="header\lean\memory\new_handler.h" />
     <ClInclude Include="header\lean\memory\win_heap.h" />
-    <ClInclude Include="header\lean\meta\complete_type_or_base.h" />
-    <ClInclude Include="header\lean\meta\conditional_type.h" />
+    <ClInclude Include="header\lean\meta\conditional.h" />
     <ClInclude Include="header\lean\meta\dependent_false.h" />
     <ClInclude Include="header\lean\meta\dereference.h" />
     <ClInclude Include="header\lean\meta\enable_if.h" />
-    <ClInclude Include="header\lean\meta\is_equal.h" />
+    <ClInclude Include="header\lean\meta\type_traits.h" />
     <ClInclude Include="header\lean\meta\meta.h" />
-    <ClInclude Include="header\lean\meta\non_void.h" />
     <ClInclude Include="header\lean\meta\strip.h" />
     <ClInclude Include="header\lean\pimpl\pimpl.h" />
     <ClInclude Include="header\lean\pimpl\opaque_val.h" />

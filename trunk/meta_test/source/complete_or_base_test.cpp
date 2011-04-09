@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include <lean/meta/complete_type_or_base.h>
+#include <lean/meta/conditional.h>
 
 BOOST_AUTO_TEST_SUITE( complete_or_base )
 

@@ -123,12 +123,6 @@
     <ClInclude Include="header\lean\meta\meta.h">
       <Filter>Header Files\meta</Filter>
     </ClInclude>
-    <ClInclude Include="header\lean\meta\conditional_type.h">
-      <Filter>Header Files\meta</Filter>
-    </ClInclude>
-    <ClInclude Include="header\lean\meta\complete_type_or_base.h">
-      <Filter>Header Files\meta</Filter>
-    </ClInclude>
     <ClInclude Include="header\lean\tags\tags.h">
       <Filter>Header Files\tags</Filter>
     </ClInclude>
@@ -273,12 +267,6 @@
     <ClInclude Include="header\lean\memory\new_handler.h">
       <Filter>Header Files\memory</Filter>
     </ClInclude>
-    <ClInclude Include="header\lean\meta\is_equal.h">
-      <Filter>Header Files\meta</Filter>
-    </ClInclude>
-    <ClInclude Include="header\lean\meta\non_void.h">
-      <Filter>Header Files\meta</Filter>
-    </ClInclude>
     <ClInclude Include="header\lean\logging\exceptions.h">
       <Filter>Header Files\logging</Filter>
     </ClInclude>
@@ -319,6 +307,12 @@
       <Filter>Header Files\strings</Filter>
     </ClInclude>
     <ClInclude Include="header\lean\meta\enable_if.h">
+      <Filter>Header Files\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\meta\conditional.h">
+      <Filter>Header Files\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\meta\type_traits.h">
       <Filter>Header Files\meta</Filter>
     </ClInclude>
   </ItemGroup>

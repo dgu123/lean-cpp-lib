@@ -7,8 +7,7 @@
 
 #include "../lean.h"
 #include "../meta/strip.h"
-#include "../meta/dependent_false.h"
-#include "../meta/is_equal.h"
+#include "../meta/type_traits.h"
 #include "../meta/enable_if.h"
 #include "char_traits.h"
 
@@ -23,6 +22,7 @@ struct nullterminated_incompatible { };
 template <class Compatible, class Char, class Traits>
 struct nullterminated_compatible : public nullterminated_incompatible
 {
+#ifdef DOXYGEN_READ_THIS
 	/// Converts an object of your type into a nullterminated character range,
 	/// returning the beginning of the range.
 	static const Char* from(const Compatible &from);
@@ -34,6 +34,7 @@ struct nullterminated_compatible : public nullterminated_incompatible
 	static Compatible to(const Char *begin);
 	/// Converts a nullterminated character range into an object of your type.
 	static Compatible to(const Char *begin, const Char *end);
+#endif
 };
 
 /// Checks if the given type is nullterminated-character-range-compatible.
@@ -147,7 +148,7 @@ public:
 	template <class Compatible>
 	LEAN_INLINE operator Compatible()
 	{
-		typedef assert_nullterminated_compatible<Compatible>::type assert_compatible;
+		typedef typename assert_nullterminated_compatible<Compatible, value_type, traits_type>::type assert_compatible;
 		return nullterminated_compatible<Compatible, value_type, traits_type>::to(m_begin);
 	}
 };

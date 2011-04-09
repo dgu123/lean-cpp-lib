@@ -114,8 +114,8 @@ struct nullterminated_compatible< std::basic_string<Char, StringTraits, StringAl
 
 	static LEAN_INLINE const Char* from(const compatible_type &from) { return from.c_str(); }
 	static LEAN_INLINE const Char* from(const compatible_type &from, const Char *begin) { return begin + from.size(); }
-	static LEAN_INLINE compatible_type to(const Char *begin) { return compatible_type(begin); }
-	static LEAN_INLINE compatible_type to(const Char *begin, const Char *end) { return compatible_type(begin, end); }
+	static compatible_type to(const Char *begin) { return compatible_type(begin); }
+	static compatible_type to(const Char *begin, const Char *end) { return compatible_type(begin, end); }
 };
 
 } // namespace

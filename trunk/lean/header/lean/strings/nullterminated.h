@@ -146,7 +146,7 @@ public:
 
 	/// Constructs a compatible object from this null-terminated character range.
 	template <class Compatible>
-	LEAN_INLINE operator Compatible()
+	operator Compatible()
 	{
 		typedef typename assert_nullterminated_compatible<Compatible, value_type, traits_type>::type assert_compatible;
 		return nullterminated_compatible<Compatible, value_type, traits_type>::to(m_begin);

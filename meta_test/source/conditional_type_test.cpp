@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include <lean/meta/conditional_type.h>
+#include <lean/meta/conditional.h>
 
 BOOST_AUTO_TEST_SUITE( conditional_type )
 

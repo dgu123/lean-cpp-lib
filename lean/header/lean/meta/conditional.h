@@ -2,15 +2,54 @@
 /* lean Meta                    (c) Tobias Zirr 2011 */
 /*****************************************************/
 
-#ifndef LEAN_META_COMPLETE_TYPE_OR_BASE
-#define LEAN_META_COMPLETE_TYPE_OR_BASE
-
-#include "conditional_type.h"
+#ifndef LEAN_META_CONDITIONAL
+#define LEAN_META_CONDITIONAL
 
 namespace lean
 {
 namespace meta
 {
+
+/// Redefines TrueType if condition fulfilled, FalseType otherwise.
+template <bool Condition, class TrueType, class FalseType>
+struct conditional_type
+{
+	/// TrueType if condition fulfilled, FalseType otherwise.
+	typedef FalseType type;
+};
+
+#ifndef DOXYGEN_SKIP_THIS
+
+template <class TrueType, class FalseType>
+struct conditional_type<true, TrueType, FalseType>
+{
+	typedef TrueType type;
+};
+
+#endif
+
+/// Redefines Type1 if not void, else Type2 if not void, nothing otherwise.
+template <class Type1, class Type2>
+struct first_non_void
+{
+	/// Redefines Type1 or Type2 if not void, undefined otherwise.
+	typedef Type1 type;
+};
+
+#ifndef DOXYGEN_SKIP_THIS
+
+template <class Type2>
+struct first_non_void<void, Type2>
+{
+	typedef Type2 type;
+};
+
+template <>
+struct first_non_void<void, void>
+{
+};
+
+#endif
 
 /// Redefines FullType if complete (and derived from BaseType), BaseType otherwise.
 template <class FullType, class BaseType>
@@ -36,6 +75,8 @@ public:
 
 } // namespace
 
+using meta::conditional_type;
+using meta::first_non_void;
 using meta::complete_type_or_base;
 
 } // namespace

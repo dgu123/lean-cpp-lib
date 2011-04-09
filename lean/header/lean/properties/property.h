@@ -10,7 +10,7 @@
 #include "../lean.h"
 #include "../smart/cloneable.h"
 #include "../smart/cloneable_obj.h"
-#include "../meta/non_void.h"
+#include "../meta/conditional.h"
 
 namespace lean
 {
@@ -54,7 +54,7 @@ template <class Class, class Derived = void>
 struct property_desc
 {
 	/// Type of the most derived structure.
-	typedef typename non_void<Derived, property_desc>::type full_type;
+	typedef typename first_non_void<Derived, property_desc>::type full_type;
 
 	const std::type_info *type;					///< Element type.
 	size_t count;								///< Number of elements.
@@ -90,7 +90,7 @@ struct property_desc
 
 /// Describes a named property.
 template <class Class, class Derived = void>
-struct named_property_desc : public property_desc<Class, typename non_void< Derived, named_property_desc<Class, Derived> >::type>
+struct named_property_desc : public property_desc<Class, typename first_non_void< Derived, named_property_desc<Class, Derived> >::type>
 {
 	std::wstring name;	///< Property name.
 
@@ -104,7 +104,7 @@ struct named_property_desc : public property_desc<Class, typename non_void< Deri
 
 /// Describes a UI property.
 template <class Class, class Widget, class Derived = void>
-struct ui_property_desc : public named_property_desc<Class, typename non_void< Derived, ui_property_desc<Class, Widget, Derived> >::type>
+struct ui_property_desc : public named_property_desc<Class, typename first_non_void< Derived, ui_property_desc<Class, Widget, Derived> >::type>
 {
 	Widget widget;	///< UI widget used to display/edit this property.
 

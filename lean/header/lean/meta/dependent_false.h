@@ -29,6 +29,7 @@ struct int_dependent_false
 } // namespace
 
 using meta::dependent_false;
+using meta::int_dependent_false;
 
 } // namespace
 

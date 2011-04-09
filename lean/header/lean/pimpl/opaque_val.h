@@ -6,8 +6,7 @@
 #define LEAN_PIMPL_OPAQUE_VAL
 
 #include "../cpp0x.h"
-#include "../meta/conditional_type.h"
-#include "../meta/complete_type_or_base.h"
+#include "../meta/conditional.h"
 #include "../meta/dereference.h"
 
 namespace lean

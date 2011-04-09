@@ -24,6 +24,44 @@ static inline const std::locale& system_locale()
 }
 
 
+//// UTF / UTF ////
+
+/// Converts the given string from UTF-8 to UTF-16.
+inline utf16_string utf_to_utf16(const utf8_ntri &wide)
+{
+	utf16_string result(wide.count(), 0);
+	utf8::unchecked::utf8to16(wide.begin(), wide.end(), result.begin());
+	return result;
+}
+
+/// Converts the given string from UTF-16 to UTF-8.
+inline utf8_string utf_to_utf8(const utf16_ntri &wide)
+{
+	utf8_string result(wide.count(), 0);
+	utf8::unchecked::utf16to8(wide.begin(), wide.end(), result.begin());
+	return result;
+}
+
+
+/// Converts the given string from UTF-8 to UTF-32.
+inline utf32_string utf_to_utf32(const utf8_ntri &wide)
+{
+	utf32_string result(wide.count(), 0);
+	utf8::unchecked::utf8to32(wide.begin(), wide.end(), result.begin());
+	return result;
+}
+
+/// Converts the given string from UTF-32 to UTF-8.
+inline utf8_string utf_to_utf8(const utf32_ntri &wide)
+{
+	utf8_string result(wide.count(), 0);
+	utf8::unchecked::utf32to8(wide.begin(), wide.end(), result.begin());
+	return result;
+}
+
+
+//// Codepage / UTF-XX ////
+
 /// Widens the given string using either the given locale or the current global locale.
 inline std::wstring to_wchar(const char_ntri &narrow, const std::locale &locale = std::locale())
 {
@@ -41,63 +79,68 @@ inline std::string to_char(const wchar_ntri &wide, const std::locale &locale = s
 }
 
 
-/// Widens the given string using either the given locale or the current global locale.
-inline char2_string to_char2(const char1_ntri &narrow, const std::locale &locale = std::locale())
+/// Widens the given string to UTF-16 using either the given locale or the current global locale.
+inline utf16_string to_utf16(const char_ntri &narrow, const std::locale &locale = std::locale())
 {
-	char2_string result(narrow.size(), 0);
-	std::use_facet< std::ctype<char2> >(locale).widen(narrow.begin(), narrow.end(), &result[0]);
+	utf16_string result(narrow.size(), 0);
+	std::use_facet< std::ctype<utf16_t> >(locale).widen(narrow.begin(), narrow.end(), &result[0]);
 	return result;
 }
 
-/// Narrows the given string using either the given locale or the current global locale.
-inline char1_string to_char1(const char2_ntri &wide, const std::locale &locale = std::locale(), char invalid = '?')
+/// Narrows the given to UTF-16 string using either the given locale or the current global locale.
+inline std::string utf_to_char(const utf16_ntri &wide, const std::locale &locale = std::locale(), char invalid = '?')
 {
-	char1_string result(wide.size(), 0);
-	std::use_facet< std::ctype<char2> >(locale).narrow(wide.begin(), wide.end(), invalid, &result[0]);
-	return result;
-}
-
-
-/// Widens the given string using either the given locale or the current global locale.
-inline char4_string to_char4(const char1_ntri &narrow, const std::locale &locale = std::locale())
-{
-	char4_string result(narrow.size(), 0);
-	std::use_facet< std::ctype<char4> >(locale).widen(narrow.begin(), narrow.end(), &result[0]);
-	return result;
-}
-
-/// Narrows the given string using either the given locale or the current global locale.
-inline char1_string to_char1(const char4_ntri &wide, const std::locale &locale = std::locale(), char invalid = '?')
-{
-	char1_string result(wide.size(), 0);
-	std::use_facet< std::ctype<char4> >(locale).narrow(wide.begin(), wide.end(), invalid, &result[0]);
+	std::string result(wide.size(), 0);
+	std::use_facet< std::ctype<utf16_t> >(locale).narrow(wide.begin(), wide.end(), invalid, &result[0]);
 	return result;
 }
 
 
-/// Converts the given string to utf-8.
-inline utf8_string to_utf8(const utf32_ntri &wide)
+/// Widens the given string to UTF-32 using either the given locale or the current global locale.
+inline utf32_string to_utf32(const char_ntri &narrow, const std::locale &locale = std::locale())
 {
-	utf8_string result(wide.count(), 0);
-	utf8::unchecked::utf32to8(wide.begin(), wide.end(), result.begin());
+	utf32_string result(narrow.size(), 0);
+	std::use_facet< std::ctype<utf32_t> >(locale).widen(narrow.begin(), narrow.end(), &result[0]);
 	return result;
 }
 
-/// Converts the given string to utf-8.
-inline utf8_string to_utf8(const utf16_ntri &wide)
+/// Narrows the given UTF-32 string using either the given locale or the current global locale.
+inline std::string utf_to_char(const utf32_ntri &wide, const std::locale &locale = std::locale(), char invalid = '?')
 {
-	utf8_string result(wide.count(), 0);
-	utf8::unchecked::utf16to8(wide.begin(), wide.end(), result.begin());
+	std::string result(wide.size(), 0);
+	std::use_facet< std::ctype<utf32_t> >(locale).narrow(wide.begin(), wide.end(), invalid, &result[0]);
 	return result;
 }
 
-/// Converts the given string to utf-8 using either the given locale or the current global locale.
+
+//// Codepage / UTF-8 ////
+
+/// Widens the given string to UTF-8 using either the given locale or the current global locale.
 inline utf8_string to_utf8(const char_ntri &narrow, const std::locale &locale = std::locale())
 {
-	return to_utf8(to_wchar(narrow, locale));
+	return utf_to_utf8(to_utf16(narrow, locale));
+}
+
+/// Narrows the given UTF-8 string using either the given locale or the current global locale.
+inline std::string utf_to_char(const utf8_ntri &utf8, const std::locale &locale = std::locale(), char invalid = '?')
+{
+	return utf_to_char(utf_to_utf16(utf8), locale, invalid);
 }
 
 } // namespace
+
+using strings::to_wchar;
+using strings::to_char;
+
+using strings::to_utf8;
+using strings::to_utf16;
+using strings::to_utf32;
+
+using strings::utf_to_utf8;
+using strings::utf_to_utf16;
+using strings::utf_to_utf32;
+
+using strings::utf_to_char;
 
 } // namespace
 

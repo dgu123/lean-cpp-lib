@@ -63,6 +63,13 @@ typedef nullterminated_range_implicit<char4> char4_ntri;
 /// Nullterminated 4-byte-character range.
 typedef nullterminated_range<char4> char4_ntr;
 
+/// 1-byte-character string.
+typedef std::basic_string<char1> char1_string;
+/// 2-byte-character string.
+typedef std::basic_string<char2> char2_string;
+/// 4-byte-character string.
+typedef std::basic_string<char4> char4_string;
+
 
 /// Implicit nullterminated utf8-character half-range.
 typedef nullterminated_implicit< utf8_t, utf_traits<utf8_t> > utf8_nti;
@@ -72,6 +79,31 @@ typedef nullterminated< utf8_t, utf_traits<utf8_t> > utf8_nt;
 typedef nullterminated_range_implicit< utf8_t, utf_traits<utf8_t> > utf8_ntri;
 /// Nullterminated utf8-character range.
 typedef nullterminated_range< utf8_t, utf_traits<utf8_t> > utf8_ntr;
+
+/// Implicit nullterminated utf8-character half-range.
+typedef nullterminated_implicit< utf16_t, char_traits<utf16_t> > utf16_nti; // MONITOR: Currently using fixed-width endcoding
+/// Nullterminated utf16-character half-range.
+typedef nullterminated< utf16_t, char_traits<utf16_t> > utf16_nt;
+/// Implicit nullterminated utf16-character range.
+typedef nullterminated_range_implicit< utf16_t, char_traits<utf16_t> > utf16_ntri;
+/// Nullterminated utf16-character range.
+typedef nullterminated_range< utf16_t, char_traits<utf16_t> > utf16_ntr;
+
+/// Implicit nullterminated utf32-character half-range.
+typedef nullterminated_implicit< utf32_t, char_traits<utf32_t> > utf32_nti; // MONITOR: Currently using fixed-width endcoding
+/// Nullterminated utf32-character half-range.
+typedef nullterminated< utf32_t, char_traits<utf32_t> > utf32_nt;
+/// Implicit nullterminated utf32-character range.
+typedef nullterminated_range_implicit< utf32_t, char_traits<utf32_t> > utf32_ntri;
+/// Nullterminated utf32-character range.
+typedef nullterminated_range< utf32_t, char_traits<utf32_t> > utf32_ntr;
+
+/// UTF-8-character string.
+typedef std::basic_string<utf8_t> utf8_string;
+/// UTF-16-character string.
+typedef std::basic_string<utf16_t> utf16_string;
+/// UTF-32-character string.
+typedef std::basic_string<utf32_t> utf32_string;
 
 
 // STL compatibility
@@ -110,10 +142,18 @@ using strings::char4_nt;
 using strings::char4_ntri;
 using strings::char4_ntr;
 
+using strings::char1_string;
+using strings::char2_string;
+using strings::char4_string;
+
 using strings::utf8_nti;
 using strings::utf8_nt;
 using strings::utf8_ntri;
 using strings::utf8_ntr;
+
+using strings::utf8_string;
+using strings::utf16_string;
+using strings::utf32_string;
 
 } // namespace
 

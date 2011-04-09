@@ -8,6 +8,7 @@
 #include "../lean.h"
 #include "../meta/strip.h"
 #include "../meta/dependent_false.h"
+#include "../meta/enable_if.h"
 #include "char_traits.h"
 #include "nullterminated.h"
 
@@ -64,7 +65,8 @@ public:
 	}
 	/// Constructs a character range from the given compatible object.
 	template <class Compatible>
-	LEAN_INLINE nullterminated_range_implicit(const Compatible &from)
+	LEAN_INLINE nullterminated_range_implicit(const Compatible &from,
+		typename enable_if<is_nullterminated_compatible<Compatible, value_type, traits_type>::value, const void*>::type = nullptr)
 		: base_type(from),
 		m_end(
 			first_non_null(
@@ -100,6 +102,7 @@ public:
 	template <class Compatible>
 	LEAN_INLINE operator Compatible()
 	{
+		typedef assert_nullterminated_compatible<Compatible>::type assert_compatible;
 		return nullterminated_compatible<Compatible, value_type, traits_type>::to(m_begin, m_end);
 	}
 };

@@ -67,6 +67,9 @@
     <Filter Include="Header Files\strings">
       <UniqueIdentifier>{820e9663-92b9-44f0-af14-c844fc566f54}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\strings">
+      <UniqueIdentifier>{90461f9d-2843-49f3-864a-8bbf95e488c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -312,6 +315,12 @@
     <ClInclude Include="header\lean\strings\nullterminated_range.h">
       <Filter>Header Files\strings</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\strings\conversions.h">
+      <Filter>Header Files\strings</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\meta\enable_if.h">
+      <Filter>Header Files\meta</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">
@@ -328,6 +337,9 @@
     </ClCompile>
     <ClCompile Include="header\lean\logging\source\exceptions.cpp">
       <Filter>Source Files\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="header\lean\strings\source\conversions.cpp">
+      <Filter>Source Files\strings</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -7,7 +7,7 @@
 
 #include "../lean.h"
 #include "../utf8.h"
-#include "../meta/is_equal.h"
+#include "../meta/dependent_false.h"
 
 namespace lean
 {
@@ -18,8 +18,7 @@ namespace strings
 template <class Char>
 struct utf_traits
 {
-	LEAN_STATIC_ASSERT_MSG_ALT(
-		!(is_equal<Char, Char>::value), // = false, dependent
+	LEAN_STATIC_ASSERT_MSG_ALT(dependent_false<Char>::value,
 		"No UTF traits available for the given character type (only UTF-8 implemented, might use char_traits instead).",
 		NO_UTF_traits_available_for_the_given_character_type__only_UTF8_implemented__might_use_char_traits_instead);
 };
@@ -31,7 +30,7 @@ struct utf_traits<utf8_t>
 	/// Character type.
 	typedef utf8_t char_type;
 	/// Unsigned integer type of range equal to or greater than char_type's.
-	typedef typename int_type<sign_class::no_sign, sizeof(char_type)>::type int_type;
+	typedef int_type<sign_class::no_sign, sizeof(char_type)>::type int_type;
 	/// Size type.
 	typedef size_t size_type;
 

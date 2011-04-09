@@ -23,18 +23,24 @@ struct nullterminated_compatible
 		"Type incompatible with nullterminated character range class.",
 		Type_incompatible_with_nullterminated_character_range_class);
 
-	/// Converts an object of your type into a nullterminated character range.
+	/// Converts an object of your type into a nullterminated character range,
+	/// returning the beginning of the range.
 	static const Char* from(const Compatible &from);
+	/// Converts an object of your type into a nullterminated character range,
+	/// returning the end of the range (must be null character), nullptr if unknown.
+	static const Char* from(const Compatible &from, const Char *begin);
 
 	/// Converts a nullterminated character range into an object of your type.
 	static Compatible to(const Char *begin);
+	/// Converts a nullterminated character range into an object of your type.
+	static Compatible to(const Char *begin, const Char *end);
 };
 
-/// Nullterminated character range class that may be constructed from arbitrary string classes.
+/// Nullterminated character half-range class that may be constructed from arbitrary string classes.
 template < class Char, class Traits = char_traits<typename strip_const<Char>::type> >
 class nullterminated
 {
-private:
+protected:
 	const Char *m_begin;
 
 public:
@@ -63,13 +69,13 @@ public:
 	/// Character traits used by this range.
 	typedef Traits traits_type;
 	
-	/// Constructs a character range from the given C string.
+	/// Constructs a (half) character range from the given C string.
 	LEAN_INLINE nullterminated(const_pointer begin)
 		: m_begin(begin)
 	{
 		LEAN_ASSERT(m_begin);
 	}
-	/// Constructs a character range from the given compatible object.
+	/// Constructs a (half) character range from the given compatible object.
 	template <class Compatible>
 	LEAN_INLINE nullterminated(const Compatible &from)
 		: m_begin(nullterminated_compatible<Compatible, value_type, traits_type>::from(from))
@@ -78,13 +84,13 @@ public:
 	}
 
 	/// Gets whether this character range is currently empty.
-	LEAN_INLINE bool empty() const { return char_traits::empty(m_begin); }
+	LEAN_INLINE bool empty() const { return traits_type::empty(m_begin); }
 	/// Gets the length of this character range, in characters (same as size()). O(n).
-	LEAN_INLINE size_type length() const { return char_traits::length(m_begin); }
+	LEAN_INLINE size_type length() const { return traits_type::length(m_begin); }
 	/// Gets the length of this character range, in characters (same as length()). O(n).
 	LEAN_INLINE size_type size() const { return length(); }
 	/// Gets the length of this character range, in code points (might differ from length() and size()). O(n).
-	LEAN_INLINE size_type count() const { return char_traits::count(m_begin); }
+	LEAN_INLINE size_type count() const { return traits_type::count(m_begin); }
 	
 	/// Gets an element by position, access violation on failure.
 	LEAN_INLINE const_reference operator [](size_type pos) const { return m_begin[pos]; }
@@ -94,7 +100,7 @@ public:
 	/// Gets a pointer to this nullterminated range.
 	LEAN_INLINE const_pointer data() const { return c_str(); }
 
-	/// Returns a constant iterator to the first element contained by this character range.
+	/// Returns a constant iterator to the first element contained by this character range. O(1).
 	LEAN_INLINE const_iterator begin(void) const { return m_begin; }
 	/// Returns a constant iterator  the last element contained by this character range. O(n).
 	LEAN_INLINE const_iterator end() const { return m_begin + length(); }
@@ -107,9 +113,14 @@ public:
 		m_begin = right_begin;
 	}
 
-	/// Constructs a compatible object from this nullterminated character range.
+	/// Gets a pointer to this null-terminated range.
+	LEAN_INLINE operator const_pointer() { return m_begin; }
+	/// Constructs a compatible object from this null-terminated character range.
 	template <class Compatible>
-	LEAN_INLINE operator Compatible() { return nullterminated_compatible<Compatible, value_type, traits_type>::to(m_begin); }
+	LEAN_INLINE operator Compatible()
+	{
+		return nullterminated_compatible<Compatible, value_type, traits_type>::to(m_begin);
+	}
 };
 
 /// Comparison operator.

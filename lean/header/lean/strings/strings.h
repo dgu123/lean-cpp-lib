@@ -16,5 +16,6 @@ namespace lean
 #include "char_traits.h"
 #include "utf_traits.h"
 #include "nullterminated.h"
+#include "types.h"
 
 #endif

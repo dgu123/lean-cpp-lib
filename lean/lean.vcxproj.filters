@@ -303,6 +303,12 @@
     <ClInclude Include="header\lean\strings\utf_traits.h">
       <Filter>Header Files\strings</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\strings\types.h">
+      <Filter>Header Files\strings</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\meta\dependent_false.h">
+      <Filter>Header Files\meta</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

@@ -109,6 +109,7 @@
     <ClInclude Include="header\lean\memory\win_heap.h" />
     <ClInclude Include="header\lean\meta\complete_type_or_base.h" />
     <ClInclude Include="header\lean\meta\conditional_type.h" />
+    <ClInclude Include="header\lean\meta\dependent_false.h" />
     <ClInclude Include="header\lean\meta\dereference.h" />
     <ClInclude Include="header\lean\meta\is_equal.h" />
     <ClInclude Include="header\lean\meta\meta.h" />
@@ -135,6 +136,7 @@
     <ClInclude Include="header\lean\strings\nullterminated.h" />
     <ClInclude Include="header\lean\strings\char_traits.h" />
     <ClInclude Include="header\lean\strings\strings.h" />
+    <ClInclude Include="header\lean\strings\types.h" />
     <ClInclude Include="header\lean\strings\utf_traits.h" />
     <ClInclude Include="header\lean\tags\nonconstructible.h" />
     <ClInclude Include="header\lean\tags\noncopyable.h" />

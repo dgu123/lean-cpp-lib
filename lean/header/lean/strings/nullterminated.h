@@ -7,6 +7,7 @@
 
 #include "../lean.h"
 #include "../meta/strip.h"
+#include "../meta/dependent_false.h"
 #include "char_traits.h"
 
 namespace lean
@@ -14,8 +15,23 @@ namespace lean
 namespace strings
 {
 
+/// Spezialize this class to make your string class compatible with the nullterminated character range class.
+template <class Compatible, class Char, class Traits>
+struct nullterminated_compatible
+{
+	LEAN_STATIC_ASSERT_MSG_ALT(dependent_false<Compatible>::value,
+		"Type incompatible with nullterminated character range class.",
+		Type_incompatible_with_nullterminated_character_range_class);
+
+	/// Converts an object of your type into a nullterminated character range.
+	static const Char* from(const Compatible &from);
+
+	/// Converts a nullterminated character range into an object of your type.
+	static Compatible to(const Char *begin);
+};
+
 /// Nullterminated character range class that may be constructed from arbitrary string classes.
-template < class Char, class Traits = char_traits< typename strip_const<Char>::type > >
+template < class Char, class Traits = char_traits<typename strip_const<Char>::type> >
 class nullterminated
 {
 private:
@@ -48,8 +64,15 @@ public:
 	typedef Traits traits_type;
 	
 	/// Constructs a character range from the given C string.
-	LEAN_INLINE char_range(const_pointer begin)
+	LEAN_INLINE nullterminated(const_pointer begin)
 		: m_begin(begin)
+	{
+		LEAN_ASSERT(m_begin);
+	}
+	/// Constructs a character range from the given compatible object.
+	template <class Compatible>
+	LEAN_INLINE nullterminated(const Compatible &from)
+		: m_begin(nullterminated_compatible<Compatible, value_type, traits_type>::from(from))
 	{
 		LEAN_ASSERT(m_begin);
 	}
@@ -83,6 +106,10 @@ public:
 		right.m_begin = m_begin;
 		m_begin = right_begin;
 	}
+
+	/// Constructs a compatible object from this nullterminated character range.
+	template <class Compatible>
+	LEAN_INLINE operator Compatible() { return nullterminated_compatible<Compatible, value_type, traits_type>::to(m_begin); }
 };
 
 /// Comparison operator.

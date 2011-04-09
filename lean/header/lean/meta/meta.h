@@ -11,6 +11,7 @@ namespace lean
 	namespace meta { }
 }
 
+#include "dependent_false.h"
 #include "strip.h"
 #include "conditional_type.h"
 #include "complete_type_or_base.h"

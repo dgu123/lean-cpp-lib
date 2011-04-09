@@ -111,6 +111,7 @@
     <ClInclude Include="header\lean\meta\conditional_type.h" />
     <ClInclude Include="header\lean\meta\dependent_false.h" />
     <ClInclude Include="header\lean\meta\dereference.h" />
+    <ClInclude Include="header\lean\meta\enable_if.h" />
     <ClInclude Include="header\lean\meta\is_equal.h" />
     <ClInclude Include="header\lean\meta\meta.h" />
     <ClInclude Include="header\lean\meta\non_void.h" />
@@ -133,6 +134,7 @@
     <ClInclude Include="header\lean\smart\smart.h" />
     <ClInclude Include="header\lean\smart\cloneable.h" />
     <ClInclude Include="header\lean\smart\weak_resource_ptr.h" />
+    <ClInclude Include="header\lean\strings\conversions.h" />
     <ClInclude Include="header\lean\strings\nullterminated.h" />
     <ClInclude Include="header\lean\strings\char_traits.h" />
     <ClInclude Include="header\lean\strings\nullterminated_range.h" />
@@ -165,6 +167,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="header\lean\memory\source\win_heap.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="header\lean\strings\source\conversions.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>

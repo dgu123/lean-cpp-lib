@@ -8,6 +8,8 @@
 #include "../lean.h"
 #include "../meta/strip.h"
 #include "../meta/dependent_false.h"
+#include "../meta/is_equal.h"
+#include "../meta/enable_if.h"
 #include "char_traits.h"
 
 namespace lean
@@ -15,14 +17,12 @@ namespace lean
 namespace strings
 {
 
+struct nullterminated_incompatible { };
+
 /// Spezialize this class to make your string class compatible with the nullterminated character range class.
 template <class Compatible, class Char, class Traits>
-struct nullterminated_compatible
+struct nullterminated_compatible : public nullterminated_incompatible
 {
-	LEAN_STATIC_ASSERT_MSG_ALT(dependent_false<Compatible>::value,
-		"Type incompatible with nullterminated character range class.",
-		Type_incompatible_with_nullterminated_character_range_class);
-
 	/// Converts an object of your type into a nullterminated character range,
 	/// returning the beginning of the range.
 	static const Char* from(const Compatible &from);
@@ -34,6 +34,30 @@ struct nullterminated_compatible
 	static Compatible to(const Char *begin);
 	/// Converts a nullterminated character range into an object of your type.
 	static Compatible to(const Char *begin, const Char *end);
+};
+
+/// Checks if the given type is nullterminated-character-range-compatible.
+template <class Compatible, class Char, class Traits>
+struct is_nullterminated_compatible
+{
+	/// True, if the given type is compatible.
+	static const bool value = !is_derived<
+		nullterminated_compatible<Compatible, Char, Traits>,
+		nullterminated_incompatible>::value;
+};
+
+/// Asserts that the given type is nullterminated-character-range-compatible.
+template <class Compatible, class Char, class Traits>
+struct assert_nullterminated_compatible
+{
+	static const bool is_compatible = is_nullterminated_compatible<Compatible, Char, Traits>::value;
+
+	LEAN_STATIC_ASSERT_MSG_ALT(is_compatible,
+		"Type incompatible with nullterminated character range class.",
+		Type_incompatible_with_nullterminated_character_range_class);
+
+	/// Dummy that may be used in asserting typedef to enforce template instantiation.
+	typedef void type;
 };
 
 /// Nullterminated character half-range class that may be IMPLICITLY constructed from arbitrary string classes.
@@ -78,7 +102,8 @@ public:
 	}
 	/// Constructs a (half) character range from the given compatible object.
 	template <class Compatible>
-	LEAN_INLINE nullterminated_implicit(const Compatible &from)
+	LEAN_INLINE nullterminated_implicit(const Compatible &from,
+		typename enable_if<is_nullterminated_compatible<Compatible, value_type, traits_type>::value, const void*>::type = nullptr)
 		: m_begin(nullterminated_compatible<Compatible, value_type, traits_type>::from(from))
 	{
 		LEAN_ASSERT(m_begin);
@@ -114,12 +139,15 @@ public:
 		m_begin = right_begin;
 	}
 
-	/// Gets a pointer to this null-terminated range.
-	LEAN_INLINE operator const_pointer() { return m_begin; }
+	// DESIGN: Only permit implicit conversion to compatible container types, otherwise pointers might accidentally dangle.
+//	// Gets a pointer to this null-terminated range.
+//	LEAN_INLINE operator const_pointer() { return m_begin; }
+
 	/// Constructs a compatible object from this null-terminated character range.
 	template <class Compatible>
 	LEAN_INLINE operator Compatible()
 	{
+		typedef assert_nullterminated_compatible<Compatible>::type assert_compatible;
 		return nullterminated_compatible<Compatible, value_type, traits_type>::to(m_begin);
 	}
 };

@@ -309,6 +309,9 @@
     <ClInclude Include="header\lean\meta\dependent_false.h">
       <Filter>Header Files\meta</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\strings\nullterminated_range.h">
+      <Filter>Header Files\strings</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

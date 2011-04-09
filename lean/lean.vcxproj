@@ -135,6 +135,7 @@
     <ClInclude Include="header\lean\smart\weak_resource_ptr.h" />
     <ClInclude Include="header\lean\strings\nullterminated.h" />
     <ClInclude Include="header\lean\strings\char_traits.h" />
+    <ClInclude Include="header\lean\strings\nullterminated_range.h" />
     <ClInclude Include="header\lean\strings\strings.h" />
     <ClInclude Include="header\lean\strings\types.h" />
     <ClInclude Include="header\lean\strings\utf_traits.h" />

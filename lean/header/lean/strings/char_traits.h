@@ -47,11 +47,6 @@ struct char_traits
 
 		return length;
 	}
-	/// Gets the length of the given null-terminated range of characters.
-	static LEAN_INLINE size_type length(const char_type *begin, const char_type *end)
-	{
-		return end - begin;
-	}
 	/// Gets the number of code points in the given null-terminated range of characters.
 	static LEAN_INLINE size_type count(const char_type *begin)
 	{
@@ -60,7 +55,7 @@ struct char_traits
 	/// Gets the number of code points in the given null-terminated range of characters.
 	static LEAN_INLINE size_type count(const char_type *begin, const char_type *end)
 	{
-		return length(begin, end);
+		return end - begin;
 	}
 
 	/// Compares the characters in the given null-terminated ranges, returning true if equal.
@@ -108,17 +103,13 @@ struct char_traits<char>
 	{
 		return ::strlen(begin);
 	}
-	static LEAN_INLINE size_type length(const char_type *begin, const char_type *end)
-	{
-		return end - begin;
-	}
 	static LEAN_INLINE size_type count(const char_type *begin)
 	{
 		return length(begin);
 	}
 	static LEAN_INLINE size_type count(const char_type *begin, const char_type *end)
 	{
-		return length(begin, end);
+		return end - begin;
 	}
 
 	static bool equal(const char_type *begin1, const char_type *begin2)
@@ -151,17 +142,13 @@ struct char_traits<wchar_t>
 	{
 		return ::wcslen(begin);
 	}
-	static LEAN_INLINE size_type length(const char_type *begin, const char_type *end)
-	{
-		return end - begin;
-	}
 	static LEAN_INLINE size_type count(const char_type *begin)
 	{
 		return length(begin);
 	}
 	static LEAN_INLINE size_type count(const char_type *begin, const char_type *end)
 	{
-		return length(begin, end);
+		return end - begin;
 	}
 
 	static bool equal(const char_type *begin1, const char_type *begin2)

@@ -50,11 +50,6 @@ struct utf_traits<utf8_t>
 	{
 		return ::strlen(begin);
 	}
-	/// Gets the length of the given null-terminated range of characters.
-	static size_type length(const char_type *begin, const char_type *end)
-	{
-		return end - begin;
-	}
 	/// Gets the number of code points in the given null-terminated range of characters.
 	static LEAN_INLINE size_type count(const char_type *begin)
 	{

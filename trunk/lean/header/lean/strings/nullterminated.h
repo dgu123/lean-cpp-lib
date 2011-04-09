@@ -36,9 +36,10 @@ struct nullterminated_compatible
 	static Compatible to(const Char *begin, const Char *end);
 };
 
-/// Nullterminated character half-range class that may be constructed from arbitrary string classes.
+/// Nullterminated character half-range class that may be IMPLICITLY constructed from arbitrary string classes.
+/// May be used in parameter lists, not recommended elsewhere.
 template < class Char, class Traits = char_traits<typename strip_const<Char>::type> >
-class nullterminated
+class nullterminated_implicit
 {
 protected:
 	const Char *m_begin;
@@ -70,14 +71,14 @@ public:
 	typedef Traits traits_type;
 	
 	/// Constructs a (half) character range from the given C string.
-	LEAN_INLINE nullterminated(const_pointer begin)
+	LEAN_INLINE nullterminated_implicit(const_pointer begin)
 		: m_begin(begin)
 	{
 		LEAN_ASSERT(m_begin);
 	}
 	/// Constructs a (half) character range from the given compatible object.
 	template <class Compatible>
-	LEAN_INLINE nullterminated(const Compatible &from)
+	LEAN_INLINE nullterminated_implicit(const Compatible &from)
 		: m_begin(nullterminated_compatible<Compatible, value_type, traits_type>::from(from))
 	{
 		LEAN_ASSERT(m_begin);
@@ -106,7 +107,7 @@ public:
 	LEAN_INLINE const_iterator end() const { return m_begin + length(); }
 
 	/// Swaps the contents of this range with the contents of the given range.
-	LEAN_INLINE void swap(nullterminated& right)
+	LEAN_INLINE void swap(nullterminated_implicit& right)
 	{
 		const_pointer right_begin = right.m_begin;
 		right.m_begin = m_begin;
@@ -123,57 +124,78 @@ public:
 	}
 };
 
+/// Nullterminated character half-range class that may be constructed from arbitrary string classes.
+template < class Char, class Traits = char_traits<typename strip_const<Char>::type> >
+class nullterminated : public nullterminated_implicit<Char, Traits>
+{
+private:
+	typedef nullterminated_implicit<Char, Traits> base_type;
+
+public:
+	/// Constructs a (half) character range from the given C string.
+	explicit LEAN_INLINE nullterminated(const_pointer begin)
+		: base_type(begin)  { }
+	/// Constructs a (half) character range from the given compatible object.
+	template <class Compatible>
+	explicit LEAN_INLINE nullterminated(const Compatible &from)
+		: base_type(from) { }
+	/// Constructs a (half) character range from the given implicit half range.
+	LEAN_INLINE nullterminated(const base_type &right)
+		: base_type(right)  { }
+};
+
 /// Comparison operator.
 template <class Char, class Traits>
-LEAN_INLINE bool operator ==(const nullterminated<Char, Traits>& left, const nullterminated<Char, Traits>& right)
+LEAN_INLINE bool operator ==(const nullterminated_implicit<Char, Traits>& left, const nullterminated_implicit<Char, Traits>& right)
 {
-	return (nullterminated<Char, Traits>::traits_type::compare(left.c_str(), right.c_str()) == 0);
+	return (nullterminated_implicit<Char, Traits>::traits_type::compare(left.c_str(), right.c_str()) == 0);
 }
 
 /// Comparison operator.
 template <class Char, class Traits>
-LEAN_INLINE bool operator !=(const nullterminated<Char, Traits>& left, const nullterminated<Char, Traits>& right)
+LEAN_INLINE bool operator !=(const nullterminated_implicit<Char, Traits>& left, const nullterminated_implicit<Char, Traits>& right)
 {
 	return !(left == right);
 }
 
 /// Comparison operator.
 template <class Char, class Traits>
-LEAN_INLINE bool operator <(const nullterminated<Char, Traits>& left, const nullterminated<Char, Traits>& right)
+LEAN_INLINE bool operator <(const nullterminated_implicit<Char, Traits>& left, const nullterminated_implicit<Char, Traits>& right)
 {
-	return (nullterminated<Char, Traits>::traits_type::compare(left.c_str(), right.c_str()) < 0);
+	return (nullterminated_implicit<Char, Traits>::traits_type::compare(left.c_str(), right.c_str()) < 0);
 }
 
 /// Comparison operator.
 template <class Char, class Traits>
-LEAN_INLINE bool operator >(const nullterminated<Char, Traits>& left, const nullterminated<Char, Traits>& right)
+LEAN_INLINE bool operator >(const nullterminated_implicit<Char, Traits>& left, const nullterminated_implicit<Char, Traits>& right)
 {
 	return (right < left);
 }
 
 /// Comparison operator.
 template <class Char, class Traits>
-LEAN_INLINE bool operator <=(const nullterminated<Char, Traits>& left, const nullterminated<Char, Traits>& right)
+LEAN_INLINE bool operator <=(const nullterminated_implicit<Char, Traits>& left, const nullterminated_implicit<Char, Traits>& right)
 {
 	return !(right < left);
 }
 
 /// Comparison operator.
 template <class Char, class Traits>
-LEAN_INLINE bool operator >=(const nullterminated<Char, Traits>& left, const nullterminated<Char, Traits>& right)
+LEAN_INLINE bool operator >=(const nullterminated_implicit<Char, Traits>& left, const nullterminated_implicit<Char, Traits>& right)
 {
 	return !(left < right);
 }
 
 /// Swaps the elements of two nullterminated character ranges.
 template <class Char, class Traits>
-LEAN_INLINE void swap(nullterminated<Char, Traits>& left, nullterminated<Char, Traits>& right)
+LEAN_INLINE void swap(nullterminated_implicit<Char, Traits>& left, nullterminated_implicit<Char, Traits>& right)
 {
 	left.swap(right);
 }
 
 } // namespace
 
+using strings::nullterminated_implicit;
 using strings::nullterminated;
 
 } // namespace

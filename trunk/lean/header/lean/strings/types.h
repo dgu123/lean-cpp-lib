@@ -17,35 +17,59 @@ namespace lean
 namespace strings
 {
 
+/// Implicit nullterminated character half-range.
+typedef nullterminated_implicit<char> char_nti;
 /// Nullterminated character half-range.
 typedef nullterminated<char> char_nt;
+/// Implicit nullterminated character range.
+typedef nullterminated_range_implicit<char> char_ntri;
 /// Nullterminated character range.
 typedef nullterminated_range<char> char_ntr;
 
+/// Implicit nullterminated wide-character half-range.
+typedef nullterminated_implicit<wchar_t> wchar_nti;
 /// Nullterminated wide-character half-range.
 typedef nullterminated<wchar_t> wchar_nt;
+/// Implicit nullterminated wide-character range.
+typedef nullterminated_range_implicit<wchar_t> wchar_ntri;
 /// Nullterminated wide-character range.
 typedef nullterminated_range<wchar_t> wchar_ntr;
 
 
+/// Implicit nullterminated 1-byte-character half-range.
+typedef nullterminated_implicit<char1> char1_nti;
 /// Nullterminated 1-byte-character half-range.
 typedef nullterminated<char1> char1_nt;
+/// Implicit nullterminated 1-byte-character range.
+typedef nullterminated_range_implicit<char1> char1_ntri;
 /// Nullterminated 1-byte-character range.
 typedef nullterminated_range<char1> char1_ntr;
 
 /// Nullterminated 2-byte-character half-range.
+typedef nullterminated_implicit<char2> char2_nti;
+/// Nullterminated 2-byte-character half-range.
 typedef nullterminated<char2> char2_nt;
+/// Nullterminated 2-byte-character range.
+typedef nullterminated_range_implicit<char2> char2_ntri;
 /// Nullterminated 2-byte-character range.
 typedef nullterminated_range<char2> char2_ntr;
 
+/// Implicit nullterminated 4-byte-character half-range.
+typedef nullterminated_implicit<char4> char4_nti;
 /// Nullterminated 4-byte-character half-range.
 typedef nullterminated<char4> char4_nt;
+/// Implicit nullterminated 4-byte-character range.
+typedef nullterminated_range_implicit<char4> char4_ntri;
 /// Nullterminated 4-byte-character range.
 typedef nullterminated_range<char4> char4_ntr;
 
 
+/// Implicit nullterminated utf8-character half-range.
+typedef nullterminated_implicit< utf8_t, utf_traits<utf8_t> > utf8_nti;
 /// Nullterminated utf8-character half-range.
 typedef nullterminated< utf8_t, utf_traits<utf8_t> > utf8_nt;
+/// Implicit nullterminated utf8-character range.
+typedef nullterminated_range_implicit< utf8_t, utf_traits<utf8_t> > utf8_ntri;
 /// Nullterminated utf8-character range.
 typedef nullterminated_range< utf8_t, utf_traits<utf8_t> > utf8_ntr;
 
@@ -64,19 +88,31 @@ struct nullterminated_compatible< std::basic_string<Char, StringTraits, StringAl
 
 } // namespace
 
+using strings::char_nti;
 using strings::char_nt;
+using strings::char_ntri;
 using strings::char_ntr;
+using strings::wchar_nti;
 using strings::wchar_nt;
+using strings::wchar_ntri;
 using strings::wchar_ntr;
 
+using strings::char1_nti;
 using strings::char1_nt;
+using strings::char1_ntri;
 using strings::char1_ntr;
+using strings::char2_nti;
 using strings::char2_nt;
+using strings::char2_ntri;
 using strings::char2_ntr;
+using strings::char4_nti;
 using strings::char4_nt;
+using strings::char4_ntri;
 using strings::char4_ntr;
 
+using strings::utf8_nti;
 using strings::utf8_nt;
+using strings::utf8_ntri;
 using strings::utf8_ntr;
 
 } // namespace

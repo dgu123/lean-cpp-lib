@@ -315,6 +315,9 @@
     <ClInclude Include="header\lean\meta\type_traits.h">
       <Filter>Header Files\meta</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\io\numeric.h">
+      <Filter>Header Files\io</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

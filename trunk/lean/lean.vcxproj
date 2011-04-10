@@ -87,6 +87,7 @@
     <ClInclude Include="header\lean\containers\simple_vector.h" />
     <ClInclude Include="header\lean\io\endianness.h" />
     <ClInclude Include="header\lean\io\io.h" />
+    <ClInclude Include="header\lean\io\numeric.h" />
     <ClInclude Include="header\lean\io\wcharcvt.h" />
     <ClInclude Include="header\lean\logging\exceptions.h" />
     <ClInclude Include="header\lean\memory\aligned.h" />

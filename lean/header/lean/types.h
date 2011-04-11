@@ -237,7 +237,7 @@ struct ieee_float : public Desc
 	/// Gets whether the given value represents infinity (provided is_special() returned true).
 	static bool is_infinity(int_type mantissa)
 	{
-		return (mantissa == static_cast<int_type>(0))
+		return (mantissa == static_cast<int_type>(0));
 	}
 	/// Gets whether the given value represents NaN (provided is_special() returned true).
 	static bool is_nan(int_type mantissa)

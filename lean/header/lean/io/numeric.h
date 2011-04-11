@@ -7,7 +7,8 @@
 
 #include "../lean.h"
 #include "../meta/strip.h"
-#include <algorithm>
+#include <clocale>
+#include <cstdio>
 
 namespace lean
 {
@@ -15,6 +16,7 @@ namespace io
 {
 
 /// Converts the given integer of the given type into an ascii character string, returning a pointer to the first character not written to.
+/// Does not append a terminating null character.
 template <class CharIter, class Integer>
 static CharIter int_to_char(CharIter buffer, Integer num)
 {
@@ -61,6 +63,7 @@ static CharIter int_to_char(CharIter buffer, Integer num)
 }
 
 /// Converts the given range of characters into an integer of the given type.
+/// Does not require *end to be a terminating null character.
 template <class CharIter, class Integer>
 static CharIter char_to_int(CharIter begin, CharIter end, Integer &num)
 {
@@ -112,63 +115,58 @@ static CharIter char_to_int(CharIter begin, CharIter end, Integer &num)
 	return begin;
 }
 
-namespace impl
-{
-
-
-
-}
-
-/// Converts the given floating-point value of the given type into an ascii character string, returning a pointer to the first character not written to.
+/// Converts the given floating-point value of the given type into an ascii character string, returning a pointer to the first character not actively used.
+/// Assumes the given iterator points to the beginning of a continuous range in memory. Overwrites *end with a terminating null character.
 template <class CharIter, class Float>
 static CharIter float_to_char(CharIter buffer, Float num)
 {
-	typedef typename strip_modifiers<typename strip_reference<Float>::type>::type float_type;
-	typedef ieee_float<float_type> float_helper;
-	typedef typename float_helper::int_type int_type;
-	typedef typename float_helper::shift_type shift_type;
-	
-	int_type exponent = float_helper::exponent(num);
-	int_type mantissa = float_helper::mantissa(num);
-	
-	// Check sign
-	if (float_helper::sign(num))
-		*(buffer++) = '-';
+	static const int precision = static_cast<int>(
+		(ieee_float_desc<Float>::mantissa_bits + 2) / 3 );
 
-	// Handle special numbers
-	if (float_helper::is_special(exponent))
-	{
-		const char *what = float_helper::is_infinity(mantissa) ? "inf" : "nan";
-		buffer = std::copy(what, what + 3, buffer);
-	}
-	// Convert to decimal
-	else
-	{
-		shift_type shift = float_helper::shift(exponent);
-		int_type fixed = float_helper::fixed(mantissa, exponent);
-		
-		while (shift > 0)
-		{
-		}
+#ifdef _MSC_VER
+	// Use MS extension
+	static const _locale_t invariantLocale = _create_locale(LC_ALL, "C");
+	return buffer + _sprintf_l(&(*buffer), "%.*g", invariantLocale, precision, num);
+#else
+	// TODO: Do what the standard library does?
+	return buffer + sprintf(&(*buffer), "%.*g", precision, num);
+#endif
+}
 
-/*		int_type exp10 = static_cast<int_type>((shift < 0) ? -shift : shift);
-		exp10 = (exp10 << 12U) / 13607U; // exp10 /= log_2{10}
+/// Converts the given range of characters into a floating-point value of the given type.
+/// Assumes the given iterator points to the beginning of a continuous range in memory.
+/// Expects *end to be either a terminating null or some other non-numeric character.
+template <class CharIter, class Float>
+static CharIter char_to_float(CharIter begin, CharIter end, Float &num)
+{
+	double value;
+	const char *pBegin = &(*begin);
+	const char *pEnd;
 
-		if (shift > 0)
-		{
-			// ...
-		}
-*/
-	}
+#ifdef _MSC_VER
+	// Use MS extension
+	static const _locale_t invariantLocale = _create_locale(LC_ALL, "C");
+	value = _strtod_l(pBegin, const_cast<char**>(&pEnd), invariantLocale);
+#else
+	// TODO: Do what the standard library does?
+	value = strtod(pBegin, const_cast<char**>(&pEnd));
+#endif
 
-	// Return end
-	return buffer;
+	CharIter stop = begin + (pEnd - pBegin);
+
+	// First check for errors, the
+	if (stop == end)
+		num = static_cast<Float>(value);
+
+	return stop;
 }
 
 } // namespace
 
 using io::int_to_char;
 using io::char_to_int;
+using io::float_to_char;
+using io::char_to_float;
 
 } // namespace
 

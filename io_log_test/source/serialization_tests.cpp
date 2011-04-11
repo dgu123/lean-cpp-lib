@@ -11,6 +11,8 @@
 #include <lean/lean.h>
 #include <lean/io/numeric.h>
 
+#include <C:/SDKs/Boost/1_44/boost/lexical_cast.hpp>
+
 template <class Integer>
 void int_to_char_check_limits()
 {
@@ -47,6 +49,23 @@ void int_to_char_check_random()
 }
 
 BOOST_AUTO_TEST_SUITE( serialization )
+
+BOOST_AUTO_TEST_CASE( float_to_char )
+{
+	char buf1[64];
+
+	*lean::float_to_char(buf1, std::numeric_limits<float>::quiet_NaN()) = 0;
+	std::cout << "float_to_char: " << buf1 << std::endl;
+
+	*lean::float_to_char(buf1, std::numeric_limits<float>::infinity()) = 0;
+	std::cout << "float_to_char: " << buf1 << std::endl;
+
+	*lean::float_to_char(buf1, -std::numeric_limits<float>::infinity()) = 0;
+	std::cout << "float_to_char: " << buf1 << std::endl;
+
+	*lean::float_to_char(buf1, 2.0f) = 0;
+	std::cout << "float_to_char: " << buf1 << std::endl;
+}
 
 BOOST_AUTO_TEST_CASE( int_to_char )
 {
@@ -102,6 +121,13 @@ BOOST_AUTO_TEST_CASE( itoa )
 		std::use_facet< std::num_put<char, char*> >(locale).put(buf, str, ' ', (long)i);
 
 	std::cout << "num_put: " << numpunct_timer.milliseconds() << std::endl;
+
+	lean::highres_timer lexcast_timer;
+
+	for (int i = 0; i < 100000; ++i)
+		boost::lexical_cast<std::string>(i);
+
+	std::cout << "lexical_cast: " << lexcast_timer.milliseconds() << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE( dtoa )
@@ -109,6 +135,13 @@ BOOST_AUTO_TEST_CASE( dtoa )
 	std::locale locale;
 	std::stringstream str;
 	char buf[64];
+
+	lean::highres_timer int_to_char_timer;
+
+	for (int i = 0; i < 100000; ++i)
+		lean::float_to_char(buf, (double) i);
+
+	std::cout << "float_to_char: " << int_to_char_timer.milliseconds() << std::endl;
 
 	lean::highres_timer itoa_timer;
 
@@ -130,6 +163,13 @@ BOOST_AUTO_TEST_CASE( dtoa )
 		std::use_facet< std::num_put<char, char*> >(locale).put(buf, str, ' ', (double)i);
 	
 	std::cout << "num_put: " << numpunct_timer.milliseconds() << std::endl;
+
+	lean::highres_timer lexcast_timer;
+
+	for (int i = 0; i < 100000; ++i)
+		boost::lexical_cast<std::string>((double)i);
+
+	std::cout << "lexical_cast: " << lexcast_timer.milliseconds() << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE( atoi )
@@ -167,6 +207,13 @@ BOOST_AUTO_TEST_CASE( atoi )
 		std::use_facet< std::num_get<char, const char*> >(locale).get(buf, buf + sizeof(buf), str, error, reinterpret_cast<long&>(result));
 
 	std::cout << "num_get: " << numpunct_timer.milliseconds() << std::endl;
+
+	lean::highres_timer lexcast_timer;
+
+	for (int i = 0; i < 100000; ++i)
+		boost::lexical_cast<int>(buf);
+
+	std::cout << "lexical_cast: " << lexcast_timer.milliseconds() << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE( atof )
@@ -184,6 +231,13 @@ BOOST_AUTO_TEST_CASE( atof )
 
 	std::cout << "atof: " << atoi_timer.milliseconds() << std::endl;
 
+	lean::highres_timer int_to_char_timer;
+
+	for (int i = 0; i < 100000; ++i)
+		lean::char_to_float(buf, buf + sizeof(buf), result);
+
+	std::cout << "char_to_float: " << int_to_char_timer.milliseconds() << std::endl;
+
 	lean::highres_timer sscanf_timer;
 
 	for (int i = 0; i < 100000; ++i)
@@ -197,6 +251,13 @@ BOOST_AUTO_TEST_CASE( atof )
 		std::use_facet< std::num_get<char, const char*> >(locale).get(buf, buf + sizeof(buf), str, error, result);
 
 	std::cout << "num_get: " << numpunct_timer.milliseconds() << std::endl;
+
+	lean::highres_timer lexcast_timer;
+
+	for (int i = 0; i < 100000; ++i)
+		boost::lexical_cast<float>(buf);
+
+	std::cout << "lexical_cast: " << lexcast_timer.milliseconds() << std::endl;
 }
 
 BOOST_AUTO_TEST_SUITE_END()

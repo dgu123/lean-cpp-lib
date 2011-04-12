@@ -1,5 +1,6 @@
 #include "../log.h"
 #include <sstream>
+#include <algorithm>
 
 // Destructor.
 LEAN_ALWAYS_LINK lean::logging::log::log()
@@ -14,12 +15,37 @@ LEAN_ALWAYS_LINK lean::logging::log::~log()
 		delete (*itStream);
 }
 
+// Adds the given target to this log.
+LEAN_ALWAYS_LINK void lean::logging::log::add_target(log_target *target)
+{
+	if (target != nullptr)
+	{
+		scoped_ssl_lock lock(m_targetLock);
+		m_targets.push_back(target);
+	}
+}
+
+// Removes the given target from this log.
+LEAN_ALWAYS_LINK void lean::logging::log::remove_target(log_target *target)
+{
+	if (target != nullptr)
+	{
+		scoped_ssl_lock lock(m_targetLock);
+		m_targets.erase(
+			std::remove(m_targets.begin(), m_targets.end(), target),
+			m_targets.end() );
+	}
+}
+
 // Prints the given message.
 LEAN_ALWAYS_LINK void lean::logging::log::print(const char_ntri &message)
 {
 	// Print synchronized
-	scoped_sl_lock lock(m_printLock);
-	// TODO: pass on...
+	scoped_ssl_lock_shared lock(m_targetLock);
+
+	for (target_vector::const_iterator itTarget = m_targets.begin();
+		itTarget != m_targets.end(); ++itTarget)
+		(*itTarget)->print(message);
 }
 
 // Acquires a stream to write to.
@@ -56,7 +82,7 @@ LEAN_ALWAYS_LINK void lean::logging::log::flushAndReleaseStream(output_stream &s
 	stringStream.str("");
 	stream.clear();
 
-	// Release stream if reset successfully
+	// Release stream (if reset successfully)
 	{
 		scoped_sl_lock lock(m_streamLock);
 		m_freeStreams.push_back(&stream);

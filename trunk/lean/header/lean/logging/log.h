@@ -103,6 +103,10 @@ using logging::log_stream;
 
 } // namespace
 
+// TODO: introduce global thread-safe lean::logging::log streams to replace unsafe std streams
+
+#include <iostream>
+
 /// @addtogroup LoggingMacros Logging macros
 /// @see lean::logging
 /// @{

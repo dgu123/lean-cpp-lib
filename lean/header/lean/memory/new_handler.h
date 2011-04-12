@@ -16,10 +16,10 @@ namespace memory
 typedef bool (*new_handler)();
 
 /// Sets a new new_handler.
-LEAN_MAYBE_LINK new_handler set_new_handler(new_handler newHandler);
+LEAN_MAYBE_EXPORT new_handler set_new_handler(new_handler newHandler);
 
 /// Calls the current new handler.
-LEAN_MAYBE_LINK bool call_new_handler();
+LEAN_MAYBE_EXPORT bool call_new_handler();
 
 } // namespace
 

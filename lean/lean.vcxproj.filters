@@ -318,6 +318,12 @@
     <ClInclude Include="header\lean\io\numeric.h">
       <Filter>Header Files\io</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\logging\log_target.h">
+      <Filter>Header Files\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\logging\log_debugger.h">
+      <Filter>Header Files\logging</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">
@@ -339,6 +345,9 @@
       <Filter>Source Files\strings</Filter>
     </ClCompile>
     <ClCompile Include="header\lean\logging\source\log.cpp">
+      <Filter>Source Files\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="header\lean\logging\source\log_debugger.cpp">
       <Filter>Source Files\logging</Filter>
     </ClCompile>
   </ItemGroup>

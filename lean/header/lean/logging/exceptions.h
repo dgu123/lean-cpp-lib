@@ -13,19 +13,19 @@ namespace logging
 {
 
 /// Throws a runtime_error exception.
-LEAN_ALWAYS_LINK void throw_error(const char *source);
+LEAN_MAYBE_EXPORT void throw_error(const char *source);
 /// Throws a runtime_error exception.
-LEAN_ALWAYS_LINK void throw_error(const char *source, const char *reason);
+LEAN_MAYBE_EXPORT void throw_error(const char *source, const char *reason);
 
 /// Throws an invalid_argument exception.
-LEAN_ALWAYS_LINK void throw_invalid(const char *source);
+LEAN_MAYBE_EXPORT void throw_invalid(const char *source);
 /// Throws an invalid_argument exception.
-LEAN_ALWAYS_LINK void throw_invalid(const char *source, const char *reason);
+LEAN_MAYBE_EXPORT void throw_invalid(const char *source, const char *reason);
 
 /// Throws a bad_alloc exception.
-LEAN_ALWAYS_LINK void throw_bad_alloc(const char *source);
+LEAN_MAYBE_EXPORT void throw_bad_alloc(const char *source);
 /// Throws a bad_alloc exception.
-LEAN_ALWAYS_LINK void throw_bad_alloc(const char *source, size_t size);
+LEAN_MAYBE_EXPORT void throw_bad_alloc(const char *source, size_t size);
 
 } // namespace
 

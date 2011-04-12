@@ -21,8 +21,8 @@ LEAN_MAYBE_EXPORT void print_debugger(const char_ntri &message);
 class log_debugger : public log_target
 {
 private:
-	log_debugger();
-	~log_debugger();
+	log_debugger() { }
+	~log_debugger() { }
 
 public:
 	/// Gets the log target instance.

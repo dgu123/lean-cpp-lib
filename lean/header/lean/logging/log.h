@@ -7,11 +7,12 @@
 
 #include "../lean.h"
 #include "../tags/noncopyable.h"
-#include "../concurrent/spin_lock.h"
 #include "../strings/types.h"
-#include <iostream>
-#include <iosfwd>
+#include "../concurrent/spin_lock.h"
+#include "../concurrent/shareable_spin_lock.h"
+#include "log_target.h"
 #include <vector>
+#include <iosfwd>
 
 namespace lean
 {
@@ -35,7 +36,9 @@ private:
 	free_stream_vector m_freeStreams;
 	spin_lock<> m_streamLock;
 
-	spin_lock<> m_printLock;
+	typedef std::vector<log_target*> target_vector;
+	target_vector m_targets;
+	shareable_spin_lock<> m_targetLock;
 
 	/// Acquires a stream to write to.
 	LEAN_MAYBE_EXPORT output_stream& acquireStream();
@@ -47,6 +50,11 @@ public:
 	LEAN_MAYBE_EXPORT log();
 	/// Destructor.
 	LEAN_MAYBE_EXPORT ~log();
+
+	/// Adds the given target to this log.
+	LEAN_MAYBE_EXPORT void add_target(log_target *target);
+	/// Removes the given target from this log.
+	LEAN_MAYBE_EXPORT void remove_target(log_target *target);
 
 	/// Prints the given message.
 	LEAN_MAYBE_EXPORT void print(const char_ntri &message);

@@ -7,8 +7,8 @@
 
 #include "../lean.h"
 #include "../strings/types.h"
-#include "log_target.h"
 #include "../pimpl/opaque_val.h"
+#include "log_target.h"
 
 namespace lean
 {

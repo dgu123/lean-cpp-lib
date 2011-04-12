@@ -9,7 +9,7 @@
 #include "../meta/strip.h"
 #include <clocale>
 #include <cstdio>
-#include "../strings/types.h
+#include "../strings/types.h"
 
 namespace lean
 {
@@ -19,7 +19,7 @@ namespace io
 /// Converts the given integer of the given type into an ascii character string, returning a pointer to the first character not written to.
 /// Does not append a terminating null character.
 template <class CharIter, class Integer>
-static CharIter int_to_char(CharIter buffer, Integer num)
+inline CharIter int_to_char(CharIter buffer, Integer num)
 {
 	typedef typename lean::strip_modifiers<typename lean::strip_reference<Integer>::type>::type int_type;
 	typedef typename lean::int_type<lean::sign_class::sign, sizeof(int_type)>::type sint_type;
@@ -65,7 +65,7 @@ static CharIter int_to_char(CharIter buffer, Integer num)
 
 /// Converts the given integer of the given type into an ascii character string.
 template <class Integer>
-static utf8_string int_to_string(Integer num)
+inline utf8_string int_to_string(Integer num)
 {
 	// Estimate decimal length
 	char buffer[(size_info<Integer>::bits + 5) / 3 + 4];
@@ -76,7 +76,7 @@ static utf8_string int_to_string(Integer num)
 /// Converts the given range of characters into an integer of the given type.
 /// Does not require *end to be a terminating null character.
 template <class CharIter, class Integer>
-static CharIter char_to_int(CharIter begin, CharIter end, Integer &num)
+inline CharIter char_to_int(CharIter begin, CharIter end, Integer &num)
 {
 	typedef typename lean::strip_modifiers<Integer>::type int_type;
 	typedef typename lean::int_type<lean::sign_class::sign, sizeof(int_type)>::type sint_type;
@@ -126,10 +126,18 @@ static CharIter char_to_int(CharIter begin, CharIter end, Integer &num)
 	return begin;
 }
 
+/// Converts the given range of characters into an integer of the given type.
+template <class CharIter, class Integer>
+inline bool string_to_int(const utf8_ntri &string, Integer &num)
+{
+	utf8_ntri::const_iterator end = string.end();
+	return (char_to_int(string.begin(), end, num) == end);
+}
+
 /// Converts the given floating-point value of the given type into an ascii character string, returning a pointer to the first character not actively used.
 /// Assumes the given iterator points to the beginning of a continuous range in memory. Overwrites *end with a terminating null character.
 template <class CharIter, class Float>
-static CharIter float_to_char(CharIter buffer, Float num)
+inline CharIter float_to_char(CharIter buffer, Float num)
 {
 	static const int precision = static_cast<int>(
 		(ieee_float_desc<Float>::mantissa_bits + 5) / 3 );
@@ -146,10 +154,10 @@ static CharIter float_to_char(CharIter buffer, Float num)
 
 /// Converts the given floating-point value of the given type into an ascii character string.
 template <class Float>
-static utf8_string float_to_string(Float num)
+inline utf8_string float_to_string(Float num)
 {
 	// Estimate decimal length
-	char buffer[3 * (size_info<Float>::bits + 5) / 3 + 12]; // "3 numbers >= float_to_char::precision" (#.#e#)
+	char buffer[3 * (size_info<Float>::bits + 5) / 3 + 12]; // "3 numbers ~= float_to_char::precision" (#.#e#)
 	// Assign to string
 	return utf8_string(buffer, float_to_char(buffer, num));
 }
@@ -158,7 +166,7 @@ static utf8_string float_to_string(Float num)
 /// Assumes the given iterator points to the beginning of a continuous range in memory.
 /// Expects *end to be either a terminating null or some other non-numeric character.
 template <class CharIter, class Float>
-static CharIter char_to_float(CharIter begin, CharIter end, Float &num)
+inline CharIter char_to_float(CharIter begin, CharIter end, Float &num)
 {
 	double value;
 	const char *pBegin = &(*begin);
@@ -180,6 +188,14 @@ static CharIter char_to_float(CharIter begin, CharIter end, Float &num)
 		num = static_cast<Float>(value);
 
 	return stop;
+}
+
+/// Converts the given range of characters into a floating-point value of the given type.
+template <class CharIter, class Float>
+inline bool string_to_float(const utf8_ntri &string, Float &num)
+{
+	utf8_ntri::const_iterator end = string.end();
+	return (char_to_float(string.begin(), end, num) == end);
 }
 
 } // namespace

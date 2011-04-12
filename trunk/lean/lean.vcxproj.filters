@@ -338,5 +338,8 @@
     <ClCompile Include="header\lean\strings\source\conversions.cpp">
       <Filter>Source Files\strings</Filter>
     </ClCompile>
+    <ClCompile Include="header\lean\logging\source\log.cpp">
+      <Filter>Source Files\logging</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -32,7 +32,7 @@ public:
 	/// Tries to lock this spin lock, returning false if currenty locked by another user.
 	LEAN_INLINE bool try_lock()
 	{
-		return atomic_test_and_set(m_counter, 0, 1);
+		return atomic_test_and_set(m_counter, static_cast<Counter>(0), static_cast<Counter>(1));
 	}
 
 	/// Locks this spin lock, returning immediately on success, otherwise waiting for the lock to become unlocked.
@@ -44,7 +44,7 @@ public:
 	/// Unlocks this spin lock, permitting waiting threads to continue execution.
 	LEAN_INLINE void unlock()
 	{
-		atomic_test_and_set(m_counter, 1, 0);
+		atomic_test_and_set(m_counter, static_cast<Counter>(1), static_cast<Counter>(0));
 	}
 };
 

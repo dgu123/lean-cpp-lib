@@ -9,6 +9,7 @@
 #include "../meta/strip.h"
 #include <clocale>
 #include <cstdio>
+#include "../strings/types.h
 
 namespace lean
 {
@@ -60,6 +61,16 @@ static CharIter int_to_char(CharIter buffer, Integer num)
 
 	// Return end
 	return buffer;
+}
+
+/// Converts the given integer of the given type into an ascii character string.
+template <class Integer>
+static utf8_string int_to_string(Integer num)
+{
+	// Estimate decimal length
+	char buffer[(size_info<Integer>::bits + 5) / 3 + 4];
+	// Assign to string
+	return utf8_string(buffer, int_to_char(buffer, num));
 }
 
 /// Converts the given range of characters into an integer of the given type.
@@ -121,7 +132,7 @@ template <class CharIter, class Float>
 static CharIter float_to_char(CharIter buffer, Float num)
 {
 	static const int precision = static_cast<int>(
-		(ieee_float_desc<Float>::mantissa_bits + 2) / 3 );
+		(ieee_float_desc<Float>::mantissa_bits + 5) / 3 );
 
 #ifdef _MSC_VER
 	// Use MS extension
@@ -131,6 +142,16 @@ static CharIter float_to_char(CharIter buffer, Float num)
 	// TODO: Do what the standard library does?
 	return buffer + sprintf(&(*buffer), "%.*g", precision, num);
 #endif
+}
+
+/// Converts the given floating-point value of the given type into an ascii character string.
+template <class Float>
+static utf8_string float_to_string(Float num)
+{
+	// Estimate decimal length
+	char buffer[3 * (size_info<Float>::bits + 5) / 3 + 12]; // "3 numbers >= float_to_char::precision" (#.#e#)
+	// Assign to string
+	return utf8_string(buffer, float_to_char(buffer, num));
 }
 
 /// Converts the given range of characters into a floating-point value of the given type.

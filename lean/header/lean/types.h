@@ -253,6 +253,19 @@ typedef std::ptrdiff_t ptrdiff_t;
 /// Std pointer address type.
 typedef int_type<sign_class::no_sign, sizeof(void*)>::type uintptr_t;
 
+/// Number of bits per byte.
+static const size_t bits_per_byte = CHAR_BIT;
+
+/// Provides enhanced type size information.
+template <class Type>
+struct size_info
+{
+	/// Number of bytes.
+	static const size_t bytes = sizeof(Type);
+	/// Number of bits.
+	static const size_t bits = bytes * bits_per_byte;
+};
+
 }
 
 namespace sign_class = types::sign_class;

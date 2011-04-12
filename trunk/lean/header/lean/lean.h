@@ -21,6 +21,10 @@
 	/// Define this to minimize lean header dependencies (compiles more source code into the link libray).
 	#define LEAN_MIN_DEPENDENCY
 	#undef LEAN_MIN_DEPENDENCY
+
+	/// Define this when compiling lean into a dynamic link library.
+	#define LEAN_MAYBE_EXPORT
+	#undef LEAN_MAYBE_EXPORT
 #endif
 
 /// @}
@@ -49,6 +53,11 @@
 	#define LEAN_RELEASE_BUILD
 #endif
 
+#endif
+
+#ifndef LEAN_MAYBE_EXPORT
+	/// Instructs the compiler to export certain functions and methods when defined accordingly.
+	#define LEAN_MAYBE_EXPORT
 #endif
 
 #ifdef LEAN_DEBUG_BUILD

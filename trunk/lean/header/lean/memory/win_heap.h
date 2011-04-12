@@ -32,9 +32,9 @@ struct win_heap
 	typedef size_t size_type;
 
 	/// Allocates the given amount of memory.
-	static void* allocate(size_type size);
+	LEAN_MAYBE_EXPORT static void* allocate(size_type size);
 	/// Frees the given block of memory.
-	static void free(void *memory);
+	LEAN_MAYBE_EXPORT static void free(void *memory);
 
 	/// Allocates the given amount of memory respecting the given alignment.
 	template <size_t Alignment>

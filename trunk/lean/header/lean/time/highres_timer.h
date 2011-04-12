@@ -21,15 +21,15 @@ private:
 
 public:
 	/// Constructs a new timer from the current system time.
-	highres_timer();
+	LEAN_MAYBE_EXPORT highres_timer();
 
 	/// Updates the reference time stored by this timer.
-	void tick();
+	LEAN_MAYBE_EXPORT void tick();
 
 	/// Gets the time that has elapsed since the last tick.
-	double seconds() const;
+	LEAN_MAYBE_EXPORT double seconds() const;
 	/// Gets the time that has elapsed since the last tick.
-	double milliseconds() const;
+	LEAN_MAYBE_EXPORT double milliseconds() const;
 };
 
 } // namespace

@@ -5,11 +5,11 @@
 #ifndef LEAN_LOGGING_LOG
 #define LEAN_LOGGING_LOG
 
-#include <iostream>
-#include "../macros.h"
+#include "../lean.h"
 #include "../tags/noncopyable.h"
 #include "../concurrent/spin_lock.h"
 #include "../strings/types.h"
+#include <iostream>
 #include <iosfwd>
 #include <vector>
 
@@ -38,18 +38,18 @@ private:
 	spin_lock<> m_printLock;
 
 	/// Acquires a stream to write to.
-	output_stream& acquireStream();
+	LEAN_MAYBE_EXPORT output_stream& acquireStream();
 	/// Prints the contents of the given stream and releases the stream for further re-use.
-	void flushAndReleaseStream(output_stream &stream);
+	LEAN_MAYBE_EXPORT void flushAndReleaseStream(output_stream &stream);
 
 public:
 	/// Constructor.
-	log();
+	LEAN_MAYBE_EXPORT log();
 	/// Destructor.
-	~log();
+	LEAN_MAYBE_EXPORT ~log();
 
 	/// Prints the given message.
-	void print(const char_ntri &message);
+	LEAN_MAYBE_EXPORT void print(const char_ntri &message);
 };
 
 /// Log stream class.

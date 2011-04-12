@@ -90,6 +90,8 @@
     <ClInclude Include="header\lean\io\numeric.h" />
     <ClInclude Include="header\lean\io\wcharcvt.h" />
     <ClInclude Include="header\lean\logging\exceptions.h" />
+    <ClInclude Include="header\lean\logging\log_debugger.h" />
+    <ClInclude Include="header\lean\logging\log_target.h" />
     <ClInclude Include="header\lean\memory\aligned.h" />
     <ClInclude Include="header\lean\memory\crt_heap.h" />
     <ClInclude Include="header\lean\containers\accumulation_vector.h" />
@@ -162,6 +164,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="header\lean\logging\source\log.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="header\lean\logging\source\log_debugger.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>

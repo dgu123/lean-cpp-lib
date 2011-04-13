@@ -1,6 +1,6 @@
 #include "../exceptions.h"
+#include "../log.h"
 #include <stdexcept>
-#include <iostream>
 
 namespace lean
 {
@@ -24,7 +24,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source)
 {
 	// Store valid source, re-used in throw clause!
 	source = impl::make_source_valid(source);
-	std::cerr << source << ": An error occured." << std::endl;
+	log_stream(error_log()) << source << ": An error occured." << std::endl);
 	throw std::runtime_error(source);
 }
 
@@ -34,7 +34,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source, const char 
 	if (!reason)
 		return throw_error(source);
 
-	std::cerr << impl::make_source_valid(source) << ": An error occured: " << reason << std::endl;
+	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occured: " << reason << std::endl;
 	throw std::runtime_error(reason);
 }
 
@@ -43,7 +43,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_invalid(const char *source)
 {
 	// Store valid source, re-used in throw clause!
 	source = impl::make_source_valid(source);
-	std::cerr << source << ": Invalid argument." << std::endl;
+	log_stream(error_log()) << source << ": Invalid argument." << std::endl;
 	throw std::invalid_argument(source);
 }
 
@@ -53,7 +53,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_invalid(const char *source, const cha
 	if (!reason)
 		return throw_invalid(source);
 
-	std::cerr << impl::make_source_valid(source) << ": Invalid argument: " << reason << std::endl;
+	log_stream(error_log()) << impl::make_source_valid(source) << ": Invalid argument: " << reason << std::endl;
 	throw std::invalid_argument(reason);
 }
 
@@ -61,7 +61,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_invalid(const char *source, const cha
 LEAN_ALWAYS_LINK void lean::logging::throw_bad_alloc(const char *source)
 {
 	// TODO: Log somewhere without allocating further memory? Depends on the amount of memory requested...
-	std::cerr << impl::make_source_valid(source) << ": Out of memory." << std::endl;
+	log_stream(error_log()) << impl::make_source_valid(source) << ": Out of memory." << std::endl;
 	throw std::bad_alloc();
 }
 
@@ -69,6 +69,6 @@ LEAN_ALWAYS_LINK void lean::logging::throw_bad_alloc(const char *source)
 LEAN_ALWAYS_LINK void lean::logging::throw_bad_alloc(const char *source, size_t size)
 {
 	// TODO: Log somewhere without allocating further memory? Depends on the amount of memory requested...
-	std::cerr << impl::make_source_valid(source) << ": Out of memory while allocating " << size << " bytes." << std::endl;
+	log_stream(error_log()) << impl::make_source_valid(source) << ": Out of memory while allocating " << size << " bytes." << std::endl;
 	throw std::bad_alloc();
 }

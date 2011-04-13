@@ -29,6 +29,10 @@ LEAN_MAYBE_EXPORT void throw_bad_alloc(const char *source, size_t size);
 
 } // namespace
 
+using logging::throw_error;
+using logging::throw_invalid;
+using logging::throw_bad_alloc;
+
 } // namespace
 
 /// @addtogroup ExceptionMacros Exception macros

@@ -89,6 +89,7 @@
     <ClInclude Include="header\lean\io\file.h" />
     <ClInclude Include="header\lean\io\io.h" />
     <ClInclude Include="header\lean\io\numeric.h" />
+    <ClInclude Include="header\lean\io\raw_file.h" />
     <ClInclude Include="header\lean\io\wcharcvt.h" />
     <ClInclude Include="header\lean\io\win_types.h" />
     <ClInclude Include="header\lean\logging\exceptions.h" />
@@ -167,6 +168,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="header\lean\io\source\raw_file.cpp" />
     <ClCompile Include="header\lean\logging\source\exceptions.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>

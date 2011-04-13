@@ -14,7 +14,7 @@ namespace lean
 namespace io
 {
 
-/// Log file class that prints any given input to a given file.
+/// File class that provides managed access to a given file.
 class file
 {
 private:
@@ -45,15 +45,12 @@ public:
 
 	/// Opens the given file according to the given flags. Throws a runtime_exception on error.
 	LEAN_MAYBE_EXPORT explicit file(const utf8_ntri &name,
-		uint4 access = read | write, uint4 share = read,
-		open_mode mode = open, uint4 hints = none);
+		uint4 access = read | write, open_mode mode = open,
+		uint4 hints = none, uint4 share = read);
 	/// Closes this file.
-	LEAN_MAYBE_EXPORT ~file();
-
-	/// Prints the given range of characters to the file. This method is thread-safe.
-	LEAN_MAYBE_EXPORT void print(const char_ntri &message);
-
-	/// Gets the last modification time in microseconds since 1/1/1901.
+	LEAN_MAYBE_EXPORT virtual ~file();
+	
+	/// Gets the last modification time in microseconds since 1/1/1901. Returns 0 if file is currently open for writing.
 	LEAN_MAYBE_EXPORT uint8 revision() const;
 	/// Gets the size of this file, in bytes.
 	LEAN_MAYBE_EXPORT uint8 size() const;

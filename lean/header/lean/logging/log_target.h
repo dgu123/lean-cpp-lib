@@ -17,6 +17,11 @@ namespace logging
 /// Log target interface.
 class log_target : public noncopyable
 {
+protected:
+	// Disallow interface construction / destruction
+	log_target() { }
+	~log_target() { }
+
 public:
 	/// Prints the given message.
 	virtual void print(const char_ntri &message) = 0;

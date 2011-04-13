@@ -44,7 +44,7 @@ public:
 	};
 
 	/// Opens the given file according to the given flags. Throws a runtime_exception on error.
-	LEAN_MAYBE_EXPORT file(const utf8_ntri &name,
+	LEAN_MAYBE_EXPORT explicit file(const utf8_ntri &name,
 		uint4 access = read | write, uint4 share = read,
 		open_mode mode = open, uint4 hints = none);
 	/// Closes this file.

@@ -23,7 +23,7 @@ private:
 
 public:
 	/// Opens the given file for logging.
-	LEAN_MAYBE_EXPORT log_file(const utf8_ntri &name);
+	LEAN_MAYBE_EXPORT explicit log_file(const utf8_ntri &name);
 	/// Closes the log file.
 	LEAN_MAYBE_EXPORT ~log_file();
 

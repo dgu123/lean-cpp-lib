@@ -33,8 +33,8 @@ public:
 	typedef stream_type_ stream_type;
 
 	/// Wraps the given stream for logging.
-	log_file(stream_type &stream)
-		: m_stream(stream) { };
+	explicit basic_log_stream(stream_type *stream)
+		: m_stream(*stream) { };
 	
 	/// Prints the given message to the log stream. This method is thread-safe.
 	void print(const char_ntri &message)

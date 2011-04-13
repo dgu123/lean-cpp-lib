@@ -53,6 +53,11 @@ public:
 	/// Prints the given range of characters to the file. This method is thread-safe.
 	LEAN_MAYBE_EXPORT void print(const char_ntri &message);
 
+	/// Gets the last modification time in microseconds since 1/1/1901.
+	LEAN_MAYBE_EXPORT uint8 revision() const;
+	/// Gets the size of this file, in bytes.
+	LEAN_MAYBE_EXPORT uint8 size() const;
+
 	/// Gets the file handle of this file.
 	LEAN_INLINE windows_file_handle handle() const { return m_handle; };
 };

@@ -301,6 +301,8 @@ using types::size_t;
 using types::ptrdiff_t;
 using types::uintptr_t;
 
+using types::size_info;
+
 }
 
 #endif

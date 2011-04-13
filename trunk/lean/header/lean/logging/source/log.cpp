@@ -1,10 +1,13 @@
 #include "../log.h"
 #include <sstream>
 #include <algorithm>
+#include "../log_debugger.h"
 
 // Destructor.
-LEAN_ALWAYS_LINK lean::logging::log::log()
+LEAN_ALWAYS_LINK lean::logging::log::log(log_target *initialTarget)
 {
+	if (initialTarget)
+		m_targets.push_back(initialTarget);
 }
 
 // Constructor.
@@ -15,7 +18,7 @@ LEAN_ALWAYS_LINK lean::logging::log::~log()
 		delete (*itStream);
 }
 
-// Adds the given target to this log.
+// Adds the given target to this log. This method is thread-safe.
 LEAN_ALWAYS_LINK void lean::logging::log::add_target(log_target *target)
 {
 	if (target != nullptr)
@@ -25,7 +28,7 @@ LEAN_ALWAYS_LINK void lean::logging::log::add_target(log_target *target)
 	}
 }
 
-// Removes the given target from this log.
+// Removes the given target from this log. This method is thread-safe.
 LEAN_ALWAYS_LINK void lean::logging::log::remove_target(log_target *target)
 {
 	if (target != nullptr)
@@ -37,10 +40,9 @@ LEAN_ALWAYS_LINK void lean::logging::log::remove_target(log_target *target)
 	}
 }
 
-// Prints the given message.
+// Prints the given message. This method is thread-safe.
 LEAN_ALWAYS_LINK void lean::logging::log::print(const char_ntri &message)
 {
-	// Print synchronized
 	scoped_ssl_lock_shared lock(m_targetLock);
 
 	for (target_vector::const_iterator itTarget = m_targets.begin();
@@ -48,7 +50,7 @@ LEAN_ALWAYS_LINK void lean::logging::log::print(const char_ntri &message)
 		(*itTarget)->print(message);
 }
 
-// Acquires a stream to write to.
+// Acquires a stream to write to. This method is thread-safe.
 LEAN_ALWAYS_LINK lean::logging::log::output_stream& lean::logging::log::acquireStream()
 {
 	scoped_sl_lock lock(m_streamLock);
@@ -72,7 +74,7 @@ LEAN_ALWAYS_LINK lean::logging::log::output_stream& lean::logging::log::acquireS
 	}
 }
 
-// Prints the contents of the given stream and releases the stream for further re-use.
+// Prints the contents of the given stream and releases the stream for further re-use. This method is thread-safe.
 LEAN_ALWAYS_LINK void lean::logging::log::flushAndReleaseStream(output_stream &stream)
 {
 	string_stream& stringStream = static_cast<string_stream&>(stream);
@@ -90,4 +92,18 @@ LEAN_ALWAYS_LINK void lean::logging::log::flushAndReleaseStream(output_stream &s
 
 	// Print stream message
 	print(message);
+}
+
+// Gets the error log.
+LEAN_ALWAYS_LINK lean::logging::log& lean::logging::error_log()
+{
+	static log errorLog(&log_debugger::get());
+	return errorLog;
+}
+
+// Gets the info log.
+LEAN_ALWAYS_LINK lean::logging::log& lean::logging::info_log()
+{
+	static log infoLog(&log_debugger::get());
+	return infoLog;
 }

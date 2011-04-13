@@ -14,7 +14,7 @@ namespace lean
 namespace logging
 {
 
-/// Prints the given message to the debug output window.
+/// Prints the given message to the debug output window. This method is thread-safe.
 LEAN_MAYBE_EXPORT void print_debugger(const char_ntri &message);
 
 /// Log debugger class that prints any given input to the debug output window.
@@ -25,10 +25,10 @@ private:
 	~log_debugger() { }
 
 public:
-	/// Gets the log target instance.
+	/// Gets the log target instance. This method is thread-safe.
 	LEAN_MAYBE_EXPORT static log_debugger& get();
 
-	/// Prints the given message to the debug output window.
+	/// Prints the given message to the debug output window. This method is thread-safe.
 	void print(const char_ntri &message) { print_debugger(message); }
 };
 

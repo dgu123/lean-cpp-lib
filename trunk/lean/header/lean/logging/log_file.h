@@ -35,7 +35,7 @@ public:
 	/// Gets whether the file was opened successfully.
 	LEAN_MAYBE_EXPORT bool valid() const;
 	
-	/// Prints the given message to the log file.
+	/// Prints the given message to the log file. This method is thread-safe.
 	LEAN_MAYBE_EXPORT void print(const char_ntri &message);
 };
 

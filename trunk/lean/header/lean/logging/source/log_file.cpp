@@ -29,11 +29,12 @@ LEAN_ALWAYS_LINK bool lean::logging::log_file::valid() const
 	return (m_handle != INVALID_HANDLE_VALUE);
 }
 
-// Prints the given message to the log file.
+// Prints the given message to the log file. This method is thread-safe.
 LEAN_ALWAYS_LINK void lean::logging::log_file::print(const char_ntri &message)
 {
 	DWORD written;
 
+	// Thread-safe: http://msdn.microsoft.com/en-us/library/ms810467
 	if (m_handle != INVALID_HANDLE_VALUE)
 		::WriteFile(m_handle, message.c_str(), message.size(), &written, NULL);
 }

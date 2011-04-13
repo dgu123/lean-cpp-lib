@@ -92,6 +92,7 @@
     <ClInclude Include="header\lean\logging\exceptions.h" />
     <ClInclude Include="header\lean\logging\log_debugger.h" />
     <ClInclude Include="header\lean\logging\log_file.h" />
+    <ClInclude Include="header\lean\logging\log_stream.h" />
     <ClInclude Include="header\lean\logging\log_target.h" />
     <ClInclude Include="header\lean\memory\aligned.h" />
     <ClInclude Include="header\lean\memory\crt_heap.h" />

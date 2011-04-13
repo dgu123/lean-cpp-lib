@@ -23,6 +23,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "containers_test", "containers_test\containers_test.vcxproj", "{14DDFB3D-BD5D-4303-ADAB-D186C01E3C7F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "io_log_test", "io_log_test\io_log_test.vcxproj", "{4063F6B3-F3B4-4FB3-90F1-F0CBDBA0A487}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E3806FF1-63DD-457C-8479-517C78134349} = {E3806FF1-63DD-457C-8479-517C78134349}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

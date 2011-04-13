@@ -86,9 +86,11 @@
     <ClInclude Include="header\lean\containers\accumulation_map.h" />
     <ClInclude Include="header\lean\containers\simple_vector.h" />
     <ClInclude Include="header\lean\io\endianness.h" />
+    <ClInclude Include="header\lean\io\file.h" />
     <ClInclude Include="header\lean\io\io.h" />
     <ClInclude Include="header\lean\io\numeric.h" />
     <ClInclude Include="header\lean\io\wcharcvt.h" />
+    <ClInclude Include="header\lean\io\win_types.h" />
     <ClInclude Include="header\lean\logging\exceptions.h" />
     <ClInclude Include="header\lean\logging\log_debugger.h" />
     <ClInclude Include="header\lean\logging\log_file.h" />
@@ -161,6 +163,10 @@
     <ClInclude Include="header\lean\memory\memory.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="header\lean\io\source\file.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="header\lean\logging\source\exceptions.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>

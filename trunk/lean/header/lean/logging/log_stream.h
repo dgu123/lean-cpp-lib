@@ -19,8 +19,8 @@ namespace logging
 /// Log stream class that prints any given input to a given stream.
 /// As streams are not guaranteed to be thread-safe, it is recommended
 /// to only ever hold one wrapper for any given stream at a time.
-template <class Char, class Traits = std::char_traits<Char> >
-class log_stream : public log_target
+template <class Char = char, class Traits = std::char_traits<Char> >
+class basic_log_stream : public log_target
 {
 private:
 	typedef basic_ostream<Char, Traits> stream_type_;
@@ -45,9 +45,19 @@ public:
 	}
 };
 
+/// Std stream logging wrapper.
+/// @see lean::logging::basic_log_stream
+typedef basic_log_stream<> log_stream;
+/// Wide-char std stream logging wrapper.
+/// @see lean::logging::basic_log_stream
+typedef basic_log_stream<wchar_t> wlog_stream;
+
 } // namespace
 
+using logging::basic_log_stream;
+
 using logging::log_stream;
+using logging::wlog_stream;
 
 } // namespace
 

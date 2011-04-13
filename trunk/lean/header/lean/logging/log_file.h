@@ -7,18 +7,13 @@
 
 #include "../lean.h"
 #include "../strings/types.h"
-#include "../pimpl/opaque_val.h"
+#include "../io/win_types.h"
 #include "log_target.h"
 
 namespace lean
 {
 namespace logging
 {
-
-DECLARE_OPAQUE_TYPE(windows_file_handle, void*);
-#ifdef _WINDOWS_
-DEFINE_OPAQUE_TYPE(windows_file_handle, HANDLE);
-#endif
 
 /// Log file class that prints any given input to a given file.
 class log_file : public log_target

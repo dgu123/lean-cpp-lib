@@ -70,6 +70,10 @@ private:
 public:
 	/// Output stream type.
 	typedef log::output_stream output_stream;
+	/// Basic output stream type.
+	typedef std::basic_ostream<output_stream::char_type, output_stream::traits_type> basic_output_stream;
+	/// Basic output ios type.
+	typedef std::basic_ios<output_stream::char_type, output_stream::traits_type> basic_output_ios;
 
 	/// Constructs a new TEMPORARY log stream from the log.
 	log_stream(log &log)
@@ -95,13 +99,13 @@ public:
 		return *this;
 	}
 	// Passes the given manipulator to this log stream.
-	log_stream& operator<<(std::basic_ostream<char>& (*manip)(std::basic_ostream<char>&))
+	log_stream& operator<<(basic_output_stream& (*manip)(basic_output_stream&))
 	{
 		m_stream << manip;
 		return *this;
 	}
 	// Passes the given manipulator to this log stream.
-	log_stream& operator<<(std::basic_ios<char>& (*manip)(std::basic_ios<char>&))
+	log_stream& operator<<(basic_output_ios& (*manip)(basic_output_ios&))
 	{
 		m_stream << manip;
 		return *this;

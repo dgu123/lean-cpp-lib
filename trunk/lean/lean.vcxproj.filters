@@ -70,6 +70,9 @@
     <Filter Include="Source Files\strings">
       <UniqueIdentifier>{90461f9d-2843-49f3-864a-8bbf95e488c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\io">
+      <UniqueIdentifier>{a66dd1a6-81dc-42b5-b0c9-5ca238765b88}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -330,6 +333,12 @@
     <ClInclude Include="header\lean\logging\log_stream.h">
       <Filter>Header Files\logging</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\io\file.h">
+      <Filter>Header Files\io</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\io\win_types.h">
+      <Filter>Header Files\io</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">
@@ -358,6 +367,9 @@
     </ClCompile>
     <ClCompile Include="header\lean\logging\source\log_file.cpp">
       <Filter>Source Files\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="header\lean\io\source\file.cpp">
+      <Filter>Source Files\io</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

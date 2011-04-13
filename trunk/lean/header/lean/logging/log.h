@@ -76,7 +76,7 @@ public:
 	typedef std::basic_ios<output_stream::char_type, output_stream::traits_type> basic_output_ios;
 
 	/// Constructs a new TEMPORARY log stream from the log.
-	log_stream(log &log)
+	explicit log_stream(log &log)
 		: m_log(log),
 		m_stream(log.acquireStream()) { }
 	/// Prints the contents of this log stream and releases it for further re-use.

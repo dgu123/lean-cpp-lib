@@ -342,6 +342,9 @@
     <ClInclude Include="header\lean\io\raw_file.h">
       <Filter>Header Files\io</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\logging\win_errors.h">
+      <Filter>Header Files\logging</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">
@@ -376,6 +379,9 @@
     </ClCompile>
     <ClCompile Include="header\lean\io\source\raw_file.cpp">
       <Filter>Source Files\io</Filter>
+    </ClCompile>
+    <ClCompile Include="header\lean\logging\source\win_errors.cpp">
+      <Filter>Source Files\logging</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

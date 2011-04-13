@@ -112,6 +112,7 @@ LEAN_MAYBE_INLINE lean::io::file::file(const utf8_ntri &name,
 			NULL) )
 {
 	if (m_handle == INVALID_HANDLE_VALUE)
+		// TODO: Log errors
 		LEAN_THROW_ERROR_MSG(name.c_str());
 }
 

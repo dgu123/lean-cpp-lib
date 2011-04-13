@@ -40,23 +40,23 @@ private:
 	target_vector m_targets;
 	shareable_spin_lock<> m_targetLock;
 
-	/// Acquires a stream to write to.
+	/// Acquires a stream to write to. This method is thread-safe.
 	LEAN_MAYBE_EXPORT output_stream& acquireStream();
-	/// Prints the contents of the given stream and releases the stream for further re-use.
+	/// Prints the contents of the given stream and releases the stream for further re-use. This method is thread-safe.
 	LEAN_MAYBE_EXPORT void flushAndReleaseStream(output_stream &stream);
 
 public:
 	/// Constructor.
-	LEAN_MAYBE_EXPORT log();
+	LEAN_MAYBE_EXPORT log(log_target *initialTarget = nullptr);
 	/// Destructor.
 	LEAN_MAYBE_EXPORT ~log();
 
-	/// Adds the given target to this log.
+	/// Adds the given target to this log. This method is thread-safe.
 	LEAN_MAYBE_EXPORT void add_target(log_target *target);
-	/// Removes the given target from this log.
+	/// Removes the given target from this log. This method is thread-safe.
 	LEAN_MAYBE_EXPORT void remove_target(log_target *target);
 
-	/// Prints the given message.
+	/// Prints the given message. This method is thread-safe.
 	LEAN_MAYBE_EXPORT void print(const char_ntri &message);
 };
 
@@ -88,6 +88,24 @@ public:
 		m_stream << value;
 		return *this;
 	}
+	// Passes the given manipulator to this log stream.
+	log_stream& operator <<(std::ios_base& (*manip)(::std::ios_base&))
+	{
+		m_stream << manip;
+		return *this;
+	}
+	// Passes the given manipulator to this log stream.
+	log_stream& operator<<(std::basic_ostream<char>& (*manip)(std::basic_ostream<char>&))
+	{
+		m_stream << manip;
+		return *this;
+	}
+	// Passes the given manipulator to this log stream.
+	log_stream& operator<<(std::basic_ios<char>& (*manip)(std::basic_ios<char>&))
+	{
+		m_stream << manip;
+		return *this;
+	}
 
 	/// Gets the underlying output stream.
 	output_stream& std()
@@ -96,26 +114,30 @@ public:
 	}
 };
 
+/// Gets the error log.
+LEAN_MAYBE_EXPORT log& error_log();
+/// Gets the info log.
+LEAN_MAYBE_EXPORT log& info_log();
+
 } // namespace
 
 using logging::log;
 using logging::log_stream;
 
+using logging::error_log;
+using logging::info_log;
+
 } // namespace
-
-// TODO: introduce global thread-safe lean::logging::log streams to replace unsafe std streams
-
-#include <iostream>
 
 /// @addtogroup LoggingMacros Logging macros
 /// @see lean::logging
 /// @{
 
 /// Logs the given message, prepending the caller's file and line.
-#define LEAN_LOG(msg) ::std::clog << __FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) "): " << msg << ::std::endl
+#define LEAN_LOG(msg) ::lean::log_stream(::lean::info_log()) << __FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) "): " << msg << ::std::endl
 
 /// Logs the given error message, prepending the caller's file and line.
-#define LEAN_LOG_ERROR(msg) ::std::cerr << __FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) "): " << msg << ::std::endl
+#define LEAN_LOG_ERROR(msg) ::lean::log_stream(::lean::error_log()) << __FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) "): " << msg << ::std::endl
 
 /// @}
 

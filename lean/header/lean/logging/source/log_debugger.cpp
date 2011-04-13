@@ -12,8 +12,9 @@ LEAN_ALWAYS_LINK lean::logging::log_debugger& lean::logging::log_debugger::get()
 	return debugger;
 }
 
-// Prints the given message to the debug output window.
+// Prints the given message to the debug output window. This method is thread-safe.
 LEAN_ALWAYS_LINK void lean::logging::print_debugger(const char_ntri &message)
 {
+	// Thread-safe: http://www.unixwiz.net/techtips/outputdebugstring.html
 	::OutputDebugStringA(message.c_str());
 }

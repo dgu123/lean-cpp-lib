@@ -1,6 +1,8 @@
 #include "../exceptions.h"
 #include "../log.h"
 #include <stdexcept>
+#include "../../strings/utility.h"
+#include "../../io/numeric.h"
 
 namespace lean
 {
@@ -24,7 +26,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source)
 {
 	// Store valid source, re-used in throw clause!
 	source = impl::make_source_valid(source);
-	log_stream(error_log()) << source << ": An error occured." << std::endl);
+	log_stream(error_log()) << source << ": An error occured." << std::endl;
 	throw std::runtime_error(source);
 }
 
@@ -60,15 +62,37 @@ LEAN_ALWAYS_LINK void lean::logging::throw_invalid(const char *source, const cha
 // Throws a bad_alloc exception.
 LEAN_ALWAYS_LINK void lean::logging::throw_bad_alloc(const char *source)
 {
-	// TODO: Log somewhere without allocating further memory? Depends on the amount of memory requested...
-	log_stream(error_log()) << impl::make_source_valid(source) << ": Out of memory." << std::endl;
+	char msg[2048];
+	size_t msgLen = 0;
+
+	// Log without allocating further memory
+	msgLen += strmcpy(msg + msgLen, impl::make_source_valid(source), sizeof(msg) - msgLen);
+	msgLen += strmcpy(msg + msgLen, ": Out of memory.\n", sizeof(msg) - msgLen);
+	
+	msg[msgLen - 1] = '\n';
+	error_log().print(msg);
+	
 	throw std::bad_alloc();
 }
 
 // Throws a bad_alloc exception.
 LEAN_ALWAYS_LINK void lean::logging::throw_bad_alloc(const char *source, size_t size)
 {
-	// TODO: Log somewhere without allocating further memory? Depends on the amount of memory requested...
-	log_stream(error_log()) << impl::make_source_valid(source) << ": Out of memory while allocating " << size << " bytes." << std::endl;
+	char msg[2048];
+	size_t msgLen = 0;
+
+	// Log without allocating further memory
+	msgLen += strmcpy(msg + msgLen, impl::make_source_valid(source), sizeof(msg) - msgLen);
+	msgLen += strmcpy(msg + msgLen, ": Out of memory while allocating ", sizeof(msg) - msgLen);
+
+	if (sizeof(msg) - msgLen > max_int_string_length<size_t>::value)
+	{
+		msgLen = int_to_char(msg + msgLen, size) - msg;
+		msgLen += strmcpy(msg + msgLen, " bytes.\n", sizeof(msg) - msgLen);
+	}
+	
+	msg[msgLen - 1] = '\n';
+	error_log().print(msg);
+
 	throw std::bad_alloc();
 }

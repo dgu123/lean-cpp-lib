@@ -345,6 +345,9 @@
     <ClInclude Include="header\lean\logging\win_errors.h">
       <Filter>Header Files\logging</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\strings\utility.h">
+      <Filter>Header Files\strings</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

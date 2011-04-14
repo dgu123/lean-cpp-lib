@@ -1,5 +1,6 @@
 #include "../win_errors.h"
 #include "../exceptions.h"
+#include "../../strings/utility.h"
 #include <windows.h>
 #include <stdexcept>
 
@@ -23,7 +24,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_last_win_error(const char *source, co
 }
 
 // Gets an error message describing the last WinAPI error that occurred. Returns the number of characters used.
-LEAN_ALWAYS_LINK size_t get_last_win_error_msg(char *buffer, size_t maxCount)
+LEAN_ALWAYS_LINK size_t lean::logging::get_last_win_error_msg(char *buffer, size_t maxCount)
 {
 	size_t count = ::FormatMessageA(
 		FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -32,12 +33,10 @@ LEAN_ALWAYS_LINK size_t get_last_win_error_msg(char *buffer, size_t maxCount)
 		buffer, maxCount,
 		nullptr );
 
-	if (count == 0 && maxCount != 0)
-	{
-		count = min(sizeof("Error unknown."), maxCount) - 1;
-		memcpy(buffer, "Error unknown.", count);
-		buffer[count] = 0;
-	}
+	if (count == 0)
+		count = strmcpy(buffer, "Error unknown.", maxCount);
+	else if (count == maxCount)
+		buffer[--count] = 0;
 
 	return count;
 }

@@ -63,12 +63,20 @@ inline CharIter int_to_char(CharIter buffer, Integer num)
 	return buffer;
 }
 
+/// Estimates the maximum string length for integers of the given type.
+template <class Integer>
+struct max_int_string_length
+{
+	/// Estimated maximum string length for integers of the given type.
+	static const int value = (size_info<Integer>::bits + 5) / 3 + 4;
+};
+
 /// Converts the given integer of the given type into an ascii character string.
 template <class Integer>
 inline utf8_string int_to_string(Integer num)
 {
 	// Estimate decimal length
-	char buffer[(size_info<Integer>::bits + 5) / 3 + 4];
+	char buffer[max_int_string_length<Integer>::value];
 	// Assign to string
 	return utf8_string(buffer, int_to_char(buffer, num));
 }
@@ -201,7 +209,9 @@ inline bool string_to_float(const utf8_ntri &string, Float &num)
 } // namespace
 
 using io::int_to_char;
+using io::max_int_string_length;
 using io::char_to_int;
+
 using io::float_to_char;
 using io::char_to_float;
 

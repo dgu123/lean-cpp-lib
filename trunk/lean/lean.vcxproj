@@ -148,6 +148,7 @@
     <ClInclude Include="header\lean\strings\strings.h" />
     <ClInclude Include="header\lean\strings\types.h" />
     <ClInclude Include="header\lean\strings\utf_traits.h" />
+    <ClInclude Include="header\lean\strings\utility.h" />
     <ClInclude Include="header\lean\tags\nonconstructible.h" />
     <ClInclude Include="header\lean\tags\noncopyable.h" />
     <ClInclude Include="header\lean\tags\tags.h" />

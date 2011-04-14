@@ -18,6 +18,7 @@ namespace io
 class file
 {
 private:
+	utf8_string m_name;
 	windows_file_handle m_handle;
 
 public:
@@ -57,6 +58,8 @@ public:
 
 	/// Gets the file handle of this file.
 	LEAN_INLINE windows_file_handle handle() const { return m_handle; };
+	/// Gets the name of this file.
+	LEAN_INLINE const utf8_string& name() const { return m_name; };
 };
 
 } // namespace

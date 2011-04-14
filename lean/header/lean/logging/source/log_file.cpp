@@ -5,6 +5,8 @@
 #include <windows.h>
 #include "../log_file.h"
 #include "../../strings/conversions.h"
+#include "../../logging/log.h"
+#include "../../logging/win_errors.h"
 
 // Opens the given file for logging.
 LEAN_ALWAYS_LINK lean::logging::log_file::log_file(const utf8_ntri &name)
@@ -14,6 +16,8 @@ LEAN_ALWAYS_LINK lean::logging::log_file::log_file(const utf8_ntri &name)
 			NULL, CREATE_ALWAYS,
 			0, NULL) )
 {
+	if (m_handle == INVALID_HANDLE_VALUE)
+		LEAN_LOG_ERROR("Error creating log file: " << get_last_win_error_msg() << " << " << name.c_str() << std::endl);
 }
 
 // Closes the log file.

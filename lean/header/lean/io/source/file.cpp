@@ -5,7 +5,7 @@
 #include <windows.h>
 #include "../file.h"
 #include "../../strings/conversions.h"
-#include "../../logging/exceptions.h"
+#include "../../logging/win_errors.h"
 
 namespace lean
 {
@@ -92,7 +92,6 @@ namespace impl
 			return FILE_FLAG_RANDOM_ACCESS;
 		else
 			return 0;
-
 	}
 
 } // namespace
@@ -102,7 +101,8 @@ namespace impl
 // Opens the given file according to the given flags. Throws a runtime_exception on error.
 LEAN_MAYBE_INLINE lean::io::file::file(const utf8_ntri &name,
 	uint4 access, open_mode mode, uint4 hints, uint4 share)
-	: m_handle(
+	: m_name(name),
+	m_handle(
 		::CreateFileW(utf_to_utf16(name).c_str(),
 			impl::get_windows_access_flags(access),
 			impl::get_windows_sharing_flags(share),
@@ -112,8 +112,7 @@ LEAN_MAYBE_INLINE lean::io::file::file(const utf8_ntri &name,
 			NULL) )
 {
 	if (m_handle == INVALID_HANDLE_VALUE)
-		// TODO: Log errors
-		LEAN_THROW_ERROR_MSG(name.c_str());
+		throw_last_win_error(name.c_str());
 }
 
 // Closes this file.
@@ -125,13 +124,12 @@ LEAN_MAYBE_INLINE lean::io::file::~file()
 // Gets the last modification time in microseconds since 1/1/1901. Returns 0 if file is currently open for writing.
 LEAN_MAYBE_INLINE lean::uint8 lean::io::file::revision() const
 {
-	static const uint8 null_revision_offset = impl::get_null_revision_offset();
-	
 	uint8 revision;
 
 	LEAN_ASSERT(sizeof(uint8) == sizeof(::FILETIME));
 	::GetFileTime(m_handle, NULL, NULL, reinterpret_cast<FILETIME*>(&revision));
 
+	static const uint8 null_revision_offset = impl::get_null_revision_offset();
 	// Return 0 in write-access scenarios
 	return (revision != 0) ? (revision - null_revision_offset) / 10ULL : 0ULL;
 }

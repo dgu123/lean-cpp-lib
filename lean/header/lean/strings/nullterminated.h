@@ -142,11 +142,11 @@ public:
 
 	// DESIGN: Only permit implicit conversion to compatible container types, otherwise pointers might accidentally dangle.
 //	// Gets a pointer to this null-terminated range.
-//	LEAN_INLINE operator const_pointer() { return m_begin; }
+//	LEAN_INLINE operator const_pointer() const { return m_begin; }
 
 	/// Constructs a compatible object from this null-terminated character range.
 	template <class Compatible>
-	operator Compatible()
+	operator Compatible() const
 	{
 		typedef typename assert_nullterminated_compatible<Compatible, value_type, traits_type>::type assert_compatible;
 		return nullterminated_compatible<Compatible, value_type, traits_type>::to(m_begin);

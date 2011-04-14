@@ -26,7 +26,7 @@ LEAN_MAYBE_EXPORT size_t lean::io::raw_file::read(char *begin, size_t count)
 
 	// Thread-safe: http://msdn.microsoft.com/en-us/library/ms810467
 	if (!::ReadFile(handle(), begin, count, &read, NULL))
-		LEAN_LOG_ERROR("Error reading from file: " << get_last_win_error_msg() << " << " << "TODO: filename" << std::endl);
+		LEAN_LOG_ERROR("Error reading from file: " << get_last_win_error_msg() << " << " << name() << std::endl);
 	
 	return read;
 }
@@ -38,7 +38,7 @@ LEAN_MAYBE_EXPORT size_t lean::io::raw_file::write(const char *begin, size_t cou
 
 	// Thread-safe: http://msdn.microsoft.com/en-us/library/ms810467
 	if (!::WriteFile(handle(), begin, count, &written, NULL))
-		LEAN_LOG_ERROR("Error writing to file: " << get_last_win_error_msg() << " << " << "TODO: filename" << std::endl);
+		LEAN_LOG_ERROR("Error writing to file: " << get_last_win_error_msg() << " << " << name() << std::endl);
 	
 	return written;
 }

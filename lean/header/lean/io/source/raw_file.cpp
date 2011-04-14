@@ -48,3 +48,33 @@ LEAN_MAYBE_INLINE size_t lean::io::raw_file::print(const char_ntri &message)
 {
 	return write(message.c_str(), message.size());
 }
+
+// Sets the current file cursor position. Throws a runtime_exception on error.
+LEAN_MAYBE_INLINE void lean::io::raw_file::pos(uint8 newPos)
+{
+	LEAN_ASSERT(sizeof(uint8) == sizeof(::LARGE_INTEGER));
+
+	if (!::SetFilePointerEx(handle(), reinterpret_cast<LARGE_INTEGER&>(newPos), NULL, FILE_BEGIN))
+		LEAN_THROW_WIN_ERROR_CTX("SetFilePointerEx()", name().c_str());
+}
+
+// Gets the current file cursor position. Returns 0 on error.
+LEAN_MAYBE_INLINE lean::uint8 lean::io::raw_file::pos() const
+{
+	const LARGE_INTEGER largeZero = { 0, 0 };
+	uint8 pos = 0;
+
+	LEAN_ASSERT(sizeof(uint8) == sizeof(::LARGE_INTEGER));
+
+	::SetFilePointerEx(handle(), largeZero, reinterpret_cast<LARGE_INTEGER*>(&pos), FILE_CURRENT);
+	return pos;
+}
+
+// Resizes the file, either extending or truncating it. Throws a runtime_exception on error.
+LEAN_MAYBE_INLINE void lean::io::raw_file::resize(uint8 newSize)
+{
+	pos(newSize);
+
+	if (!::SetEndOfFile(handle()))
+		LEAN_THROW_WIN_ERROR_CTX("SetEndOfFile()", name().c_str());
+}

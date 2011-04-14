@@ -112,7 +112,7 @@ LEAN_MAYBE_INLINE lean::io::file::file(const utf8_ntri &name,
 			NULL) )
 {
 	if (m_handle == INVALID_HANDLE_VALUE)
-		throw_last_win_error(name.c_str());
+		LEAN_THROW_WIN_ERROR_CTX("CreateFile()", m_name.c_str());
 }
 
 // Closes this file.
@@ -124,20 +124,24 @@ LEAN_MAYBE_INLINE lean::io::file::~file()
 // Gets the last modification time in microseconds since 1/1/1901. Returns 0 if file is currently open for writing.
 LEAN_MAYBE_INLINE lean::uint8 lean::io::file::revision() const
 {
-	uint8 revision;
+	uint8 revision = 0;
 
 	LEAN_ASSERT(sizeof(uint8) == sizeof(::FILETIME));
+
 	::GetFileTime(m_handle, NULL, NULL, reinterpret_cast<FILETIME*>(&revision));
 
 	static const uint8 null_revision_offset = impl::get_null_revision_offset();
 	// Return 0 in write-access scenarios
-	return (revision != 0) ? (revision - null_revision_offset) / 10ULL : 0ULL;
+	return (revision != 0) ? (revision - null_revision_offset) / 10U : 0;
 }
 
 // Gets the size of this file, in bytes.
 LEAN_MAYBE_INLINE lean::uint8 lean::io::file::size() const
 {
-	DWORD sizeLow, sizeHigh;
-	sizeLow = ::GetFileSize(m_handle, &sizeHigh);
-	return static_cast<uint8>(sizeLow) | (static_cast<uint8>(sizeHigh) << size_info<DWORD>::bits);
+	uint8 size = 0;
+
+	LEAN_ASSERT(sizeof(uint8) == sizeof(::LARGE_INTEGER));
+
+	::GetFileSizeEx(m_handle, reinterpret_cast<LARGE_INTEGER*>(&size));
+	return size;
 }

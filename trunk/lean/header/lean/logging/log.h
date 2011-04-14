@@ -13,6 +13,7 @@
 #include "log_target.h"
 #include <vector>
 #include <iosfwd>
+#include <ostream>
 
 namespace lean
 {

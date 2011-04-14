@@ -23,6 +23,21 @@ LEAN_ALWAYS_LINK void lean::logging::throw_last_win_error(const char *source, co
 	throw_error(source, msg.c_str());
 }
 
+// Throws a runtime_error exception containing the last WinAPI error.
+LEAN_ALWAYS_LINK void lean::logging::throw_last_win_error(const char *source, const char *reason, const char *context)
+{
+	if (!context)
+		return throw_last_win_error(source, reason);
+	if (!reason)
+		return throw_last_win_error(source, context);
+
+	std::string msg = get_last_win_error_msg();
+	msg.append(" << ");
+	msg.append(reason);
+
+	throw_error(source, msg.c_str(), context);
+}
+
 // Gets an error message describing the last WinAPI error that occurred. Returns the number of characters used.
 LEAN_ALWAYS_LINK size_t lean::logging::get_last_win_error_msg(char *buffer, size_t maxCount)
 {

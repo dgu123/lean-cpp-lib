@@ -40,6 +40,18 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source, const char 
 	throw std::runtime_error(reason);
 }
 
+// Throws a runtime_error exception.
+LEAN_MAYBE_EXPORT void lean::logging::throw_error(const char *source, const char *reason, const char *context)
+{
+	if (!context)
+		return throw_error(source, reason);
+	if (!reason)
+		return throw_error(source, context);
+
+	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occured: " << reason << " (" << context << ")" << std::endl;
+	throw std::runtime_error(reason);
+}
+
 // Throws an invalid_argument exception.
 LEAN_ALWAYS_LINK void lean::logging::throw_invalid(const char *source)
 {

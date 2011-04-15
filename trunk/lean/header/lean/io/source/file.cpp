@@ -51,13 +51,14 @@ namespace impl
 	}
 
 	/// Converts the given sharing flags into valid windows sharing flags.
-	DWORD get_windows_sharing_flags(uint4 share)
+	DWORD get_windows_sharing_flags(uint4 share, uint4 access)
 	{
 		DWORD winShare = 0;
 		
-		if (share & file::read)
+		if ((share & file::read) || (share & file::share_default))
 			winShare |= FILE_SHARE_READ;
-		if (share & file::write)
+		// Share for writing, if default & access read-only
+		if (share & file::write || (share & file::share_default) && !(access & file::write))
 			winShare |= FILE_SHARE_WRITE;
 
 		return winShare;
@@ -105,7 +106,7 @@ LEAN_MAYBE_INLINE lean::io::file::file(const utf8_ntri &name,
 	m_handle(
 		::CreateFileW(utf_to_utf16(name).c_str(),
 			impl::get_windows_access_flags(access),
-			impl::get_windows_sharing_flags(share),
+			impl::get_windows_sharing_flags(share, access),
 			nullptr,
 			impl::get_windows_open_mode(mode, access),
 			impl::get_windows_optimization_flags(hints),

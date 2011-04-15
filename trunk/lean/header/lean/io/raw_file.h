@@ -21,7 +21,7 @@ public:
 	/// Opens the given file according to the given flags. Throws a runtime_exception on error.
 	LEAN_MAYBE_EXPORT explicit raw_file(const utf8_ntri &name,
 		uint4 access = file::read | file::write, open_mode mode = file::open,
-		uint4 hints = file::none, uint4 share = file::read);
+		uint4 hints = file::none, uint4 share = file::share_default);
 	/// Closes this file.
 	LEAN_MAYBE_EXPORT ~raw_file();
 

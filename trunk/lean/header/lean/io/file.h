@@ -2,6 +2,14 @@
 /* lean I/O                     (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+// Opaque value requires this to go here
+#ifdef LEAN_INLINING
+	#ifndef LEAN_LOGGING_IO_FILE_CPP
+		#define LEAN_LOGGING_IO_FILE_CPP
+		#include "source/file.cpp"
+	#endif
+#endif
+
 #ifndef LEAN_LOGGING_IO_FILE
 #define LEAN_LOGGING_IO_FILE
 
@@ -25,8 +33,15 @@ public:
 	/// Access modes.
 	enum access_modes
 	{
-		read = 0x1,		///< Read mode.
-		write = 0x2		///< Write mode.
+		read = 0x1,					///< Read mode.
+		write = 0x2,				///< Write mode.
+		readwrite = read | write	///< Read-write mode.
+	};
+	/// Additional sharing modes (enhancing access modes which may also be used as sharing modes).
+	enum share_modes
+	{
+		dont_share = 0x0,		///< Exclusive access mode.
+		share_default = 0x4,		///< Default sharing mode (read-write on read-only access, read otherwise).
 	};
 	/// Open modes.
 	enum open_mode
@@ -47,7 +62,7 @@ public:
 	/// Opens the given file according to the given flags. Throws a runtime_exception on error.
 	LEAN_MAYBE_EXPORT explicit file(const utf8_ntri &name,
 		uint4 access = read | write, open_mode mode = open,
-		uint4 hints = none, uint4 share = read);
+		uint4 hints = none, uint4 share = share_default);
 	/// Closes this file.
 	LEAN_MAYBE_EXPORT virtual ~file();
 	
@@ -75,9 +90,5 @@ public:
 using io::file;
 
 } // namespace
-
-#ifdef LEAN_INLINING
-#include "source/file.cpp"
-#endif
 
 #endif

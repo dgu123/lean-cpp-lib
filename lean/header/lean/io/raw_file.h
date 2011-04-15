@@ -26,20 +26,12 @@ public:
 	LEAN_MAYBE_EXPORT ~raw_file();
 
 	/// Reads the given number of bytes from the file, returning the number of bytes read. This method is thread-safe.
-	LEAN_MAYBE_EXPORT size_t read(char *begin, size_t count);
+	LEAN_MAYBE_EXPORT size_t read(char *begin, size_t count) const;
 	/// Writes the given number of bytes to the file, returning the number of bytes written. This method is thread-safe.
 	LEAN_MAYBE_EXPORT size_t write(const char *begin, size_t count);
 
 	/// Prints the given range of characters to the file. This method is thread-safe.
 	LEAN_MAYBE_EXPORT size_t print(const char_ntri &message);
-
-	/// Sets the current file cursor position. Throws a runtime_exception on error.
-	LEAN_MAYBE_EXPORT void pos(uint8 newPos);
-	/// Gets the current file cursor position. Returns 0 on error.
-	LEAN_MAYBE_EXPORT uint8 pos() const;
-
-	/// Resizes the file, either extending or truncating it. Throws a runtime_exception on error.
-	LEAN_MAYBE_EXPORT void resize(uint8 newSize);
 };
 
 } // namespace

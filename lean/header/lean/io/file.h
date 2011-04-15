@@ -51,6 +51,14 @@ public:
 	/// Closes this file.
 	LEAN_MAYBE_EXPORT virtual ~file();
 	
+	/// Sets the current file cursor position. Throws a runtime_exception on error.
+	LEAN_MAYBE_EXPORT void pos(uint8 newPos);
+	/// Gets the current file cursor position. Returns 0 on error.
+	LEAN_MAYBE_EXPORT uint8 pos() const;
+
+	/// Resizes the file, either extending or truncating it. Throws a runtime_exception on error.
+	LEAN_MAYBE_EXPORT void resize(uint8 newSize);
+
 	/// Gets the last modification time in microseconds since 1/1/1901. Returns 0 if file is currently open for writing.
 	LEAN_MAYBE_EXPORT uint8 revision() const;
 	/// Gets the size of this file, in bytes.

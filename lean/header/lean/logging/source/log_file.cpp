@@ -13,7 +13,7 @@ LEAN_ALWAYS_LINK lean::logging::log_file::log_file(const utf8_ntri &name)
 	: m_handle(
 		::CreateFileW(utf_to_utf16(name).c_str(),
 			GENERIC_WRITE, FILE_SHARE_READ,
-			NULL, CREATE_ALWAYS,
+			nullptr, CREATE_ALWAYS,
 			0, NULL) )
 {
 	if (m_handle == INVALID_HANDLE_VALUE)
@@ -40,5 +40,5 @@ LEAN_ALWAYS_LINK void lean::logging::log_file::print(const char_ntri &message)
 
 	// Thread-safe: http://msdn.microsoft.com/en-us/library/ms810467
 	if (m_handle != INVALID_HANDLE_VALUE)
-		::WriteFile(m_handle, message.c_str(), message.size(), &written, NULL);
+		::WriteFile(m_handle, message.c_str(), message.size(), &written, nullptr);
 }

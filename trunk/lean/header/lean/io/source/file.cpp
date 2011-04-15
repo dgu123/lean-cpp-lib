@@ -106,7 +106,7 @@ LEAN_MAYBE_INLINE lean::io::file::file(const utf8_ntri &name,
 		::CreateFileW(utf_to_utf16(name).c_str(),
 			impl::get_windows_access_flags(access),
 			impl::get_windows_sharing_flags(share),
-			NULL,
+			nullptr,
 			impl::get_windows_open_mode(mode, access),
 			impl::get_windows_optimization_flags(hints),
 			NULL) )
@@ -121,6 +121,36 @@ LEAN_MAYBE_INLINE lean::io::file::~file()
 	::CloseHandle(m_handle);
 }
 
+// Sets the current file cursor position. Throws a runtime_exception on error.
+LEAN_MAYBE_INLINE void lean::io::file::pos(uint8 newPos)
+{
+	LEAN_ASSERT(sizeof(uint8) == sizeof(::LARGE_INTEGER));
+
+	if (!::SetFilePointerEx(handle(), reinterpret_cast<LARGE_INTEGER&>(newPos), nullptr, FILE_BEGIN))
+		LEAN_THROW_WIN_ERROR_CTX("SetFilePointerEx()", name().c_str());
+}
+
+// Gets the current file cursor position. Returns 0 on error.
+LEAN_MAYBE_INLINE lean::uint8 lean::io::file::pos() const
+{
+	uint8 pos = 0;
+
+	LEAN_ASSERT(sizeof(uint8) == sizeof(::LARGE_INTEGER));
+
+	::SetFilePointerEx(handle(), reinterpret_cast<const LARGE_INTEGER&>(static_cast<const uint8&>(0)),
+		reinterpret_cast<LARGE_INTEGER*>(&pos), FILE_CURRENT);
+	return pos;
+}
+
+// Resizes the file, either extending or truncating it. Throws a runtime_exception on error.
+LEAN_MAYBE_INLINE void lean::io::file::resize(uint8 newSize)
+{
+	pos(newSize);
+
+	if (!::SetEndOfFile(handle()))
+		LEAN_THROW_WIN_ERROR_CTX("SetEndOfFile()", name().c_str());
+}
+
 // Gets the last modification time in microseconds since 1/1/1901. Returns 0 if file is currently open for writing.
 LEAN_MAYBE_INLINE lean::uint8 lean::io::file::revision() const
 {
@@ -128,7 +158,7 @@ LEAN_MAYBE_INLINE lean::uint8 lean::io::file::revision() const
 
 	LEAN_ASSERT(sizeof(uint8) == sizeof(::FILETIME));
 
-	::GetFileTime(m_handle, NULL, NULL, reinterpret_cast<FILETIME*>(&revision));
+	::GetFileTime(m_handle, nullptr, nullptr, reinterpret_cast<FILETIME*>(&revision));
 
 	static const uint8 null_revision_offset = impl::get_null_revision_offset();
 	// Return 0 in write-access scenarios

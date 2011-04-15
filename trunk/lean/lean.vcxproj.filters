@@ -348,6 +348,9 @@
     <ClInclude Include="header\lean\strings\utility.h">
       <Filter>Header Files\strings</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\io\mapped_file.h">
+      <Filter>Header Files\io</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">
@@ -385,6 +388,9 @@
     </ClCompile>
     <ClCompile Include="header\lean\logging\source\win_errors.cpp">
       <Filter>Source Files\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="header\lean\io\source\mapped_file.cpp">
+      <Filter>Source Files\io</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

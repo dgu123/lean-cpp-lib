@@ -53,5 +53,10 @@ LEAN_ALWAYS_LINK size_t lean::logging::get_last_win_error_msg(char *buffer, size
 	else if (count == maxCount)
 		buffer[--count] = 0;
 
+	if (buffer[count - 1] == '\n' || buffer[count - 1] == '\r')
+		buffer[count - 1] = 0;
+	if (buffer[count - 2] == '\n' || buffer[count - 2] == '\r')
+		buffer[count - 2] = 0;
+
 	return count;
 }

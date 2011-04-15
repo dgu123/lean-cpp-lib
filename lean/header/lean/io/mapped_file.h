@@ -53,7 +53,7 @@ public:
 	/// Opens the given file according to the given flags. Throws a runtime_exception on error.
 	LEAN_MAYBE_EXPORT explicit rmapped_file(const utf8_ntri &name,
 		bool mapWhole = true, open_mode mode = file::open,
-		uint4 hints = file::none, uint4 share = file::read);
+		uint4 hints = file::none, uint4 share = file::share_default);
 	/// Closes this file.
 	LEAN_MAYBE_EXPORT ~rmapped_file();
 
@@ -81,7 +81,7 @@ public:
 	/// A size of 0 equals the current file size.
 	LEAN_MAYBE_EXPORT explicit mapped_file(const utf8_ntri &name,
 		uint8 size = 0, bool mapWhole = true, open_mode mode = file::open,
-		uint4 hints = file::none, uint4 share = file::read);
+		uint4 hints = file::none, uint4 share = file::share_default);
 	/// Closes this file.
 	LEAN_MAYBE_EXPORT ~mapped_file();
 

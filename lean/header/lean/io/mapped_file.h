@@ -52,7 +52,7 @@ private:
 public:
 	/// Opens the given file according to the given flags. Throws a runtime_exception on error.
 	LEAN_MAYBE_EXPORT explicit rmapped_file(const utf8_ntri &name,
-		open_mode mode = file::open,
+		bool mapWhole = true, open_mode mode = file::open,
 		uint4 hints = file::none, uint4 share = file::read);
 	/// Closes this file.
 	LEAN_MAYBE_EXPORT ~rmapped_file();
@@ -78,14 +78,15 @@ private:
 
 public:
 	/// Opens the given file according to the given flags. Throws a runtime_exception on error.
+	/// A size of 0 equals the current file size.
 	LEAN_MAYBE_EXPORT explicit mapped_file(const utf8_ntri &name,
-		open_mode mode = file::open,
+		uint8 size = 0, bool mapWhole = true, open_mode mode = file::open,
 		uint4 hints = file::none, uint4 share = file::read);
 	/// Closes this file.
 	LEAN_MAYBE_EXPORT ~mapped_file();
 
-	/// (Re-)maps the file using the given parameters. A size of 0 maps the entire file starting at the given offset.
-	/// Throws a runtime_exception on error.
+	/// (Re-)maps the file using the given parameters. Throws a runtime_exception on error.
+	/// A size of 0 maps the entire file starting at the given offset.
 	LEAN_MAYBE_EXPORT void* map(uint8 offset = 0, size_t size = 0);
 	/// Unmaps the file.
 	LEAN_MAYBE_EXPORT void unmap();

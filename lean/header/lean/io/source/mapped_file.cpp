@@ -88,9 +88,9 @@ LEAN_MAYBE_INLINE void lean::io::mapped_file_base::unmap(void *memory)
 
 // Opens the given file according to the given flags. Throws a runtime_exception on error.
 LEAN_MAYBE_INLINE lean::io::rmapped_file::rmapped_file(const utf8_ntri &name,
-		open_mode mode, uint4 hints, uint4 share)
+		bool mapWhole, open_mode mode, uint4 hints, uint4 share)
 	: mapped_file_base(name, true, 0, mode, hints, share),
-	m_memory(nullptr)
+	m_memory( (mapWhole) ? mapped_file_base::map(true, 0, 0) : nullptr )
 {
 }
 
@@ -119,10 +119,11 @@ LEAN_MAYBE_INLINE void lean::io::rmapped_file::unmap()
 }
 
 // Opens the given file according to the given flags. Throws a runtime_exception on error.
+// A size of 0 equals the current file size.
 LEAN_MAYBE_INLINE lean::io::mapped_file::mapped_file(const utf8_ntri &name,
-		open_mode mode, uint4 hints, uint4 share)
-	: mapped_file_base(name, false, 0, mode, hints, share),
-	m_memory(nullptr)
+		uint8 size, bool mapWhole, open_mode mode, uint4 hints, uint4 share)
+	: mapped_file_base(name, false, size, mode, hints, share),
+	m_memory( (mapWhole) ? mapped_file_base::map(false, 0, size) : nullptr )
 {
 }
 

@@ -14,7 +14,7 @@ namespace io
 namespace impl
 {
 	/// Gets the file time null revision offset.
-	static inline uint8 get_null_revision_offset()
+	inline uint8 get_null_revision_offset()
 	{
 		SYSTEMTIME refTime;
 		refTime.wYear = 1901;
@@ -34,7 +34,7 @@ namespace impl
 	}
 
 	/// Converts the given access flags into valid windows access flags.
-	DWORD get_windows_access_flags(uint4 access)
+	inline DWORD get_windows_access_flags(uint4 access)
 	{
 		DWORD winAccess = 0;
 		
@@ -51,7 +51,7 @@ namespace impl
 	}
 
 	/// Converts the given sharing flags into valid windows sharing flags.
-	DWORD get_windows_sharing_flags(uint4 share, uint4 access)
+	inline DWORD get_windows_sharing_flags(uint4 share, uint4 access)
 	{
 		DWORD winShare = 0;
 		
@@ -65,7 +65,7 @@ namespace impl
 	}
 
 	/// Converts the given open mode into the corresponding windows open mode.
-	DWORD get_windows_open_mode(file::open_mode mode, uint4 access)
+	inline DWORD get_windows_open_mode(file::open_mode mode, uint4 access)
 	{
 		if (access & file::write)
 			switch (mode)
@@ -85,7 +85,7 @@ namespace impl
 	}
 
 	/// Converts the given optimization hints into the corresponding windows flags.
-	DWORD get_windows_optimization_flags(uint4 hints)
+	inline DWORD get_windows_optimization_flags(uint4 hints)
 	{
 		if (hints & file::sequential)
 			return FILE_FLAG_SEQUENTIAL_SCAN;
@@ -150,6 +150,8 @@ LEAN_MAYBE_INLINE void lean::io::file::resize(uint8 newSize)
 
 	if (!::SetEndOfFile(handle()))
 		LEAN_THROW_WIN_ERROR_CTX("SetEndOfFile()", name().c_str());
+
+	pos(0);
 }
 
 // Gets the last modification time in microseconds since 1/1/1901. Returns 0 if file is currently open for writing.

@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include <lean/io/raw_file.h>
+#include <lean/time/timer.h>
 
-BOOST_AUTO_TEST_SUITE( nullterminated )
+BOOST_AUTO_TEST_SUITE( raw_file )
 
 BOOST_AUTO_TEST_CASE( overwrite )
 {
@@ -42,6 +43,27 @@ BOOST_AUTO_TEST_CASE( sharing )
 	readFile.read(buffer, sizeof("test"));
 
 	BOOST_CHECK_EQUAL(buffer, "test");
+}
+
+BOOST_AUTO_TEST_CASE( revision )
+{
+	{
+		lean::raw_file file1(MAKE_TEST_FILENAME("test3.txt"));
+		file1.print("Hello file!");
+	}
+	
+	lean::timer wait;
+	while (wait.milliseconds() < 10);
+	
+	{
+		lean::raw_file file2(MAKE_TEST_FILENAME("test4.txt"));
+		file2.print("Hi there!");
+	}
+
+	lean::raw_file file1(MAKE_TEST_FILENAME("test3.txt"), lean::file::read);
+	lean::raw_file file2(MAKE_TEST_FILENAME("test4.txt"), lean::file::read);
+
+	BOOST_CHECK_GT(file2.revision(), file1.revision());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

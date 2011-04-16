@@ -49,6 +49,24 @@ namespace memory
 
 #endif
 
+	/// (Negatively) aligns the given unsigned integer on the given alignment boundaries.
+	template <size_t Alignment, class Integer>
+	LEAN_INLINE Integer nalign_integer(Integer integer)
+	{
+		LEAN_STATIC_ASSERT_MSG_ALT(check_alignment<Alignment>::valid,
+			"Alignment is required to be power of two.", Alignment_is_required_to_be_power_of_two);
+
+		return integer & ~static_cast<typename int_type<sign_class::no_sign, sizeof(Integer)>::type>(Alignment - 1);
+	}
+
+	/// (Negatively) aligns the given pointer on the given alignment boundaries.
+	template <size_t Alignment, class Value>
+	LEAN_INLINE Value* nalign(Value *pointer)
+	{
+		return reinterpret_cast<Value*>(
+			nalign_integer<Alignment>( reinterpret_cast<uintptr_t>(pointer) ) );
+	}
+
 	/// Aligns the given unsigned integer on the given alignment boundaries.
 	template <size_t Alignment, class Integer>
 	LEAN_INLINE Integer align_integer(Integer integer)
@@ -57,7 +75,7 @@ namespace memory
 			"Alignment is required to be power of two.", Alignment_is_required_to_be_power_of_two);
 
 		integer += (Alignment - 1);
-		return integer & ~(Alignment - 1);
+		return integer & ~static_cast<typename int_type<sign_class::no_sign, sizeof(Integer)>::type>(Alignment - 1);
 	}
 
 	/// Aligns the given pointer on the given alignment boundaries.
@@ -76,7 +94,7 @@ namespace memory
 			"Alignment is required to be power of two.", Alignment_is_required_to_be_power_of_two);
 
 		integer += Alignment;
-		return integer & ~(Alignment - 1);
+		return integer & ~static_cast<typename int_type<sign_class::no_sign, sizeof(Integer)>::type>(Alignment - 1);
 	}
 
 	/// Aligns the given pointer on the given alignment boundaries, incrementing it at least by one.

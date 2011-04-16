@@ -134,15 +134,15 @@ namespace lean
 {
 
 /// Returns the smaller of both arguments.
-template <class T1, class T2>
-LEAN_INLINE T1 min(T1 a, T2 b)
+template <class Type>
+LEAN_INLINE Type min(Type a, Type b)
 {
 	return (a < b) ? a : b;
 }
 
 /// Returns the larger of both arguments.
-template <class T1, class T2>
-LEAN_INLINE T1 max(T1 a, T2 b)
+template <class Type>
+LEAN_INLINE Type max(Type a, Type b)
 {
 	return (a < b) ? b : a;
 }

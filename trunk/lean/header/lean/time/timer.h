@@ -28,7 +28,7 @@ public:
 	LEAN_INLINE void tick() { ::time(&m_time); }
 
 	/// Gets the time that has elapsed since the last tick.
-	LEAN_INLINE double seconds() const { return ::difftime(m_time, ::time(nullptr)); }
+	LEAN_INLINE double seconds() const { return ::difftime(::time(nullptr), m_time); }
 	/// Gets the time that has elapsed since the last tick.
 	LEAN_INLINE double milliseconds() const { return seconds() * 1000; }
 };

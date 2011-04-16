@@ -41,7 +41,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source, const char 
 }
 
 // Throws a runtime_error exception.
-LEAN_MAYBE_EXPORT void lean::logging::throw_error(const char *source, const char *reason, const char *context)
+LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source, const char *reason, const char *context)
 {
 	if (!context)
 		return throw_error(source, reason);

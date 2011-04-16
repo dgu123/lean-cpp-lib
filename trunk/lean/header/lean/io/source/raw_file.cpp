@@ -20,7 +20,7 @@ LEAN_MAYBE_INLINE lean::io::raw_file::~raw_file()
 }
 
 // Reads the given number of bytes from the file, returning the number of bytes read. This method is thread-safe.
-LEAN_MAYBE_EXPORT size_t lean::io::raw_file::read(char *begin, size_t count) const
+LEAN_MAYBE_INLINE size_t lean::io::raw_file::read(char *begin, size_t count) const
 {
 	DWORD read = 0;
 
@@ -32,7 +32,7 @@ LEAN_MAYBE_EXPORT size_t lean::io::raw_file::read(char *begin, size_t count) con
 }
 
 // Writes the given number of bytes to the file, returning the number of bytes written. This method is thread-safe.
-LEAN_MAYBE_EXPORT size_t lean::io::raw_file::write(const char *begin, size_t count)
+LEAN_MAYBE_INLINE size_t lean::io::raw_file::write(const char *begin, size_t count)
 {
 	DWORD written = 0;
 

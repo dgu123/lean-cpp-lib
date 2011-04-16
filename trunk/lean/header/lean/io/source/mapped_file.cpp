@@ -7,6 +7,67 @@
 #include "../../logging/log.h"
 #include "../../logging/win_errors.h"
 
+namespace lean
+{
+namespace io
+{
+namespace impl
+{
+	/// Gets the memory alignment required in offset map calls.
+	inline DWORD get_map_alignment()
+	{
+		struct helper
+		{
+			static DWORD system_allocation_granularity()
+			{
+				SYSTEM_INFO sysInfo;
+				GetSystemInfo(&sysInfo);
+
+				// Guarantee a power of two
+				LEAN_ASSERT( (sysInfo.dwAllocationGranularity & (sysInfo.dwAllocationGranularity - 1)) == 0 );
+				
+				return sysInfo.dwAllocationGranularity;
+			}
+		};
+		
+		static const DWORD alignment = helper::system_allocation_granularity();
+		return alignment;
+	}
+
+	/// Aligns the given map offset.
+	inline uint8 align_map_offset(uint8 offset)
+	{
+		return offset & ~static_cast<uint8>(get_map_alignment() - 1);
+	}
+
+	/// Aligns the given pointer to mapped memory.
+	template <class Type>
+	inline Type* align_mapped_memory(Type *memory)
+	{
+		return reinterpret_cast<Type*>(
+			reinterpret_cast<uintptr_t>(memory) &  ~static_cast<uintptr_t>(get_map_alignment() - 1) );
+	}
+
+	/// Aligns the given map size.
+	inline size_t align_map_size(size_t size)
+	{
+		const size_t alignment_minus_1 = get_map_alignment() - 1;
+		return (size + alignment_minus_1) & ~alignment_minus_1;
+	}
+
+	/// Clamps the given map size.
+	inline size_t clamp_map_size(uint8 size)
+	{
+		if (size > static_cast<size_t>(-1))
+			size = static_cast<size_t>(-1);
+
+		return static_cast<size_t>(size);
+	}
+
+} // namespace
+} // namespace
+} // namespace
+
 // Opens the given file according to the given flags. Throws a runtime_exception on error.
 LEAN_MAYBE_INLINE lean::io::mapped_file_base::mapped_file_base(const utf8_ntri &name,
 		bool readonly, uint8 size,
@@ -66,24 +127,32 @@ LEAN_MAYBE_INLINE void lean::io::mapped_file_base::resize(uint8 newSize)
 // Throws a runtime_exception on error.
 LEAN_MAYBE_INLINE void* lean::io::mapped_file_base::map(bool readonly, uint8 offset, size_t size)
 {
+	// Offset is required to be aligned using system allocation granularity
+	uint8 alignedOffset = impl::align_map_offset(offset);
+	size_t alignmentDelta = static_cast<size_t>(offset - alignedOffset);
+	size_t alignedSize = impl::align_map_size(size + alignmentDelta);
+
 	// Handles size of 0 equal to end of file
-	void *memory = ::MapViewOfFile(m_mappingHandle,
-		(readonly) ? FILE_MAP_READ : (FILE_MAP_READ | FILE_MAP_WRITE),
-		static_cast<DWORD>(offset >> size_info<DWORD>::bits),
-		static_cast<DWORD>(offset),
-		size);
+	void *memory = (m_mappingHandle != NULL)
+		? ::MapViewOfFile(m_mappingHandle,
+			(readonly) ? FILE_MAP_READ : (FILE_MAP_READ | FILE_MAP_WRITE),
+			static_cast<DWORD>(alignedOffset >> size_info<DWORD>::bits),
+			static_cast<DWORD>(alignedOffset),
+			alignedSize)
+		: nullptr;
 
 	if (!memory)
 		LEAN_THROW_WIN_ERROR_CTX("MapViewOfFile()", name().c_str());
 
-	return memory;
+	// Return requested unaligned address
+	return reinterpret_cast<char*>(memory) + alignmentDelta;
 }
 
 // Unmaps the given view of this file.
 LEAN_MAYBE_INLINE void lean::io::mapped_file_base::unmap(void *memory)
 {
 	if (memory)
-		::UnmapViewOfFile(memory);
+		::UnmapViewOfFile(impl::align_mapped_memory(memory));
 }
 
 // Opens the given file according to the given flags. Throws a runtime_exception on error.
@@ -123,7 +192,9 @@ LEAN_MAYBE_INLINE void lean::io::rmapped_file::unmap()
 LEAN_MAYBE_INLINE lean::io::mapped_file::mapped_file(const utf8_ntri &name,
 		uint8 size, bool mapWhole, open_mode mode, uint4 hints, uint4 share)
 	: mapped_file_base(name, false, size, mode, hints, share),
-	m_memory( (mapWhole) ? mapped_file_base::map(false, 0, size) : nullptr )
+	m_memory( (mapWhole)
+		? mapped_file_base::map(false, 0, impl::clamp_map_size(size))
+		: nullptr )
 {
 }
 

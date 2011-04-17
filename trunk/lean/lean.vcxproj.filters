@@ -73,6 +73,12 @@
     <Filter Include="Source Files\io">
       <UniqueIdentifier>{a66dd1a6-81dc-42b5-b0c9-5ca238765b88}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\rapidxml">
+      <UniqueIdentifier>{796a55eb-f9a6-4dbe-81e0-40889349fc2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\xml">
+      <UniqueIdentifier>{476e9021-0055-4b45-b5c6-92f3fa49edf7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -350,6 +356,27 @@
     </ClInclude>
     <ClInclude Include="header\lean\io\mapped_file.h">
       <Filter>Header Files\io</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\rapidxml\rapidxml.hpp">
+      <Filter>Header Files\rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\rapidxml\rapidxml_iterators.hpp">
+      <Filter>Header Files\rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\rapidxml\rapidxml_print.hpp">
+      <Filter>Header Files\rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\rapidxml\rapidxml_utils.hpp">
+      <Filter>Header Files\rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\xml\xml.h">
+      <Filter>Header Files\xml</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\xml\xml_file.h">
+      <Filter>Header Files\xml</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\meta\constexpr.h">
+      <Filter>Header Files\meta</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

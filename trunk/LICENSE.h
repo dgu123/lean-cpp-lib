@@ -24,7 +24,7 @@
 
 // --------------------------------------------------------------------
 // Some components in the lean-cpp-lib make use of other third-party
-// open source software, subject to their liceneses listed below:
+// open source software, subject to the liceneses listed below:
 // --------------------------------------------------------------------
  
  

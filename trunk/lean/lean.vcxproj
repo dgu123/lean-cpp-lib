@@ -118,6 +118,7 @@
     <ClInclude Include="header\lean\memory\new_handler.h" />
     <ClInclude Include="header\lean\memory\win_heap.h" />
     <ClInclude Include="header\lean\meta\conditional.h" />
+    <ClInclude Include="header\lean\meta\constexpr.h" />
     <ClInclude Include="header\lean\meta\dependent_false.h" />
     <ClInclude Include="header\lean\meta\dereference.h" />
     <ClInclude Include="header\lean\meta\enable_if.h" />
@@ -132,6 +133,10 @@
     <ClInclude Include="header\lean\properties\property.h" />
     <ClInclude Include="header\lean\properties\property_accessors.h" />
     <ClInclude Include="header\lean\properties\property_collection.h" />
+    <ClInclude Include="header\lean\rapidxml\rapidxml.hpp" />
+    <ClInclude Include="header\lean\rapidxml\rapidxml_iterators.hpp" />
+    <ClInclude Include="header\lean\rapidxml\rapidxml_print.hpp" />
+    <ClInclude Include="header\lean\rapidxml\rapidxml_utils.hpp" />
     <ClInclude Include="header\lean\smart\auto_restore.h" />
     <ClInclude Include="header\lean\smart\cloneable_obj.h" />
     <ClInclude Include="header\lean\smart\com_ptr.h" />
@@ -161,6 +166,8 @@
     <ClInclude Include="header\lean\utf8\checked.h" />
     <ClInclude Include="header\lean\utf8\core.h" />
     <ClInclude Include="header\lean\utf8\unchecked.h" />
+    <ClInclude Include="header\lean\xml\xml.h" />
+    <ClInclude Include="header\lean\xml\xml_file.h" />
     <ClInclude Include="header\lean_internal\stdafx.h" />
     <ClInclude Include="header\lean_internal\targetver.h" />
     <ClInclude Include="header\lean\pimpl\pimpl_ptr.h" />

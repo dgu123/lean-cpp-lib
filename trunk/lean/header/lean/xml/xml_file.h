@@ -44,7 +44,7 @@ LEAN_INLINE void load_xml_file(const utf8_ntri &fileName, rapidxml::xml_document
 
 /// Saves an xml document to the given file.
 template <int PrintFlags, class Char>
-LEAN_INLINE void save_xml_file(const utf8_ntri &fileName, const rapidxml::xml_document<Char> &document)
+LEAN_INLINE void save_xml_file(const utf8_ntri &fileName, const rapidxml::xml_node<Char> &document)
 {
 	raw_file file(fileName, file::write, file::overwrite);
 	print(raw_file_inserter(file), document, PrintFlags);

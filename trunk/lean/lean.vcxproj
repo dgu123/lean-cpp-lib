@@ -91,6 +91,7 @@
     <ClInclude Include="header\lean\io\mapped_file.h" />
     <ClInclude Include="header\lean\io\numeric.h" />
     <ClInclude Include="header\lean\io\raw_file.h" />
+    <ClInclude Include="header\lean\io\raw_file_inserter.h" />
     <ClInclude Include="header\lean\io\wcharcvt.h" />
     <ClInclude Include="header\lean\io\win_types.h" />
     <ClInclude Include="header\lean\logging\exceptions.h" />

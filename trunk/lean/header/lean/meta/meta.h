@@ -17,5 +17,6 @@ namespace lean
 #include "strip.h"
 #include "dereference.h"
 #include "enable_if.h"
+#include "constexpr.h"
 
 #endif

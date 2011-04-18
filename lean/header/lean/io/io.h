@@ -11,6 +11,12 @@ namespace lean
 	namespace io { }
 }
 
+#include "endianness.h"
+#include "numeric.h"
 #include "wcharcvt.h"
+#include "file.h"
+#include "raw_file.h"
+#include "raw_file_inserter.h"
+#include "mapped_file.h"
 
 #endif

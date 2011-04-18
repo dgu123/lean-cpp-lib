@@ -9,7 +9,9 @@
 #include "../string/types.h"
 #include "../meta/constexpr.h"
 #include "../io/raw_file.h"
+#include "../io/raw_file_inserter.h"
 #include "../rapidxml/rapidxml.hpp"
+#include "../rapidxml/rapidxml_print.hpp"
 
 namespace lean
 {
@@ -44,9 +46,8 @@ LEAN_INLINE void load_xml_file(const utf8_ntri &fileName, rapidxml::xml_document
 template <int PrintFlags, class Char>
 LEAN_INLINE void save_xml_file(const utf8_ntri &fileName, const rapidxml::xml_document<Char> &document)
 {
-	// TODO: Write buffered
-//	document.parse<ParseFlags>(
-//		impl::load_xml_source(fileName, document) );
+	raw_file file(fileName, file::write, file::overwrite);
+	print(raw_file_inserter(file), document, PrintFlags);
 }
 
 /// This convenience class wraps up the most common xml file functionality.

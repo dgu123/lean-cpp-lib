@@ -17,13 +17,54 @@ namespace lean
 namespace properties
 {
 
+class property_type_info
+{
+protected:
+	~property_type_info() throw() { }
+
+public:
+	/// Writes the given number of values to the given range of characters.
+	virtual utf8_t* write(utf8_t *begin, const void *values, size_t count) const = 0;
+	/// Reads the given number of values from the given range of characters.
+	virtual const utf8_t* read(const utf8_t *begin, const utf8_t *end, const void *values, size_t count) const = 0;
+
+	/// Gets the STD lib typeid.
+	virtual const std::type_info& type_info() const = 0;
+};
+
+template <class Type>
+struct property_type : public property_type_info
+{
+	/// Writes the given number of values to the given range of characters.
+	utf8_t* write(utf8_t *begin, const void *values, size_t count) const
+	{
+		return begin;
+	}
+	/// Reads the given number of values from the given range of characters.
+	const utf8_t* read(const utf8_t *begin, const utf8_t *end, const void *values, size_t count) const
+	{
+		return begin;
+	}
+
+	/// Gets the STD lib typeid.
+	const std::type_info& type_info() const { return typeid(Type); }
+};
+
+/// Gets the property type info for the given type.
+template <class Type>
+LEAN_INLINE const property_type_info& get_property_type_info()
+{
+	static property_type<Type> info;
+	return info;
+}
+
 /// Passes data to a specific destination.
 template <class Class>
 class property_setter : public cloneable
 {
 public:
 	/// Passes the given values of the given type to the given object.
-	virtual bool operator ()(Class &object, const type_info &type, const void *values, size_t count) = 0;
+	virtual bool operator ()(Class &object, const std::type_info &type, const void *values, size_t count) = 0;
 
 	/// Passes the given values to the given object.
 	template <class Value>
@@ -39,7 +80,7 @@ class property_getter : public cloneable
 {
 public:
 	/// Fetches the given number of values of the given type from the given object.
-	virtual bool operator ()(const Class &object, const type_info &type, void *values, size_t count) const = 0;
+	virtual bool operator ()(const Class &object, const std::type_info &type, void *values, size_t count) const = 0;
 
 	/// Fetches the given number of values from the given object.
 	template <class Value>

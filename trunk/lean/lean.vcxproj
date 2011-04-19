@@ -148,6 +148,7 @@
     <ClInclude Include="header\lean\smart\smart.h" />
     <ClInclude Include="header\lean\smart\cloneable.h" />
     <ClInclude Include="header\lean\smart\weak_resource_ptr.h" />
+    <ClInclude Include="header\lean\strings\charstream.h" />
     <ClInclude Include="header\lean\strings\conversions.h" />
     <ClInclude Include="header\lean\strings\nullterminated.h" />
     <ClInclude Include="header\lean\strings\char_traits.h" />

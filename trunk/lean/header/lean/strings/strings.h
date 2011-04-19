@@ -18,5 +18,6 @@ namespace lean
 #include "nullterminated.h"
 #include "nullterminated_range.h"
 #include "types.h"
+#include "charstream.h"
 
 #endif

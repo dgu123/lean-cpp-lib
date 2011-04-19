@@ -10,6 +10,8 @@
 
 #include <lean/lean.h>
 #include <lean/io/numeric.h>
+#include <lean/logging/log.h>
+#include <lean/strings/charstream.h>
 
 #include <C:/SDKs/Boost/1_44/boost/lexical_cast.hpp>
 
@@ -128,6 +130,20 @@ BOOST_AUTO_TEST_CASE( itoa )
 		boost::lexical_cast<std::string>(i);
 
 	std::cout << "lexical_cast: " << lexcast_timer.milliseconds() << std::endl;
+
+	lean::highres_timer charstream_timer;
+
+	for (int i = 0; i < 100000; ++i)
+		lean::charstream(buf, buf + sizeof(buf)) << i;
+
+	std::cout << "charstream: " << charstream_timer.milliseconds() << std::endl;
+
+	lean::highres_timer stringstream_timer;
+	
+	for (int i = 0; i < 100000; ++i)
+		std::stringstream() << i;
+
+	std::cout << "stringstream: " << stringstream_timer.milliseconds() << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE( dtoa )
@@ -170,6 +186,20 @@ BOOST_AUTO_TEST_CASE( dtoa )
 		boost::lexical_cast<std::string>((double)i);
 
 	std::cout << "lexical_cast: " << lexcast_timer.milliseconds() << std::endl;
+
+	lean::highres_timer charstream_timer;
+
+	for (int i = 0; i < 100000; ++i)
+		lean::charstream(buf, buf + sizeof(buf)) << (double) i;
+
+	std::cout << "charstream: " << charstream_timer.milliseconds() << std::endl;
+
+	lean::highres_timer stringstream_timer;
+	
+	for (int i = 0; i < 100000; ++i)
+		std::stringstream() << (double) i;
+
+	std::cout << "stringstream: " << stringstream_timer.milliseconds() << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE( atoi )

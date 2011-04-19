@@ -381,6 +381,9 @@
     <ClInclude Include="header\lean\io\raw_file_inserter.h">
       <Filter>Header Files\io</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\strings\charstream.h">
+      <Filter>Header Files\strings</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

@@ -10,13 +10,14 @@
 #include <typeinfo>
 #include <iostream>
 #include "../strings/charstream.h"
+#include "../io/numeric.h"
 
 namespace lean
 {
 namespace properties
 {
 
-template <class Class, class Type, size_t MaxCount, utf8_t Delimter>
+template <class Class, class Type, size_t MaxCount, utf8_t Delimiter = ';'>
 struct generic_property_type : public property_type<Class>
 {
 	// Writes the given number of values to the given stream.
@@ -25,17 +26,18 @@ struct generic_property_type : public property_type<Class>
 		Type values[MaxCount];
 		count = min(count, MaxCount);
 		
-		getter(object, values, count);
+		if (!getter(object, values, count))
+			return false;
 		
 		for (size_t i = 0; i < count; ++i)
 		{
 			if (i != 0)
-				stream << Delimter;
+				stream << Delimiter;
 
 			stream << values[i];
 		}
 
-		return stream.fail();
+		return !stream.fail();
 	}
 	// Writes the given number of values to the given character buffer, returning the first character not written to.
 	utf8_t* write(utf8_t *begin, const property_getter<Class> &getter, const Class &object, size_t count) const
@@ -59,9 +61,7 @@ struct generic_property_type : public property_type<Class>
 			stream >> values[i];
 		}
 
-		setter(object, values, count);
-
-		return stream.fail();
+		return setter(object, values, count) && !stream.fail();
 	}
 	// Reads the given number of values from the given range of characters, returning the first character not read.
 	const utf8_t* read(const utf8_t *begin, const utf8_t *end, property_setter<Class> &setter, Class &object, size_t count) const
@@ -71,21 +71,58 @@ struct generic_property_type : public property_type<Class>
 		return stream.read_end();
 	}
 
-	/// Writes the given value to the given stream.
-	void write(std::basic_ostream<utf8_t> &stream, const void *values, size_t index) const
+	/// Gets the STD lib typeid.
+	const std::type_info& type_info() const { return typeid(Type); }
+};
+
+/// Gets the property type info for the given type.
+template <class Class, class Type, size_t MaxCount>
+LEAN_INLINE const property_type& get_generic_property_type()
+{
+	static generic_property_type<Class, Type, MaxCount> info;
+	return info;
+}
+
+template <class Class, class Type, size_t MaxCount, utf8_t Delimiter = ';'>
+struct int_property_type : public generic_property_type<Class, Type, MaxCount, Delimiter>
+{
+	// Writes the given number of values to the given character buffer, returning the first character not written to.
+	utf8_t* write(utf8_t *begin, const property_getter<Class> &getter, const Class &object, size_t count) const
 	{
-		stream << static_cast<const Type*>(value)[index];
-	}
-	/// Writes the given value to the given range of characters.
-	utf8_t* write(utf8_t *begin, const void *value, size_t index) const
-	{
+		Type values[MaxCount];
+		count = min(count, MaxCount);
+		
+		if (!getter(object, values, count))
+			return begin;
+		
+		for (size_t i = 0; i < count; ++i)
+		{
+			if (i != 0)
+				*(begin++) = Delimiter;
+
+			begin = int_to_char(begin, values[i]);
+		}
+
 		return begin;
 	}
-	/// Reads the given number of values from the given range of characters.
-	const utf8_t* read(const utf8_t *begin, const utf8_t *end, void *value, size_t index) const
+
+	// Reads the given number of values from the given range of characters, returning the first character not read.
+	const utf8_t* read(const utf8_t *begin, const utf8_t *end, property_setter<Class> &setter, Class &object, size_t count) const
 	{
-		basic_charstream<utf8_t> stream(begin, end);
-		stream >> static_cast<Type*>(value)[index];
+		Type values[MaxCount] = { Type() };
+		count = min(count, MaxCount);
+
+		for (size_t i = 0; i < count; ++i)
+		{
+			if (i != 0)
+				while (begin != end && *(begin++) != Delimiter);
+
+			// TODO: stop without fail
+			begin = char_to_int(begin, end, values[i]);
+		}
+
+		setter(object, values, count);
+
 		return begin;
 	}
 
@@ -94,10 +131,64 @@ struct generic_property_type : public property_type<Class>
 };
 
 /// Gets the property type info for the given type.
-template <class Class, class Type>
-LEAN_INLINE const property_type_info& get_generic_property_type()
+template <class Class, class Type, size_t MaxCount>
+LEAN_INLINE const property_type& get_int_property_type()
 {
-	static generic_property_type<Class, Type> info;
+	static int_property_type<Class, Type, MaxCount> info;
+	return info;
+}
+
+template <class Class, class Type, size_t MaxCount, utf8_t Delimiter = ';'>
+struct float_property_type : public generic_property_type<Class, Type, MaxCount, Delimiter>
+{
+	// Writes the given number of values to the given character buffer, returning the first character not written to.
+	utf8_t* write(utf8_t *begin, const property_getter<Class> &getter, const Class &object, size_t count) const
+	{
+		Type values[MaxCount];
+		count = min(count, MaxCount);
+		
+		if (!getter(object, values, count))
+			return begin;
+		
+		for (size_t i = 0; i < count; ++i)
+		{
+			if (i != 0)
+				*(begin++) = Delimiter;
+
+			begin = float_to_char(begin, values[i]);
+		}
+
+		return begin;
+	}
+
+	// Reads the given number of values from the given range of characters, returning the first character not read.
+	const utf8_t* read(const utf8_t *begin, const utf8_t *end, property_setter<Class> &setter, Class &object, size_t count) const
+	{
+		Type values[MaxCount] = { Type() };
+		count = min(count, MaxCount);
+
+		for (size_t i = 0; i < count; ++i)
+		{
+			if (i != 0)
+				while (begin != end && *(begin++) != Delimiter);
+
+			begin = char_to_float(begin, end, values[i]);
+		}
+
+		setter(object, values, count);
+
+		return begin;
+	}
+
+	/// Gets the STD lib typeid.
+	const std::type_info& type_info() const { return typeid(Type); }
+};
+
+/// Gets the property type info for the given type.
+template <class Class, class Type, size_t MaxCount>
+LEAN_INLINE const property_type& get_float_property_type()
+{
+	static float_property_type<Class, Type, MaxCount> info;
 	return info;
 }
 
@@ -105,6 +196,12 @@ LEAN_INLINE const property_type_info& get_generic_property_type()
 
 using properties::generic_property_type;
 using properties::get_generic_property_type;
+
+using properties::int_property_type;
+using properties::get_int_property_type;
+
+using properties::float_property_type;
+using properties::get_float_property_type;
 
 } // namespace
 

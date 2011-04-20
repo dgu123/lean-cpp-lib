@@ -80,7 +80,9 @@ struct property_desc
 	/// Type of the most derived structure.
 	typedef typename first_non_void<Derived, property_desc>::type full_type;
 
-	const std::type_info *type;					///< Element type.
+	/// Property type
+	typedef property_type<Class> property_type;
+	const property_type *type;			///< Element type.
 	size_t count;								///< Number of elements.
 
 	/// Setter type.
@@ -100,7 +102,7 @@ struct property_desc
 		setter(setter_storage_type::null()),
 		getter(getter_storage_type::null()) { }
 	/// Constructs a property destriction from the given parameters.
-	property_desc(const std::type_info &type, size_t count)
+	property_desc(const property_type &type, size_t count)
 		: type(&type),
 		count(count),
 		setter(setter_storage_type::null()),
@@ -121,7 +123,7 @@ struct named_property_desc : public property_desc<Class, typename first_non_void
 	/// Constructs an empty property destriction.
 	named_property_desc() { }
 	/// Constructs a property destriction from the given parameters.
-	named_property_desc(const std::wstring &name, const std::type_info &type, size_t count)
+	named_property_desc(const std::wstring &name, const property_type &type, size_t count)
 		: property_desc<Class, full_type>(type, count),
 		name(name) { }
 };
@@ -149,7 +151,7 @@ struct ui_property_desc : public named_property_desc<Class, typename first_non_v
 		value_step(value_storage_type::null()),
 		max_value(value_storage_type::null()) { }
 	/// Constructs a property destriction from the given parameters.
-	ui_property_desc(const std::wstring &name, const std::type_info &type, size_t count, const Widget &widget)
+	ui_property_desc(const std::wstring &name, const property_type &type, size_t count, const Widget &widget)
 		: named_property_desc<Class, full_type>(name, type, count),
 		widget(widget),
 		default_value(value_storage_type::null()),

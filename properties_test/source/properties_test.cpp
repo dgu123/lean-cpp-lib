@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include <lean/properties/property_accessors.h>
+#include <lean/properties/property_types.h>
 #include <lean/properties/property_collection.h>
+#include <lean/properties/property_serialization.h>
+#include <lean/xml/xml_file.h>
 
 #include "property_driven_test_impl.h"
 
@@ -26,16 +29,23 @@ BOOST_AUTO_TEST_CASE( inplace )
 	
 	static collection_type collection = collection_type::construct_inplace()
 
-		<< collection_type::property_desc(L"name", typeid(std::string), 1)
+		<< collection_type::property_desc(L"name", lean::get_generic_property_type<test_property_driven, std::string, 1>(), 1)
 			.set_setter(LEAN_MAKE_PROPERTY_SETTER(&test_property_driven::setName))
 			.set_getter(LEAN_MAKE_PROPERTY_GETTER(&test_property_driven::getName))
 
-		<< collection_type::property_desc(L"id", typeid(int), 1)
+		<< collection_type::property_desc(L"id", lean::get_int_property_type<test_property_driven, int, 1>(), 1)
 			.set_getter(LEAN_MAKE_PROPERTY_GETTER(&test_property_driven::getID))
 
-		<< collection_type::property_desc(L"weight", typeid(float), 1)
+		<< collection_type::property_desc(L"weight", lean::get_float_property_type<test_property_driven, float, 1>(), 1)
 			.set_setter(LEAN_MAKE_PROPERTY_SETTER(&test_property_driven::setWeight))
 			.set_getter(LEAN_MAKE_PROPERTY_GETTER(&test_property_driven::getWeight));
+
+	test_property_driven object("test", 1);
+	object.setWeight(2.1521231561f);
+
+	lean::xml_file<lean::utf8_t> file;
+	lean::properties_to_xml(object, collection, file.document());
+	file.save("blabla.xml");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

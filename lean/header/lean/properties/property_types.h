@@ -71,7 +71,7 @@ struct generic_property_type : public property_type<Class>
 	// Reads the given number of values from the given range of characters, returning the first character not read.
 	const utf8_t* read(const utf8_t *begin, const utf8_t *end, property_setter<Class> &setter, Class &object, size_t count) const
 	{
-		basic_charstream<utf8_t> stream(begin);
+		basic_charstream<utf8_t> stream(const_cast<utf8_t*>(begin));
 		generic_property_type::read(stream, setter, object, count);
 		return stream.read_end();
 	}
@@ -82,7 +82,7 @@ struct generic_property_type : public property_type<Class>
 
 /// Gets the property type info for the given type.
 template <class Class, class Type, size_t MaxCount>
-LEAN_INLINE const property_type& get_generic_property_type()
+LEAN_INLINE const property_type<Class>& get_generic_property_type()
 {
 	static generic_property_type<Class, Type, MaxCount> info;
 	return info;
@@ -139,7 +139,7 @@ struct int_property_type : public generic_property_type<Class, Type, MaxCount, D
 
 /// Gets the property type info for the given type.
 template <class Class, class Type, size_t MaxCount>
-LEAN_INLINE const property_type& get_int_property_type()
+LEAN_INLINE const property_type<Class>& get_int_property_type()
 {
 	static int_property_type<Class, Type, MaxCount> info;
 	return info;
@@ -196,7 +196,7 @@ struct float_property_type : public generic_property_type<Class, Type, MaxCount,
 
 /// Gets the property type info for the given type.
 template <class Class, class Type, size_t MaxCount>
-LEAN_INLINE const property_type& get_float_property_type()
+LEAN_INLINE const property_type<Class>& get_float_property_type()
 {
 	static float_property_type<Class, Type, MaxCount> info;
 	return info;

@@ -6,7 +6,7 @@
 #define LEAN_XML_XML_FILE
 
 #include "../lean.h"
-#include "../string/types.h"
+#include "../strings/types.h"
 #include "../meta/constexpr.h"
 #include "../io/raw_file.h"
 #include "../io/raw_file_inserter.h"
@@ -47,7 +47,7 @@ template <int PrintFlags, class Char>
 LEAN_INLINE void save_xml_file(const utf8_ntri &fileName, const rapidxml::xml_node<Char> &document)
 {
 	raw_file file(fileName, file::write, file::overwrite);
-	print(raw_file_inserter(file), document, PrintFlags);
+	print(raw_file_inserter<>(file).iter(), document, PrintFlags);
 }
 
 /// This convenience class wraps up the most common xml file functionality.
@@ -61,16 +61,25 @@ public:
 	/// Constructs an empty xml document.
 	LEAN_INLINE xml_file() { }
 	/// Loads an xml document from the given file.
+	LEAN_INLINE explicit xml_file(const utf8_ntri &name)
+	{
+		load_xml_file<rapidxml::parse_trim_whitespace | rapidxml::parse_normalize_whitespace>(name, m_document);
+	}
+	/// Loads an xml document from the given file.
 	template <int ParseFlags>
-	LEAN_INLINE explicit xml_file(const utf8_ntri &name,
-		ce_int<ParseFlags> = ce_int<rapidxml::parse_trim_whitespace | rapidxml::parse_normalize_whitespace>())
+	LEAN_INLINE xml_file(const utf8_ntri &name, ce_int<ParseFlags>)
 	{
 		load_xml_file<ParseFlags>(name, m_document);
 	}
 
 	/// Saves this xml document to the given file.
+	LEAN_INLINE void save(const utf8_ntri &name) const
+	{
+		save_xml_file<0>(name, m_document);
+	}
+	/// Saves this xml document to the given file.
 	template <int ParseFlags>
-	LEAN_INLINE void save(const utf8_ntri &name, ce_int<ParseFlags> = ce_int<0>()) const
+	LEAN_INLINE void save(const utf8_ntri &name, ce_int<ParseFlags>) const
 	{
 		save_xml_file<PrintFlags>(name, m_document);
 	}

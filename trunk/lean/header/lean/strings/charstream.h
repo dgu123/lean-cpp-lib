@@ -83,7 +83,7 @@ public:
 			stream_base_type(&m_buffer) { }
 	/// Constructs an unlimited character stream from the given character buffer pointer.
 	basic_charstream(char_type *begin)
-			: holder_base_type(begin, static_cast<char_type*>(nullptr) - 1),
+			: holder_base_type(begin, begin + std::numeric_limits<int>::max()), // required to be int
 			stream_base_type(&m_buffer) { }
 
 	/// Resets the character stream.

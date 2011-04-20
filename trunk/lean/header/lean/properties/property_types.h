@@ -61,7 +61,7 @@ struct generic_property_type : public property_type<Class>
 		for (size_t i = 0; i < count; ++i)
 		{
 			if (i != 0)
-				stream.ignore(std::numeric_limits<std::streamsize>::max(), Delimiter);
+				stream.ignore(std::numeric_limits<int>::max(), Delimiter); // required to be int
 
 			stream >> values[i];
 		}
@@ -71,7 +71,7 @@ struct generic_property_type : public property_type<Class>
 	// Reads the given number of values from the given range of characters, returning the first character not read.
 	const utf8_t* read(const utf8_t *begin, const utf8_t *end, property_setter<Class> &setter, Class &object, size_t count) const
 	{
-		basic_charstream<utf8_t> stream(const_cast<utf8_t*>(begin));
+		basic_charstream<utf8_t> stream(const_cast<utf8_t*>(begin), const_cast<utf8_t*>(end));
 		generic_property_type::read(stream, setter, object, count);
 		return stream.read_end();
 	}

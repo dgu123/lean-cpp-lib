@@ -48,6 +48,9 @@ BOOST_AUTO_TEST_CASE( inplace )
 	file.document().append_node(rootnode);
 	lean::properties_to_xml(object, collection, *rootnode);
 	file.save("blabla.xml");
+
+	test_property_driven object2("asfdas", 125);
+	lean::properties_from_xml(object2, collection, *rootnode);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

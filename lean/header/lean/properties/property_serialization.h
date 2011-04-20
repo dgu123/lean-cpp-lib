@@ -71,10 +71,45 @@ inline void properties_to_xml(const Class &object, const Collection &collection,
 		node.append_node( property_to_xml(object, *itProperty, document) );
 }
 
+/// Loads property values from the given XML node.
+template <class Class, class Property>
+inline void property_from_xml(Class &object, const Property &desc, const rapidxml::xml_node<utf8_t> &propertyNode)
+{
+	// Check if writeable
+	if (desc.setter.valid())
+		desc.type->read(propertyNode.value(), propertyNode.value() + propertyNode.value_size(),
+			desc.setter, object, desc.count);
+}
+
+/// Loads property values from the given XML node.
+template <class Class, class Collection>
+inline void properties_from_xml(Class &object, const Collection &collection, const rapidxml::xml_node<utf8_t> &node)
+{
+	for (const rapidxml::xml_node<utf8_t> *propertyNode = node.first_node("property");
+		propertyNode; propertyNode = propertyNode->next_sibling("property"))
+	{
+		const rapidxml::xml_attribute<utf8_t> *nameAttr = propertyNode->first_attribute("name");
+
+		if (nameAttr)
+		{
+			// TODO: don't require zero term
+			std::wstring name = utf_to_utf16(nameAttr->value());
+
+			for (typename Collection::const_iterator itProperty = collection.begin();
+				itProperty != collection.end(); ++itProperty)
+				if (itProperty->name == name)
+					property_from_xml(object, *itProperty, *propertyNode);
+		}
+	}
+}
+
 } // namespace
 
 using properties::property_to_xml;
 using properties::properties_to_xml;
+
+using properties::property_from_xml;
+using properties::properties_from_xml;
 
 } // namespace
 

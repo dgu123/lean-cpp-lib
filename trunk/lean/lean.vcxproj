@@ -134,6 +134,7 @@
     <ClInclude Include="header\lean\properties\property.h" />
     <ClInclude Include="header\lean\properties\property_accessors.h" />
     <ClInclude Include="header\lean\properties\property_collection.h" />
+    <ClInclude Include="header\lean\properties\property_serialization.h" />
     <ClInclude Include="header\lean\properties\property_types.h" />
     <ClInclude Include="header\lean\rapidxml\rapidxml.hpp" />
     <ClInclude Include="header\lean\rapidxml\rapidxml_iterators.hpp" />

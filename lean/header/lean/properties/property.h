@@ -5,58 +5,17 @@
 #ifndef LEAN_PROPERTIES_PROPERTY
 #define LEAN_PROPERTIES_PROPERTY
 
-#include <string>
-#include <typeinfo>
 #include "../lean.h"
 #include "../smart/cloneable.h"
 #include "../smart/cloneable_obj.h"
 #include "../meta/conditional.h"
+#include <typeinfo>
+#include <string>
 
 namespace lean
 {
 namespace properties
 {
-
-class property_type_info
-{
-protected:
-	~property_type_info() throw() { }
-
-public:
-	/// Writes the given number of values to the given range of characters.
-	virtual utf8_t* write(utf8_t *begin, const void *values, size_t count) const = 0;
-	/// Reads the given number of values from the given range of characters.
-	virtual const utf8_t* read(const utf8_t *begin, const utf8_t *end, const void *values, size_t count) const = 0;
-
-	/// Gets the STD lib typeid.
-	virtual const std::type_info& type_info() const = 0;
-};
-
-template <class Type>
-struct property_type : public property_type_info
-{
-	/// Writes the given number of values to the given range of characters.
-	utf8_t* write(utf8_t *begin, const void *values, size_t count) const
-	{
-		return begin;
-	}
-	/// Reads the given number of values from the given range of characters.
-	const utf8_t* read(const utf8_t *begin, const utf8_t *end, const void *values, size_t count) const
-	{
-		return begin;
-	}
-
-	/// Gets the STD lib typeid.
-	const std::type_info& type_info() const { return typeid(Type); }
-};
-
-/// Gets the property type info for the given type.
-template <class Type>
-LEAN_INLINE const property_type_info& get_property_type_info()
-{
-	static property_type<Type> info;
-	return info;
-}
 
 /// Passes data to a specific destination.
 template <class Class>
@@ -88,6 +47,27 @@ public:
 	{
 		return (*this)(object, typeid(Value), values, count);
 	}
+};
+
+template <class Class>
+class property_type
+{
+protected:
+	~property_type() throw() { }
+
+public:
+	/// Writes the given number of values to the given stream.
+	virtual bool write(std::basic_ostream<utf8_t> &stream, const property_getter<Class> &getter, const Class &object, size_t count) const = 0;
+	/// Writes the given number of values to the given character buffer, returning the first character not written to.
+	virtual utf8_t* write(utf8_t *begin, const property_getter<Class> &getter, const Class &object, size_t count) const = 0;
+
+	/// Reads the given number of values from the given stream.
+	virtual bool read(std::basic_istream<utf8_t> &stream, property_setter<Class> &setter, Class &object, size_t count) const = 0;
+	/// Reads the given number of values from the given range of characters, returning the first character not read.
+	virtual const utf8_t* read(const utf8_t *begin, const utf8_t *end, property_setter<Class> &setter, Class &object, size_t count) const = 0;
+
+	/// Gets the STD lib typeid.
+	virtual const std::type_info& type_info() const = 0;
 };
 
 /// Destribes a property.
@@ -222,6 +202,7 @@ LEAN_INLINE bool get_property(const Class &object, const cloneable_obj<property_
 
 using properties::property_setter;
 using properties::property_getter;
+using properties::property_type;
 
 using properties::property_desc;
 using properties::named_property_desc;

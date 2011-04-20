@@ -6,6 +6,7 @@
 #define LEAN_TYPES
 
 #include <cstddef>
+#include <limits>
 
 namespace lean
 {

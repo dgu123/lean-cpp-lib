@@ -68,7 +68,7 @@ template <class Integer>
 struct max_int_string_length
 {
 	/// Estimated maximum string length for integers of the given type.
-	static const int value = (size_info<Integer>::bits + 5) / 3 + 4;
+	static const int value = (size_info<Integer>::bits + 2) / 3 + 3;
 };
 
 /// Converts the given integer of the given type into an ascii character string.
@@ -107,30 +107,36 @@ inline CharIter char_to_int(CharIter begin, CharIter end, Integer &num)
 
 	uint_type unum = 0U;
 
+	CharIter first = begin;
+
 	// Convert front-to-back (Horner)
 	while (begin != end)
 	{
 		unsigned int digit = static_cast<unsigned int>(*begin - '0');
 
-		// Return iterator to invalid character on error
+		// Stop on non-digit character
 		if (digit > 9)
-			return begin;
+			break;
 
 		unum = unum * 10U + static_cast<uint_type>(digit);
 		++begin;
 	}
 
-	num = static_cast<int_type>(unum);
-
-	// Check, if signed
-	if (static_cast<int_type>(-1) < static_cast<int_type>(0))
+	// Immediately return iterator to invalid character on error
+	if (begin != first)
 	{
-		// Flip number, if negative
-		if (flip)
-			num = static_cast<int_type>(-static_cast<sint_type>(unum));
+		num = static_cast<int_type>(unum);
+
+		// Check, if signed
+		if (static_cast<int_type>(-1) < static_cast<int_type>(0))
+		{
+			// Flip number, if negative
+			if (flip)
+				num = static_cast<int_type>(-static_cast<sint_type>(unum));
+		}
 	}
 
-	// Return end
+	// Return end position
 	return begin;
 }
 
@@ -141,6 +147,14 @@ inline bool string_to_int(const utf8_ntri &string, Integer &num)
 	utf8_ntri::const_iterator end = string.end();
 	return (char_to_int(string.begin(), end, num) == end);
 }
+
+/// Estimates the maximum string length for floating-point values of the given type.
+template <class Float>
+struct max_float_string_length
+{
+	/// Estimated maximum string length for floating-point values of the given type.
+	static const int value = ((size_info<Float>::bits + 2) / 3) * 3 + 8;
+};
 
 /// Converts the given floating-point value of the given type into an ascii character string, returning a pointer to the first character not actively used.
 /// Assumes the given iterator points to the beginning of a continuous range in memory. Overwrites *end with a terminating null character.
@@ -165,7 +179,7 @@ template <class Float>
 inline utf8_string float_to_string(Float num)
 {
 	// Estimate decimal length
-	char buffer[3 * (size_info<Float>::bits + 5) / 3 + 12]; // "3 numbers ~= float_to_char::precision" (#.#e#)
+	char buffer[max_float_string_length<Float>::value];
 	// Assign to string
 	return utf8_string(buffer, float_to_char(buffer, num));
 }
@@ -213,6 +227,7 @@ using io::max_int_string_length;
 using io::char_to_int;
 
 using io::float_to_char;
+using io::max_float_string_length;
 using io::char_to_float;
 
 } // namespace

@@ -20,6 +20,11 @@ namespace properties
 template <class Class, class Type, size_t MaxCount, utf8_t Delimiter = ';'>
 struct generic_property_type : public property_type<Class>
 {
+	/// Gets the maximum length of the given number of values when serialized. Zero if unpredictable.
+	size_t max_length(size_t count) const
+	{
+		return 0;
+	}
 	// Writes the given number of values to the given stream.
 	bool write(std::basic_ostream<utf8_t> &stream, const property_getter<Class> &getter, const Class &object, size_t count) const
 	{
@@ -86,6 +91,12 @@ LEAN_INLINE const property_type& get_generic_property_type()
 template <class Class, class Type, size_t MaxCount, utf8_t Delimiter = ';'>
 struct int_property_type : public generic_property_type<Class, Type, MaxCount, Delimiter>
 {
+	/// Gets the maximum length of the given number of values when serialized. Zero if unpredictable.
+	size_t max_length(size_t count) const
+	{
+		// N numbers & delimiters
+		return (max_int_string_length<Type>::value + 1) * count;
+	}
 	// Writes the given number of values to the given character buffer, returning the first character not written to.
 	utf8_t* write(utf8_t *begin, const property_getter<Class> &getter, const Class &object, size_t count) const
 	{
@@ -117,7 +128,6 @@ struct int_property_type : public generic_property_type<Class, Type, MaxCount, D
 			if (i != 0)
 				while (begin != end && *(begin++) != Delimiter);
 
-			// TODO: stop without fail
 			begin = char_to_int(begin, end, values[i]);
 		}
 
@@ -125,9 +135,6 @@ struct int_property_type : public generic_property_type<Class, Type, MaxCount, D
 
 		return begin;
 	}
-
-	/// Gets the STD lib typeid.
-	const std::type_info& type_info() const { return typeid(Type); }
 };
 
 /// Gets the property type info for the given type.
@@ -141,6 +148,12 @@ LEAN_INLINE const property_type& get_int_property_type()
 template <class Class, class Type, size_t MaxCount, utf8_t Delimiter = ';'>
 struct float_property_type : public generic_property_type<Class, Type, MaxCount, Delimiter>
 {
+	/// Gets the maximum length of the given number of values when serialized. Zero if unpredictable.
+	size_t max_length(size_t count) const
+	{
+		// N numbers & delimiters
+		return (max_float_string_length<Type>::value + 1) * count;
+	}
 	// Writes the given number of values to the given character buffer, returning the first character not written to.
 	utf8_t* write(utf8_t *begin, const property_getter<Class> &getter, const Class &object, size_t count) const
 	{
@@ -179,9 +192,6 @@ struct float_property_type : public generic_property_type<Class, Type, MaxCount,
 
 		return begin;
 	}
-
-	/// Gets the STD lib typeid.
-	const std::type_info& type_info() const { return typeid(Type); }
 };
 
 /// Gets the property type info for the given type.

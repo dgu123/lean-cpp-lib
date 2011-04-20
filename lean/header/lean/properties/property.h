@@ -56,6 +56,9 @@ protected:
 	~property_type() throw() { }
 
 public:
+	/// Gets the maximum length of the given number of values when serialized. Zero if unpredictable.
+	virtual size_t max_length(size_t count) const = 0;
+
 	/// Writes the given number of values to the given stream.
 	virtual bool write(std::basic_ostream<utf8_t> &stream, const property_getter<Class> &getter, const Class &object, size_t count) const = 0;
 	/// Writes the given number of values to the given character buffer, returning the first character not written to.

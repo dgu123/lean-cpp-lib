@@ -15,6 +15,7 @@ namespace lean
 
 #include "property.h"
 #include "property_accessors.h"
+#include "property_types.h"
 #include "property_collection.h"
 
 #endif

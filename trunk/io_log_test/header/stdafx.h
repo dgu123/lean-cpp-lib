@@ -5,6 +5,7 @@
 
 #pragma once
 
+#define LEAN_FAST_STL
 #include <lean/depconfig.h>
 #include <lean/lean.h>
 

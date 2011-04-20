@@ -29,16 +29,20 @@ static inline const std::locale& system_locale()
 /// Converts the given string from UTF-8 to UTF-16.
 inline utf16_string utf_to_utf16(const utf8_ntri &wide)
 {
-	utf16_string result(wide.count(), 0);
-	utf8::unchecked::utf8to16(wide.begin(), wide.end(), result.begin());
+	utf16_string result(wide.size(), 0);
+	result.erase(
+		utf8::unchecked::utf8to16(wide.begin(), wide.end(), result.begin()),
+		result.end());
 	return result;
 }
 
 /// Converts the given string from UTF-16 to UTF-8.
 inline utf8_string utf_to_utf8(const utf16_ntri &wide)
 {
-	utf8_string result(wide.count(), 0);
-	utf8::unchecked::utf16to8(wide.begin(), wide.end(), result.begin());
+	utf8_string result(2 * wide.size(), 0);
+	result.erase(
+		utf8::unchecked::utf16to8(wide.begin(), wide.end(), result.begin()),
+		result.end());
 	return result;
 }
 
@@ -46,16 +50,20 @@ inline utf8_string utf_to_utf8(const utf16_ntri &wide)
 /// Converts the given string from UTF-8 to UTF-32.
 inline utf32_string utf_to_utf32(const utf8_ntri &wide)
 {
-	utf32_string result(wide.count(), 0);
-	utf8::unchecked::utf8to32(wide.begin(), wide.end(), result.begin());
+	utf32_string result(wide.size(), 0);
+	result.erase(
+		utf8::unchecked::utf8to32(wide.begin(), wide.end(), result.begin()),
+		result.end());
 	return result;
 }
 
 /// Converts the given string from UTF-32 to UTF-8.
 inline utf8_string utf_to_utf8(const utf32_ntri &wide)
 {
-	utf8_string result(wide.count(), 0);
-	utf8::unchecked::utf32to8(wide.begin(), wide.end(), result.begin());
+	utf8_string result(4 * wide.size(), 0);
+	result.erase(
+		utf8::unchecked::utf32to8(wide.begin(), wide.end(), result.begin()),
+		result.end());
 	return result;
 }
 

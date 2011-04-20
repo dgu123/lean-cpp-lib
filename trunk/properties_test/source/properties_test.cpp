@@ -44,7 +44,9 @@ BOOST_AUTO_TEST_CASE( inplace )
 	object.setWeight(2.1521231561f);
 
 	lean::xml_file<lean::utf8_t> file;
-	lean::properties_to_xml(object, collection, file.document());
+	rapidxml::xml_node<lean::utf8_t> *rootnode = file.document().allocate_node(rapidxml::node_element, "properties", nullptr);
+	file.document().append_node(rootnode);
+	lean::properties_to_xml(object, collection, *rootnode);
 	file.save("blabla.xml");
 }
 

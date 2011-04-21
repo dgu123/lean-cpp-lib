@@ -97,13 +97,20 @@ struct union_helper
 		"Size of union type must be positive multiple of value type.",
 		Size_of_union_type_must_be_positive_multiple_of_value_type);
 
+	// Divide by zero prevented by if clause
+	#pragma	warning(push)
+	#pragma warning(disable : 4723)
+
 	template <class Count>
 	static LEAN_INLINE Count union_count(Count count)
 	{
-		return (sizeof(UnionValue) >= sizeof(Value))
-			? count / (sizeof(UnionValue) / sizeof(Value))
-			: count * (sizeof(Value) / sizeof(UnionValue));
+		if (sizeof(UnionValue) >= sizeof(Value))
+			return count / (sizeof(UnionValue) / sizeof(Value));
+		else
+			return count * (sizeof(Value) / sizeof(UnionValue));
 	}
+
+	#pragma warning(pop)
 };
 
 } // namespace

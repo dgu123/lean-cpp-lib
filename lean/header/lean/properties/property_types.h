@@ -26,7 +26,7 @@ struct generic_property_type : public property_type<Class>
 		return 0;
 	}
 	// Writes the given number of values to the given stream.
-	bool write(std::basic_ostream<utf8_t> &stream, const property_getter<Class> &getter, const Class &object, size_t count) const
+	bool write(std::basic_ostream<utf8_t> &stream, const Class &object, const property_getter<Class> &getter, size_t count) const
 	{
 		Type values[MaxCount];
 		count = min(count, MaxCount);
@@ -45,15 +45,15 @@ struct generic_property_type : public property_type<Class>
 		return !stream.fail();
 	}
 	// Writes the given number of values to the given character buffer, returning the first character not written to.
-	utf8_t* write(utf8_t *begin, const property_getter<Class> &getter, const Class &object, size_t count) const
+	utf8_t* write(utf8_t *begin, const Class &object, const property_getter<Class> &getter, size_t count) const
 	{
 		basic_charstream<utf8_t> stream(begin);
-		generic_property_type::write(stream, getter, object, count);
+		generic_property_type::write(stream, object, getter, count);
 		return stream.write_end();
 	}
 
 	// Reads the given number of values from the given stream.
-	bool read(std::basic_istream<utf8_t> &stream, property_setter<Class> &setter, Class &object, size_t count) const
+	bool read(std::basic_istream<utf8_t> &stream, Class &object, property_setter<Class> &setter, size_t count) const
 	{
 		Type values[MaxCount] = { Type() };
 		count = min(count, MaxCount);
@@ -69,10 +69,10 @@ struct generic_property_type : public property_type<Class>
 		return setter(object, values, count) && !stream.fail();
 	}
 	// Reads the given number of values from the given range of characters, returning the first character not read.
-	const utf8_t* read(const utf8_t *begin, const utf8_t *end, property_setter<Class> &setter, Class &object, size_t count) const
+	const utf8_t* read(const utf8_t *begin, const utf8_t *end, Class &object, property_setter<Class> &setter, size_t count) const
 	{
 		basic_charstream<utf8_t> stream(const_cast<utf8_t*>(begin), const_cast<utf8_t*>(end));
-		generic_property_type::read(stream, setter, object, count);
+		generic_property_type::read(stream, object, setter, count);
 		return stream.read_end();
 	}
 
@@ -98,7 +98,7 @@ struct int_property_type : public generic_property_type<Class, Type, MaxCount, D
 		return (max_int_string_length<Type>::value + 1) * count;
 	}
 	// Writes the given number of values to the given character buffer, returning the first character not written to.
-	utf8_t* write(utf8_t *begin, const property_getter<Class> &getter, const Class &object, size_t count) const
+	utf8_t* write(utf8_t *begin, const Class &object, const property_getter<Class> &getter, size_t count) const
 	{
 		Type values[MaxCount];
 		count = min(count, MaxCount);
@@ -118,7 +118,7 @@ struct int_property_type : public generic_property_type<Class, Type, MaxCount, D
 	}
 
 	// Reads the given number of values from the given range of characters, returning the first character not read.
-	const utf8_t* read(const utf8_t *begin, const utf8_t *end, property_setter<Class> &setter, Class &object, size_t count) const
+	const utf8_t* read(const utf8_t *begin, const utf8_t *end, Class &object, property_setter<Class> &setter, size_t count) const
 	{
 		Type values[MaxCount] = { Type() };
 		count = min(count, MaxCount);
@@ -155,7 +155,7 @@ struct float_property_type : public generic_property_type<Class, Type, MaxCount,
 		return (max_float_string_length<Type>::value + 1) * count;
 	}
 	// Writes the given number of values to the given character buffer, returning the first character not written to.
-	utf8_t* write(utf8_t *begin, const property_getter<Class> &getter, const Class &object, size_t count) const
+	utf8_t* write(utf8_t *begin, const Class &object, const property_getter<Class> &getter, size_t count) const
 	{
 		Type values[MaxCount];
 		count = min(count, MaxCount);
@@ -175,7 +175,7 @@ struct float_property_type : public generic_property_type<Class, Type, MaxCount,
 	}
 
 	// Reads the given number of values from the given range of characters, returning the first character not read.
-	const utf8_t* read(const utf8_t *begin, const utf8_t *end, property_setter<Class> &setter, Class &object, size_t count) const
+	const utf8_t* read(const utf8_t *begin, const utf8_t *end, Class &object, property_setter<Class> &setter, size_t count) const
 	{
 		Type values[MaxCount] = { Type() };
 		count = min(count, MaxCount);

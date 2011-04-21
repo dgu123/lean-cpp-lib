@@ -68,6 +68,25 @@ inline utf8_string utf_to_utf8(const utf32_ntri &wide)
 }
 
 
+/// Converts the given string from UTF-8 to UTF-8.
+LEAN_INLINE utf8_ntri utf_to_utf8(const utf8_ntri &wide)
+{
+	return wide;
+}
+
+/// Converts the given string from UTF-16 to UTF-16.
+LEAN_INLINE utf16_ntri utf_to_utf16(const utf16_ntri &wide)
+{
+	return wide;
+}
+
+/// Converts the given string from UTF-32 to UTF-32.
+LEAN_INLINE utf32_ntri utf_to_utf32(const utf32_ntri &wide)
+{
+	return wide;
+}
+
+
 //// Codepage / UTF-XX ////
 
 /// Widens the given string using either the given locale or the current global locale.

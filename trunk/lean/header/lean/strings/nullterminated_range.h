@@ -19,10 +19,10 @@ namespace strings
 /// Nullterminated character range class that may be constructed IMPLICITLY from arbitrary string classes.
 /// May be used in parameter lists, not recommended elsewhere.
 template < class Char, class Traits = char_traits<typename strip_const<Char>::type> >
-class nullterminated_range_implicit : public nullterminated<Char, Traits>
+class nullterminated_range_implicit : public nullterminated_implicit<Char, Traits>
 {
 private:
-	typedef nullterminated<Char, Traits> base_type;
+	typedef nullterminated_implicit<Char, Traits> base_type;
 	
 	/// Asserts null-termination.
 	static LEAN_INLINE void assert_null_terminated(const_pointer end)
@@ -129,11 +129,18 @@ public:
 		: base_type(from) { }
 };
 
+/// Makes an explicit nullterminated range from the given implicit range.
+template <class Char, class Traits>
+LEAN_INLINE nullterminated_range<Char, Traits> make_ntr(const nullterminated_range_implicit<Char, Traits> &range)
+{
+	return nullterminated_range<Char, Traits>(range);
+}
+
 /// Comparison operator.
 template <class Char, class Traits>
 LEAN_INLINE bool operator ==(const nullterminated_range_implicit<Char, Traits>& left, const nullterminated_range_implicit<Char, Traits>& right)
 {
-	return (left.length() == right.length()) && (nullterminated<Char, Traits>::traits_type::compare(left.c_str(), right.c_str()) == 0);
+	return (left.length() == right.length()) && nullterminated<Char, Traits>::traits_type::equal(left.c_str(), right.c_str());
 }
 
 /// Comparison operator.
@@ -147,7 +154,7 @@ LEAN_INLINE bool operator !=(const nullterminated_range_implicit<Char, Traits>& 
 template <class Char, class Traits>
 LEAN_INLINE bool operator <(const nullterminated_range_implicit<Char, Traits>& left, const nullterminated_range_implicit<Char, Traits>& right)
 {
-	return (left.length() < right.length()) || (nullterminated<Char, Traits>::traits_type::compare(left.c_str(), right.c_str()) < 0);
+	return left.length() < right.length() || nullterminated<Char, Traits>::traits_type::less(left.c_str(), right.c_str());
 }
 
 /// Comparison operator.
@@ -182,6 +189,8 @@ LEAN_INLINE void swap(nullterminated_range_implicit<Char, Traits>& left, nullter
 
 using strings::nullterminated_range_implicit;
 using strings::nullterminated_range;
+
+using strings::make_ntr;
 
 } // namespace
 

@@ -6,6 +6,7 @@
 #define LEAN_PROPERTIES_PROPERTY_SERIALIZATION
 
 #include "../lean.h"
+#include "../strings/types.h"
 #include "../strings/conversions.h"
 #include "../rapidxml/rapidxml.hpp"
 #include "property.h"
@@ -81,26 +82,56 @@ inline void property_from_xml(Class &object, const Property &desc, const rapidxm
 			object, desc.setter, desc.count);
 }
 
+namespace impl
+{
+	/// Gets the next (circular) sibling property node until a certain node is reached.
+	inline const rapidxml::xml_node<utf8_t>* next_property_node(const rapidxml::xml_node<utf8_t> *node, const rapidxml::xml_node<utf8_t> *endNode)
+	{
+		node = node->next_sibling(node->name());
+
+		if (!node)
+			node = endNode->parent()->first_node(endNode->name());
+
+		return (node != endNode)
+			? node
+			: nullptr;
+	}
+
+	/// Locates a property node of the given name and reads from it.
+	template <class Class, class Property>
+	inline const rapidxml::xml_node<utf8_t>* find_and_load_property(Class &object, const Property &desc,
+		const utf8_ntri &name, const rapidxml::xml_node<utf8_t> *startNode)
+	{
+		// Iterate once in a circle starting at the given start node
+		for (const rapidxml::xml_node<utf8_t> *propertyNode = startNode;
+			propertyNode; propertyNode = next_property_node(propertyNode, startNode))
+		{
+			const rapidxml::xml_attribute<utf8_t> *nameAttr = propertyNode->first_attribute("name");
+
+			if (nameAttr && utf8_nt(nameAttr->value()) == name)
+			{
+				property_from_xml(object, desc, *propertyNode);
+				startNode = propertyNode->next_sibling(propertyNode->name());
+				return (startNode) ? startNode : propertyNode;
+			}
+		}
+
+		return startNode;
+	}
+
+}
+
 /// Loads property values from the given XML node.
 template <class Class, class Collection>
 inline void properties_from_xml(Class &object, const Collection &collection, const rapidxml::xml_node<utf8_t> &node)
 {
-	for (const rapidxml::xml_node<utf8_t> *propertyNode = node.first_node("property");
-		propertyNode; propertyNode = propertyNode->next_sibling("property"))
-	{
-		const rapidxml::xml_attribute<utf8_t> *nameAttr = propertyNode->first_attribute("name");
+	const rapidxml::xml_node<utf8_t> *startNode = node.first_node("property");
 
-		if (nameAttr)
-		{
-			// TODO: don't require zero term
-			std::wstring name = utf_to_utf16(nameAttr->value());
-
-			for (typename Collection::const_iterator itProperty = collection.begin();
-				itProperty != collection.end(); ++itProperty)
-				if (itProperty->name == name)
-					property_from_xml(object, *itProperty, *propertyNode);
-		}
-	}
+	if (startNode)
+		for (typename Collection::const_iterator itProperty = collection.begin();
+			 itProperty != collection.end(); ++itProperty)
+			 // Optimized for sequential storage layout (as saved by properties_to_xml)
+			startNode = impl::find_and_load_property(object, *itProperty, utf_to_utf8(itProperty->name), startNode);
 }
 
 } // namespace

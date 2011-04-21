@@ -173,11 +173,18 @@ public:
 		: base_type(right)  { }
 };
 
+/// Makes an explicit nullterminated (half) range from the given implicit range.
+template <class Char, class Traits>
+LEAN_INLINE nullterminated<Char, Traits> make_nt(const nullterminated_implicit<Char, Traits> &range)
+{
+	return nullterminated<Char, Traits>(range);
+}
+
 /// Comparison operator.
 template <class Char, class Traits>
 LEAN_INLINE bool operator ==(const nullterminated_implicit<Char, Traits>& left, const nullterminated_implicit<Char, Traits>& right)
 {
-	return (nullterminated_implicit<Char, Traits>::traits_type::compare(left.c_str(), right.c_str()) == 0);
+	return nullterminated_implicit<Char, Traits>::traits_type::equal(left.c_str(), right.c_str());
 }
 
 /// Comparison operator.
@@ -191,7 +198,7 @@ LEAN_INLINE bool operator !=(const nullterminated_implicit<Char, Traits>& left, 
 template <class Char, class Traits>
 LEAN_INLINE bool operator <(const nullterminated_implicit<Char, Traits>& left, const nullterminated_implicit<Char, Traits>& right)
 {
-	return (nullterminated_implicit<Char, Traits>::traits_type::compare(left.c_str(), right.c_str()) < 0);
+	return nullterminated_implicit<Char, Traits>::traits_type::less(left.c_str(), right.c_str());
 }
 
 /// Comparison operator.
@@ -226,6 +233,8 @@ LEAN_INLINE void swap(nullterminated_implicit<Char, Traits>& left, nullterminate
 
 using strings::nullterminated_implicit;
 using strings::nullterminated;
+
+using strings::make_nt;
 
 } // namespace
 

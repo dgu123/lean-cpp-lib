@@ -5,6 +5,8 @@
 #include <lean/properties/property_serialization.h>
 #include <lean/xml/xml_file.h>
 
+#include <lean/time/highres_timer.h>
+
 #include "property_driven_test_impl.h"
 
 BOOST_AUTO_TEST_SUITE( property )
@@ -38,7 +40,15 @@ BOOST_AUTO_TEST_CASE( inplace )
 
 		<< collection_type::property_desc(L"weight", lean::get_float_property_type<test_property_driven, float, 1>(), 1)
 			.set_setter(LEAN_MAKE_PROPERTY_SETTER(&test_property_driven::setWeight))
-			.set_getter(LEAN_MAKE_PROPERTY_GETTER(&test_property_driven::getWeight));
+			.set_getter(LEAN_MAKE_PROPERTY_GETTER(&test_property_driven::getWeight))
+
+		<< collection_type::property_desc(L"ints", lean::get_int_property_type<test_property_driven, int, 16>(), 16)
+			.set_setter(LEAN_MAKE_PROPERTY_SETTER(&test_property_driven::setInts))
+			.set_getter(LEAN_MAKE_PROPERTY_GETTER(&test_property_driven::getInts))
+
+		<< collection_type::property_desc(L"floats", lean::get_float_property_type<test_property_driven, float, 16>(), 16)
+			.set_setter(LEAN_MAKE_PROPERTY_SETTER(&test_property_driven::setFloats))
+			.set_getter(LEAN_MAKE_PROPERTY_GETTER(&test_property_driven::getFloats));
 
 	test_property_driven object("test", 1);
 	object.setWeight(2.1521231561f);
@@ -46,11 +56,26 @@ BOOST_AUTO_TEST_CASE( inplace )
 	lean::xml_file<lean::utf8_t> file;
 	rapidxml::xml_node<lean::utf8_t> *rootnode = file.document().allocate_node(rapidxml::node_element, "properties", nullptr);
 	file.document().append_node(rootnode);
-	lean::properties_to_xml(object, collection, *rootnode);
+	
+	lean::highres_timer write_timer;
+
+	for (int i = 0; i < 10000; ++i)
+		lean::properties_to_xml(object, collection, *rootnode);
+
+	std::cout << "Properties_to_XML: " << write_timer.milliseconds() << std::endl;
+	
 	file.save("blabla.xml");
 
 	test_property_driven object2("asfdas", 125);
-	lean::properties_from_xml(object2, collection, *rootnode);
+
+	lean::highres_timer read_timer;
+
+	lean::xml_file<lean::utf8_t> file2("blabla.xml");
+
+	for (int i = 0; i < 10000; ++i)
+		lean::properties_from_xml(object2, collection, *file2.document().first_node());
+
+	std::cout << "Properties_from_XML: " << read_timer.milliseconds() << std::endl;
 }
 
 BOOST_AUTO_TEST_SUITE_END()

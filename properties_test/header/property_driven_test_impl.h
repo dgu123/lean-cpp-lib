@@ -27,4 +27,7 @@ public:
 
 	void setInts(const int *ints, size_t count) { }
 	void getInts(int *ints, size_t count) const { }
+
+	void setFloats(const float *ints, size_t count) { }
+	void getFloats(float *ints, size_t count) const { }
 };

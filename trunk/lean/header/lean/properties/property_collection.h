@@ -14,9 +14,6 @@ namespace lean
 namespace properties
 {
 
-/// Invalid property ID.
-static const size_t invalid_property_id = static_cast<size_t>(-1);
-
 /// Container class that may be used to store information on class / object properties.
 template < class Class, class Description, class Vector = std::vector<Description> >
 class property_collection
@@ -146,6 +143,9 @@ public:
 
 };
 
+/// Invalid property ID.
+static const size_t invalid_property_id = static_cast<size_t>(-1);
+
 /// Finds a property by name, returning its ID on success, invalid_property_id on failure.
 template <class Collection, class String>
 inline size_t find_property(const Collection &collection, const String &name)
@@ -160,8 +160,9 @@ inline size_t find_property(const Collection &collection, const String &name)
 
 } // namespace
 
-using properties::invalid_property_id;
 using properties::property_collection;
+
+using properties::invalid_property_id;
 using properties::find_property;
 
 } // namespace

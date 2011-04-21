@@ -60,6 +60,20 @@
 	#define LEAN_MAYBE_EXPORT
 #endif
 
+#ifdef _MSC_VER
+
+	#pragma warning(push)
+	// Can't do anything about methods not being inlined
+	#pragma warning(disable : 4714)
+	// Formal parameters named for documentation purposes
+	#pragma warning(disable : 4100)
+	// Constant conditional expressions occur quite often in template code
+	#pragma warning(disable : 4127)
+	// Sometimes, using 'this' in initializier lists is unavoidable
+	#pragma warning(disable : 4355)
+
+#endif
+
 #ifdef LEAN_DEBUG_BUILD
 	#include <cassert>
 	/// Asserts that the given expression is always true.

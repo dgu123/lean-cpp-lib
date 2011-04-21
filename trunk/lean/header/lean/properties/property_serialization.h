@@ -33,7 +33,7 @@ inline rapidxml::xml_node<utf8_t>* property_to_xml(const Class &object, const Pr
 		if (max_length != 0 && max_length < optBufferSize)
 		{
 			utf8_t buffer[optBufferSize];
-			utf8_t *bufferEnd = desc.type->write(buffer, desc.getter, object, desc.count);
+			utf8_t *bufferEnd = desc.type->write(buffer, object, desc.getter, desc.count);
 
 			// Required to be null-terminated
 			*(bufferEnd++) = 0;
@@ -47,7 +47,7 @@ inline rapidxml::xml_node<utf8_t>* property_to_xml(const Class &object, const Pr
 		else
 		{
 			std::basic_ostringstream<utf8_t> stream;
-			desc.type->write(stream, desc.getter, object, desc.count);
+			desc.type->write(stream, object, desc.getter, desc.count);
 			value = document.allocate_string(stream.str().c_str());
 		}
 	}
@@ -78,7 +78,7 @@ inline void property_from_xml(Class &object, const Property &desc, const rapidxm
 	// Check if writeable
 	if (desc.setter.valid())
 		desc.type->read(propertyNode.value(), propertyNode.value() + propertyNode.value_size(),
-			desc.setter, object, desc.count);
+			object, desc.setter, desc.count);
 }
 
 /// Loads property values from the given XML node.

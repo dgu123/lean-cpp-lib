@@ -60,14 +60,14 @@ public:
 	virtual size_t max_length(size_t count) const = 0;
 
 	/// Writes the given number of values to the given stream.
-	virtual bool write(std::basic_ostream<utf8_t> &stream, const property_getter<Class> &getter, const Class &object, size_t count) const = 0;
+	virtual bool write(std::basic_ostream<utf8_t> &stream, const Class &object, const property_getter<Class> &getter, size_t count) const = 0;
 	/// Writes the given number of values to the given character buffer, returning the first character not written to.
-	virtual utf8_t* write(utf8_t *begin, const property_getter<Class> &getter, const Class &object, size_t count) const = 0;
+	virtual utf8_t* write(utf8_t *begin, const Class &object, const property_getter<Class> &getter, size_t count) const = 0;
 
 	/// Reads the given number of values from the given stream.
-	virtual bool read(std::basic_istream<utf8_t> &stream, property_setter<Class> &setter, Class &object, size_t count) const = 0;
+	virtual bool read(std::basic_istream<utf8_t> &stream, Class &object, property_setter<Class> &setter, size_t count) const = 0;
 	/// Reads the given number of values from the given range of characters, returning the first character not read.
-	virtual const utf8_t* read(const utf8_t *begin, const utf8_t *end, property_setter<Class> &setter, Class &object, size_t count) const = 0;
+	virtual const utf8_t* read(const utf8_t *begin, const utf8_t *end, Class &object, property_setter<Class> &setter, size_t count) const = 0;
 
 	/// Gets the STD lib typeid.
 	virtual const std::type_info& type_info() const = 0;

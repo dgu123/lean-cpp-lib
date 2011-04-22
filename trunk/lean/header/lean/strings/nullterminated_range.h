@@ -142,6 +142,12 @@ LEAN_INLINE bool operator ==(const nullterminated_range_implicit<Char, Traits>& 
 {
 	return (left.length() == right.length()) && nullterminated<Char, Traits>::traits_type::equal(left.c_str(), right.c_str());
 }
+template <class Char, class Traits, class Compatible>
+LEAN_INLINE typename enable_if<is_nullterminated_convertible<Compatible, Char, Traits>::value, bool>::type
+	operator ==(const nullterminated_range_implicit<Char, Traits>& left, const Compatible& right) { return left == make_ntr<Char, Traits>(right); }
+template <class Char, class Traits, class Compatible>
+LEAN_INLINE typename enable_if<is_nullterminated_convertible<Compatible, Char, Traits>::value, bool>::type
+	operator ==(const Compatible& left, const nullterminated_range_implicit<Char, Traits>& right) { return make_ntr<Char, Traits>(left) == right; }
 
 /// Comparison operator.
 template <class Char, class Traits>
@@ -149,6 +155,12 @@ LEAN_INLINE bool operator !=(const nullterminated_range_implicit<Char, Traits>& 
 {
 	return !(left == right);
 }
+template <class Char, class Traits, class Compatible>
+LEAN_INLINE typename enable_if<is_nullterminated_convertible<Compatible, Char, Traits>::value, bool>::type
+	operator !=(const nullterminated_range_implicit<Char, Traits>& left, const Compatible& right) { return left != make_ntr<Char, Traits>(right); }
+template <class Char, class Traits, class Compatible>
+LEAN_INLINE typename enable_if<is_nullterminated_convertible<Compatible, Char, Traits>::value, bool>::type
+	operator !=(const Compatible& left, const nullterminated_range_implicit<Char, Traits>& right) { return make_ntr<Char, Traits>(left) != right; }
 
 /// Comparison operator.
 template <class Char, class Traits>
@@ -156,6 +168,12 @@ LEAN_INLINE bool operator <(const nullterminated_range_implicit<Char, Traits>& l
 {
 	return left.length() < right.length() || nullterminated<Char, Traits>::traits_type::less(left.c_str(), right.c_str());
 }
+template <class Char, class Traits, class Compatible>
+LEAN_INLINE typename enable_if<is_nullterminated_convertible<Compatible, Char, Traits>::value, bool>::type
+	operator <(const nullterminated_range_implicit<Char, Traits>& left, const Compatible& right) { return left < make_ntr<Char, Traits>(right); }
+template <class Char, class Traits, class Compatible>
+LEAN_INLINE typename enable_if<is_nullterminated_convertible<Compatible, Char, Traits>::value, bool>::type
+	operator <(const Compatible& left, const nullterminated_range_implicit<Char, Traits>& right) { return make_ntr<Char, Traits>(left) < right; }
 
 /// Comparison operator.
 template <class Char, class Traits>
@@ -163,6 +181,12 @@ LEAN_INLINE bool operator >(const nullterminated_range_implicit<Char, Traits>& l
 {
 	return (right < left);
 }
+template <class Char, class Traits, class Compatible>
+LEAN_INLINE typename enable_if<is_nullterminated_convertible<Compatible, Char, Traits>::value, bool>::type
+	operator >(const nullterminated_range_implicit<Char, Traits>& left, const Compatible& right) { return left > make_ntr<Char, Traits>(right); }
+template <class Char, class Traits, class Compatible>
+LEAN_INLINE typename enable_if<is_nullterminated_convertible<Compatible, Char, Traits>::value, bool>::type
+	operator >(const Compatible& left, const nullterminated_range_implicit<Char, Traits>& right) { return make_ntr<Char, Traits>(left) > right; }
 
 /// Comparison operator.
 template <class Char, class Traits>
@@ -170,6 +194,12 @@ LEAN_INLINE bool operator <=(const nullterminated_range_implicit<Char, Traits>& 
 {
 	return !(right < left);
 }
+template <class Char, class Traits, class Compatible>
+LEAN_INLINE typename enable_if<is_nullterminated_convertible<Compatible, Char, Traits>::value, bool>::type
+	operator <=(const nullterminated_range_implicit<Char, Traits>& left, const Compatible& right) { return left <= make_ntr<Char, Traits>(right); }
+template <class Char, class Traits, class Compatible>
+LEAN_INLINE typename enable_if<is_nullterminated_convertible<Compatible, Char, Traits>::value, bool>::type
+	operator <=(const Compatible& left, const nullterminated_range_implicit<Char, Traits>& right) { return make_ntr<Char, Traits>(left) <= right; }
 
 /// Comparison operator.
 template <class Char, class Traits>
@@ -177,6 +207,12 @@ LEAN_INLINE bool operator >=(const nullterminated_range_implicit<Char, Traits>& 
 {
 	return !(left < right);
 }
+template <class Char, class Traits, class Compatible>
+LEAN_INLINE typename enable_if<is_nullterminated_convertible<Compatible, Char, Traits>::value, bool>::type
+	operator >=(const nullterminated_range_implicit<Char, Traits>& left, const Compatible& right) { return left >= make_ntr<Char, Traits>(right); }
+template <class Char, class Traits, class Compatible>
+LEAN_INLINE typename enable_if<is_nullterminated_convertible<Compatible, Char, Traits>::value, bool>::type
+	operator >=(const Compatible& left, const nullterminated_range_implicit<Char, Traits>& right) { return make_ntr<Char, Traits>(left) >= right; }
 
 /// Swaps the elements of two null-terminated character ranges.
 template <class Char, class Traits>

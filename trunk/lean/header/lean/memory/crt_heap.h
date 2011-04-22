@@ -12,9 +12,11 @@
 	// MONITOR: Seems to be guaranteed for MSC & GCC
 	#ifdef LEAN_64_BIT
 		/// Specifies alignment requirements that are assumed to always be met by the CRT
+		/// @ingroup MemorySwitches
 		#define LEAN_ASSUME_CRT_ALIGNMENT 16
 	#else
 		/// Specifies alignment requirements that are assumed to always be met by the CRT
+		/// @ingroup MemorySwitches
 		#define LEAN_ASSUME_CRT_ALIGNMENT 8
 	#endif
 #endif

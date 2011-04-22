@@ -22,4 +22,6 @@ namespace lean
 #include "heap_bound.h"
 #include "aligned.h"
 
+/// @defgroup MemorySwitches Memory-management switches
+
 #endif

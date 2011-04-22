@@ -13,6 +13,12 @@
 #include "../rapidxml/rapidxml.hpp"
 #include "../rapidxml/rapidxml_print.hpp"
 
+#ifndef LEAN_XML_FILE_SAVE_BATCH_SIZE
+	/// Batch size used (in bytes) when writing XML files to file.
+	/// @ingroup AssortedSwitches
+	#define LEAN_XML_FILE_SAVE_BATCH_SIZE 4096
+#endif
+
 namespace lean
 {
 namespace xml
@@ -47,7 +53,7 @@ template <int PrintFlags, class Char>
 LEAN_INLINE void save_xml_file(const utf8_ntri &fileName, const rapidxml::xml_node<Char> &document)
 {
 	raw_file file(fileName, file::write, file::overwrite);
-	print(raw_file_inserter<>(file).iter(), document, PrintFlags);
+	print(raw_file_inserter<LEAN_XML_FILE_SAVE_BATCH_SIZE>(file).iter(), document, PrintFlags);
 }
 
 /// This convenience class wraps up the most common xml file functionality.

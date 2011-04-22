@@ -94,8 +94,40 @@ struct strip_modifiers
 	static const bool stripped = strip_volatile<Type>::stripped || strip_const<Type>::stripped;
 };
 
+namespace impl
+{
+
+template <class Type>
+struct do_strip_pointer
+{
+	typedef Type type;
+	static const bool stripped = false;
+};
+
+template <class Type>
+struct do_strip_pointer<Type*>
+{
+	typedef Type type;
+	static const bool stripped = true;
+};
+
+}
+
+/// Strips a pointer from the given type.
+template <class Type>
+struct strip_pointer
+{
+	/// Pointer type without modifiers.
+	typedef typename strip_modifiers<Type>::type pointer;
+	/// Type without pointer.
+	typedef typename impl::do_strip_pointer<pointer>::type type;
+	/// True, if any pointer stripped.
+	static const bool stripped = impl::do_strip_pointer<pointer>::stripped;
+};
+
 } // namespace
 
+using meta::strip_pointer;
 using meta::strip_reference;
 using meta::strip_const;
 using meta::strip_volatile;

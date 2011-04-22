@@ -13,9 +13,11 @@
 	// see http://stackoverflow.com/questions/2805896/what-alignment-does-heapalloc-use
 	#ifdef LEAN_64_BIT
 		/// Specifies alignment requirements that are assumed to always be met by the windows memory management functions
+		/// @ingroup MemorySwitches
 		#define LEAN_ASSUME_WIN_ALIGNMENT 16
 	#else
 		/// Specifies alignment requirements that are assumed to always be met by the windows memory management functions
+		/// @ingroup MemorySwitches
 		#define LEAN_ASSUME_WIN_ALIGNMENT 8
 	#endif
 #endif

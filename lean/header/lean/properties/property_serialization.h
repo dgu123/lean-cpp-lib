@@ -12,6 +12,12 @@
 #include "property.h"
 #include <sstream>
 
+#ifndef LEAN_PROPERTY_SERIALIZATION_OPTBUF_SIZE
+	/// Maximum number of characters to be statically allocated before switching to stream-based serialization.
+	/// @ingroup AssortedSwitches
+	#define LEAN_PROPERTY_SERIALIZATION_OPTBUF_SIZE 1024
+#endif
+
 namespace lean
 {
 namespace properties
@@ -26,7 +32,7 @@ inline rapidxml::xml_node<utf8_t>* property_to_xml(const Class &object, const Pr
 	// Check if readable
 	if (desc.getter.valid())
 	{
-		static const size_t optBufferSize = 1024;
+		static const size_t optBufferSize = LEAN_PROPERTY_SERIALIZATION_OPTBUF_SIZE;
 		
 		size_t max_length = desc.type->max_length(desc.count);
 
@@ -108,7 +114,7 @@ namespace impl
 		{
 			const rapidxml::xml_attribute<utf8_t> *nameAttr = propertyNode->first_attribute("name");
 
-			if (nameAttr && utf8_nt(nameAttr->value()) == name)
+			if (nameAttr && nameAttr->value() == name)
 			{
 				property_from_xml(object, desc, *propertyNode);
 				startNode = propertyNode->next_sibling(propertyNode->name());

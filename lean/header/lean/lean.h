@@ -7,6 +7,7 @@
 
 /// @addtogroup GlobalSwitches Global switches used for configuration
 /// @see GlobalMacros
+/// @see AssortedSwitches
 /// @{
 
 #ifdef DOXYGEN_READ_THIS
@@ -29,20 +30,21 @@
 
 /// @}
 
+/// @defgroup AssortedSwitches Assorted Switches
+/// @see GlobalSwitches
+
 /// @addtogroup GlobalMacros Global macros
 /// @see GlobalSwitches
 /// @see CPP0X
 /// @{
 
 #ifdef DOXYGEN_READ_THIS
-
 	/// Defined in debug builds.
 	#define LEAN_DEBUG_BUILD
 	#undef LEAN_DEBUG_BUILD
 	/// Defined in release builds.
 	#define LEAN_RELEASE_BUILD
 	#undef LEAN_RELEASE_BUILD
-
 #else
 
 #ifdef _DEBUG

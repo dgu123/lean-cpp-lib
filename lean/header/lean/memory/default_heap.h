@@ -9,6 +9,7 @@
 
 	#include "crt_heap.h"
 	/// Default heap to be used by all subsequent definitions that make use of the heap concept.
+	/// @ingroup MemorySwitches
 	#define LEAN_DEFAULT_HEAP crt_heap
 
 #endif
@@ -25,6 +26,13 @@ namespace lean
 	using memory::default_heap;
 
 } // namespace
+
+#ifdef DOXYGEN_READ_THIS
+	/// Define this to override new using a custom specified default heap.
+	/// @ingroup MemorySwitches
+	#define LEAN_OVERRIDE_NEW
+	#undef LEAN_OVERRIDE_NEW
+#endif
 
 #ifdef LEAN_OVERRIDE_NEW
 

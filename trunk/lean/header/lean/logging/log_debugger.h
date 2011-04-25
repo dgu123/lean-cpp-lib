@@ -38,7 +38,7 @@ using logging::log_debugger;
 
 } // namespace
 
-#ifndef LEAN_LINKING
+#ifdef LEAN_INCLUDE_LINKED
 #include "source/log_debugger.cpp"
 #endif
 

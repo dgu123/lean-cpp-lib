@@ -146,7 +146,7 @@ using logging::info_log;
 
 /// @}
 
-#ifndef LEAN_LINKING
+#ifdef LEAN_INCLUDE_LINKED
 #include "source/log.cpp"
 #endif
 

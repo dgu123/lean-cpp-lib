@@ -26,6 +26,10 @@
 	/// Define this when compiling lean into a dynamic link library.
 	#define LEAN_MAYBE_EXPORT
 	#undef LEAN_MAYBE_EXPORT
+
+	/// Define this when including each component of lean exactly once to directly integrate it with your libary.
+	#define LEAN_INTEGRATE_ONCE
+	#undef LEAN_INTEGRATE_ONCE
 #endif
 
 /// @}
@@ -108,7 +112,7 @@
 	#define LEAN_NOLTINLINE
 #endif
 
-#if defined(LEAN_HEADER_ONLY) && !defined(LEAN_BUILD_LIB)
+#if !defined(LEAN_INTEGRATE_ONCE) && defined(LEAN_HEADER_ONLY) && !defined(LEAN_BUILD_LIB)
 	/// Picks the first argument in a linked library, the second one in a header-only library.
 	#define LEAN_LINK_SELECT(linklib, headeronly) headeronly
 #else
@@ -118,12 +122,17 @@
 	#define LEAN_LINKING 1
 #endif
 
+#if !defined(LEAN_LINKING) || defined(LEAN_INTEGRATE_ONCE)
+	/// Also include linked function definitions.
+	#define LEAN_INCLUDE_LINKED 1
+#endif
+
 /// Trys to avoid inlining in a header-only library.
 #define LEAN_MAYBE_LINK LEAN_LINK_SELECT(, LEAN_NOINLINE)
 /// Trys to avoid inlining in a header-only library as well as at link time.
 #define LEAN_ALWAYS_LINK LEAN_LINK_SELECT(LEAN_NOLTINLINE, LEAN_NOINLINE)
 
-#if (defined(LEAN_HEADER_ONLY) || !defined(LEAN_MIN_DEPENDENCY)) && !defined(LEAN_BUILD_LIB)
+#if !defined(LEAN_INTEGRATE_ONCE) && (defined(LEAN_HEADER_ONLY) || !defined(LEAN_MIN_DEPENDENCY)) && !defined(LEAN_BUILD_LIB)
 	/// Picks the first argument in a header-only / non-min-dependency library, the second one in a min-dependency / linked library.
 	#define LEAN_INLINE_SELECT(maxdep, mindep) maxdep
 	/// Inlining in header-only library
@@ -131,6 +140,11 @@
 #else
 	/// Picks the first argument in a header-only / non-min-dependency library, the second one in a min-dependency / linked library.
 	#define LEAN_INLINE_SELECT(maxdep, mindep) mindep
+#endif
+
+#if defined(LEAN_INLINING) || defined(LEAN_INTEGRATE_ONCE)
+	/// Include inlined function definitions.
+	#define LEAN_INCLUDE_INLINED 1
 #endif
 
 /// Inlines in a header-only / non-min-dependency library.

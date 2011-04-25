@@ -40,7 +40,7 @@ using io::raw_file;
 
 } // namespace
 
-#ifdef LEAN_INLINING
+#ifdef LEAN_INCLUDE_INLINED
 #include "source/raw_file.cpp"
 #endif
 

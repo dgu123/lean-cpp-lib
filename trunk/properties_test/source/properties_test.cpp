@@ -31,22 +31,22 @@ BOOST_AUTO_TEST_CASE( inplace )
 	
 	static collection_type collection = collection_type::construct_inplace()
 
-		<< collection_type::property_desc(L"name", lean::get_generic_property_type<test_property_driven, std::string, 1>(), 1)
+		<< collection_type::property_desc("name", lean::get_generic_property_type<test_property_driven, std::string, 1>(), 1)
 			.set_setter(LEAN_MAKE_PROPERTY_SETTER(&test_property_driven::setName))
 			.set_getter(LEAN_MAKE_PROPERTY_GETTER(&test_property_driven::getName))
 
-		<< collection_type::property_desc(L"id", lean::get_int_property_type<test_property_driven, int, 1>(), 1)
+		<< collection_type::property_desc("id", lean::get_int_property_type<test_property_driven, int, 1>(), 1)
 			.set_getter(LEAN_MAKE_PROPERTY_GETTER(&test_property_driven::getID))
 
-		<< collection_type::property_desc(L"weight", lean::get_float_property_type<test_property_driven, float, 1>(), 1)
+		<< collection_type::property_desc("weight", lean::get_float_property_type<test_property_driven, float, 1>(), 1)
 			.set_setter(LEAN_MAKE_PROPERTY_SETTER(&test_property_driven::setWeight))
 			.set_getter(LEAN_MAKE_PROPERTY_GETTER(&test_property_driven::getWeight))
 
-		<< collection_type::property_desc(L"ints", lean::get_int_property_type<test_property_driven, int, 16>(), 16)
+		<< collection_type::property_desc("ints", lean::get_int_property_type<test_property_driven, int, 16>(), 16)
 			.set_setter(LEAN_MAKE_PROPERTY_SETTER(&test_property_driven::setInts))
 			.set_getter(LEAN_MAKE_PROPERTY_GETTER(&test_property_driven::getInts))
 
-		<< collection_type::property_desc(L"floats", lean::get_float_property_type<test_property_driven, float, 16>(), 16)
+		<< collection_type::property_desc("floats", lean::get_float_property_type<test_property_driven, float, 16>(), 16)
 			.set_setter(LEAN_MAKE_PROPERTY_SETTER(&test_property_driven::setFloats))
 			.set_getter(LEAN_MAKE_PROPERTY_GETTER(&test_property_driven::getFloats));
 

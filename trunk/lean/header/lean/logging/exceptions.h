@@ -65,7 +65,7 @@ using logging::throw_bad_alloc;
 
 /// @}
 
-#ifndef LEAN_LINKING
+#ifdef LEAN_INCLUDE_LINKED
 #include "source/exceptions.cpp"
 #endif
 

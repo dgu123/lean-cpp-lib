@@ -29,7 +29,7 @@ using memory::call_new_handler;
 
 } // namespace
 
-#ifndef LEAN_LINKING
+#ifdef LEAN_INCLUDE_LINKED
 #include "source/new_handler.cpp"
 #endif
 

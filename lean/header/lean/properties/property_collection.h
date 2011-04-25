@@ -147,7 +147,7 @@ public:
 static const size_t invalid_property_id = static_cast<size_t>(-1);
 
 /// Finds a property by name, returning its ID on success, invalid_property_id on failure.
-template <class Collection, class String>
+template <class String, class Collection>
 inline size_t find_property(const Collection &collection, const String &name)
 {
 	for (typename Collection::const_iterator itProperty = collection.begin();

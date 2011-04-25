@@ -114,7 +114,7 @@ using io::mapped_file;
 
 } // namespace
 
-#ifdef LEAN_INLINING
+#ifdef LEAN_INCLUDE_INLINED
 #include "source/mapped_file.cpp"
 #endif
 

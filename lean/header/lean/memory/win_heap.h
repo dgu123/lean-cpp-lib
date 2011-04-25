@@ -63,7 +63,7 @@ using memory::win_heap;
 
 } // namespace
 
-#ifndef LEAN_LINKING
+#ifdef LEAN_INCLUDE_LINKED
 #include "source/win_heap.cpp"
 #endif
 

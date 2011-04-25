@@ -9,8 +9,8 @@
 #include "../smart/cloneable.h"
 #include "../smart/cloneable_obj.h"
 #include "../meta/conditional.h"
+#include "../strings/types.h"
 #include <typeinfo>
-#include <string>
 
 namespace lean
 {
@@ -118,12 +118,12 @@ struct property_desc
 template <class Class, class Derived = void>
 struct named_property_desc : public property_desc<Class, typename first_non_void< Derived, named_property_desc<Class, Derived> >::type>
 {
-	std::wstring name;	///< Property name.
+	utf8_string name;	///< Property name.
 
 	/// Constructs an empty property destriction.
 	named_property_desc() { }
 	/// Constructs a property destriction from the given parameters.
-	named_property_desc(const std::wstring &name, const property_type &type, size_t count)
+	named_property_desc(const utf8_string &name, const property_type &type, size_t count)
 		: property_desc<Class, full_type>(type, count),
 		name(name) { }
 };

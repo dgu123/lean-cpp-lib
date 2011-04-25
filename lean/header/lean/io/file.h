@@ -3,7 +3,7 @@
 /*****************************************************/
 
 // Opaque value requires this to go here
-#ifdef LEAN_INLINING
+#ifdef LEAN_INCLUDE_INLINED
 	#ifndef LEAN_LOGGING_IO_FILE_CPP
 		#define LEAN_LOGGING_IO_FILE_CPP
 		#include "source/file.cpp"

@@ -40,7 +40,7 @@ using logging::log_file;
 
 } // namespace
 
-#ifndef LEAN_LINKING
+#ifdef LEAN_INCLUDE_LINKED
 #include "source/log_file.cpp"
 #endif
 

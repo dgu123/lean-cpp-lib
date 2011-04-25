@@ -53,7 +53,7 @@ using logging::get_last_win_error_msg;
 
 /// @}
 
-#ifndef LEAN_LINKING
+#ifdef LEAN_INCLUDE_LINKED
 #include "source/win_errors.cpp"
 #endif
 

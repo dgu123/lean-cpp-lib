@@ -12,8 +12,19 @@ namespace lean
 namespace pimpl
 {
 
+/// Default PImpl pointer destruction policy.
+struct pimpl_delete_policy
+{
+	/// Calls delete on the given implementation pointer.
+	template <class Implementation>
+	static void destroy(Implementation *impl)
+	{
+		delete impl;
+	}
+};
+
 /// Smart pointer class allowing for secure storage of forward-declared pimpl classes.
-template <class Implementation, class ImplementationBase = Implementation>
+template <class Implementation, class ImplementationBase = Implementation, class DestroyPolicy = pimpl_delete_policy>
 class pimpl_ptr : public noncopyable
 {
 private:
@@ -22,9 +33,9 @@ private:
 	/// Deletes the implementation stored by this pimpl pointer.
 	static void delete_impl(const ImplementationBase *impl) { delete_full_impl( impl, static_cast<const Implementation*>(nullptr) ); }
 	/// Deletes the implementation stored by this pimpl pointer calling the implementation destructor.
-	static void delete_full_impl(const ImplementationBase *impl, const ImplementationBase*) { delete static_cast<const Implementation*>(impl); }
+	static void delete_full_impl(const ImplementationBase *impl, const ImplementationBase*) { DestroyPolicy::destroy(static_cast<const Implementation*>(impl)); }
 	/// Deletes the implementation stored by this pimpl pointer calling the base destructor.
-	static void delete_full_impl(const ImplementationBase *impl, const void*) { delete impl; }
+	static void delete_full_impl(const ImplementationBase *impl, const void*) { DestroyPolicy::destroy(impl); }
 
 public:
 	/// Type of the implementation stored by this pimpl pointer.

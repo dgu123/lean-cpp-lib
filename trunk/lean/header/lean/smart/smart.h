@@ -23,5 +23,6 @@ namespace lean
 
 #include "com_ptr.h"
 #include "scoped_lock.h"
+#include "scope_guard.h"
 
 #endif

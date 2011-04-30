@@ -88,6 +88,9 @@
 	#ifdef _MSC_VER
 		/// Asserts that the given expression is always true.
 		#define LEAN_ASSERT(expr) __assume(expr)
+	#else
+		/// Asserts that the given expression is always true.
+		#define LEAN_ASSERT(expr)
 	#endif
 #endif
 

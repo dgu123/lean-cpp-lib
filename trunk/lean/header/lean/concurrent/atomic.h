@@ -6,6 +6,7 @@
 #define LEAN_CONCURRENT_ATOMIC
 
 #include "../lean.h"
+#include "../meta/strip.h"
 
 #ifdef _MSC_VER
 
@@ -20,25 +21,25 @@ namespace concurrent
 		//// Long ////
 
 		/// Atomically increments the given value, returning the results.
-		__forceinline long atomic_increment(long &value)
+		__forceinline long atomic_increment(volatile long &value)
 		{
 			return _InterlockedIncrement(&value);
 		}
 
 		/// Atomically decrements the given value, returning the results.
-		__forceinline long atomic_decrement(long &value)
+		__forceinline long atomic_decrement(volatile long &value)
 		{
 			return _InterlockedDecrement(&value);
 		}
 
 		/// Atomically tests if the given value is equal to the given expected value, assigning the given new value on success.
-		__forceinline bool atomic_test_and_set(long &value, long expectedValue, long newValue)
+		__forceinline bool atomic_test_and_set(volatile long &value, long expectedValue, long newValue)
 		{
 			return (_InterlockedCompareExchange(&value, newValue, expectedValue) == expectedValue);
 		}
 
 		/// Atomically sets the given value.
-		__forceinline void atomic_set(long &value, long newValue)
+		__forceinline void atomic_set(volatile long &value, long newValue)
 		{
 			_InterlockedExchange(&value, newValue);
 		}
@@ -46,25 +47,25 @@ namespace concurrent
 		//// Short ////
 
 		/// Atomically increments the given value, returning the results.
-		__forceinline short atomic_increment(short &value)
+		__forceinline short atomic_increment(volatile short &value)
 		{
 			return _InterlockedIncrement16(&value);
 		}
 
 		/// Atomically decrements the given value, returning the results.
-		__forceinline short atomic_decrement(short &value)
+		__forceinline short atomic_decrement(volatile short &value)
 		{
 			return _InterlockedDecrement16(&value);
 		}
 
 		/// Atomically tests if the given value is equal to the given expected value, assigning the given new value on success.
-		__forceinline bool atomic_test_and_set(short &value, short expectedValue, short newValue)
+		__forceinline bool atomic_test_and_set(volatile short &value, short expectedValue, short newValue)
 		{
 			return (_InterlockedCompareExchange16(&value, newValue, expectedValue) == expectedValue);
 		}
 
 		/// Atomically sets the given value.
-		__forceinline void atomic_set(short &value, short newValue)
+		__forceinline void atomic_set(volatile short &value, short newValue)
 		{
 			_InterlockedExchange16(&value, newValue);
 		}
@@ -82,6 +83,33 @@ namespace concurrent
 
 		template <> struct atomic_type<sizeof(short)> { typedef short type; };
 		template <> struct atomic_type<sizeof(long)> { typedef long type; };
+
+		//// Pointers ////
+
+		/// Atomically tests if the given pointer is equal to the given expected pointer, assigning the given new pointer on success.
+		__forceinline bool atomic_test_and_set(void *volatile &ptr, void *expectedPtr, void *newPtr)
+		{
+#ifdef _M_IX86
+			return atomic_test_and_set(
+				reinterpret_cast<volatile long&>(ptr),
+				reinterpret_cast<long>(expectedPtr),
+				reinterpret_cast<long>(newPtr) );
+#else
+			return (_InterlockedCompareExchangePointer(&ptr, newPtr, expectedPtr) == expectedPtr);
+#endif
+		}
+
+		/// Atomically sets the given pointer.
+		__forceinline void atomic_set(void *volatile &ptr, void *newPtr)
+		{
+#ifdef _M_IX86
+			atomic_set(
+				reinterpret_cast<volatile long&>(ptr),
+				reinterpret_cast<long>(newPtr) );
+#else
+			_InterlockedExchangePointer(&ptr, newPtr);
+#endif
+		}
 
 	} // namespace
 
@@ -102,45 +130,64 @@ namespace concurrent
 
 	/// Atomically increments the given value, returning the results.
 	template <class Integer>
-	LEAN_INLINE Integer atomic_increment(Integer &value)
+	LEAN_INLINE Integer atomic_increment(volatile Integer &value)
 	{
 		typedef typename impl::atomic_type<sizeof(Integer)>::type atomic_int;
 
 		return static_cast<Integer>( impl::atomic_increment(
-			reinterpret_cast<atomic_int&>(value) ) );
+			reinterpret_cast<volatile atomic_int&>(value) ) );
 	}
 
 	/// Atomically decrements the given value, returning the results.
 	template <class Integer>
-	LEAN_INLINE Integer atomic_decrement(Integer &value)
+	LEAN_INLINE Integer atomic_decrement(volatile Integer &value)
 	{
 		typedef typename impl::atomic_type<sizeof(Integer)>::type atomic_int;
 
 		return static_cast<Integer>( impl::atomic_decrement(
-			reinterpret_cast<atomic_int&>(value) ) );
+			reinterpret_cast<volatile atomic_int&>(value) ) );
 	}
 
 	/// Atomically tests if the given value is equal to the given expected value, assigning the given new value on success.
 	template <class Integer>
-	LEAN_INLINE bool atomic_test_and_set(Integer &value, Integer expectedValue, Integer newValue)
+	LEAN_INLINE bool atomic_test_and_set(volatile Integer &value, typename identity<Integer>::type expectedValue, typename identity<Integer>::type newValue)
 	{
 		typedef typename impl::atomic_type<sizeof(Integer)>::type atomic_int;
 
 		return impl::atomic_test_and_set(
-			reinterpret_cast<atomic_int&>(value),
+			reinterpret_cast<volatile atomic_int&>(value),
 			static_cast<atomic_int>(expectedValue),
 			static_cast<atomic_int>(newValue) );
 	}
 
 	/// Atomically sets the given value.
 	template <class Integer>
-	LEAN_INLINE void atomic_set(Integer &value, Integer newValue)
+	LEAN_INLINE void atomic_set(volatile Integer &value, typename identity<Integer>::type newValue)
 	{
 		typedef typename impl::atomic_type<sizeof(Integer)>::type atomic_int;
 
 		impl::atomic_set(
-			reinterpret_cast<atomic_int&>(value),
+			reinterpret_cast<volatile atomic_int&>(value),
 			static_cast<atomic_int>(newValue) );
+	}
+
+	/// Atomically tests if the given value is equal to the given expected value, assigning the given new value on success.
+	template <class Pointer>
+	LEAN_INLINE bool atomic_test_and_set(Pointer *volatile &value, typename identity<Pointer>::type *expectedValue, typename identity<Pointer>::type *newValue)
+	{
+		return impl::atomic_test_and_set(
+			const_cast<void *volatile &>(reinterpret_cast<const void *volatile &>(const_cast<const Pointer *volatile &>(value))),
+			const_cast<void*>(static_cast<const void*>(expectedValue)),
+			const_cast<void*>(static_cast<const void*>(newValue)) );
+	}
+
+	/// Atomically sets the given value.
+	template <class Pointer>
+	LEAN_INLINE void atomic_set(Pointer *volatile &value, typename identity<Pointer>::type *newValue)
+	{
+		impl::atomic_set(
+			const_cast<void *volatile &>(reinterpret_cast<const void *volatile &>(const_cast<const Pointer *volatile &>(value))),
+			const_cast<void*>(static_cast<const void*>(newValue)) );
 	}
 
 } // namespace

@@ -1,5 +1,5 @@
 /*****************************************************/
-/* lean Containers              (c) Tobias Zirr 2011 */
+/* lean Concurrent              (c) Tobias Zirr 2011 */
 /*****************************************************/
 
 #ifndef LEAN_CONCURRENT_SPINLOCK

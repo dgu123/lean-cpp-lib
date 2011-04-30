@@ -393,6 +393,18 @@
     <ClInclude Include="header\lean\export_all.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\concurrent\critical_section.h">
+      <Filter>Header Files\concurrent</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\smart\scope_guard.h">
+      <Filter>Header Files\smart</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\concurrent\event.h">
+      <Filter>Header Files\concurrent</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\concurrent\semaphore.h">
+      <Filter>Header Files\concurrent</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

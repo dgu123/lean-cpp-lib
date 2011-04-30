@@ -84,11 +84,11 @@ struct strip_volatile<volatile Type>
 
 #endif
 
-/// Strips a volatile modifier from the given type.
+/// Strips cv-modifiers from the given type.
 template <class Type>
 struct strip_modifiers
 {
-	/// Type without volatile modifier.
+	/// Type without cv-modifiers.
 	typedef typename strip_volatile<typename strip_const<Type>::type>::type type;
 	/// True, if any modifiers stripped.
 	static const bool stripped = strip_volatile<Type>::stripped || strip_const<Type>::stripped;
@@ -125,6 +125,14 @@ struct strip_pointer
 	static const bool stripped = impl::do_strip_pointer<pointer>::stripped;
 };
 
+/// Redefines the given type.
+template <class Type>
+struct identity
+{
+	/// Type.
+	typedef Type type;
+};
+
 } // namespace
 
 using meta::strip_pointer;
@@ -132,6 +140,7 @@ using meta::strip_reference;
 using meta::strip_const;
 using meta::strip_volatile;
 using meta::strip_modifiers;
+using meta::identity;
 
 } // namespace
 

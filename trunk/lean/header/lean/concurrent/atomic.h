@@ -39,9 +39,9 @@ namespace concurrent
 		}
 
 		/// Atomically sets the given value.
-		__forceinline void atomic_set(volatile long &value, long newValue)
+		__forceinline long atomic_set(volatile long &value, long newValue)
 		{
-			_InterlockedExchange(&value, newValue);
+			return _InterlockedExchange(&value, newValue);
 		}
 
 		//// Short ////
@@ -65,9 +65,9 @@ namespace concurrent
 		}
 
 		/// Atomically sets the given value.
-		__forceinline void atomic_set(volatile short &value, short newValue)
+		__forceinline short atomic_set(volatile short &value, short newValue)
 		{
-			_InterlockedExchange16(&value, newValue);
+			return _InterlockedExchange16(&value, newValue);
 		}
 
 		//// Integers ////
@@ -100,14 +100,14 @@ namespace concurrent
 		}
 
 		/// Atomically sets the given pointer.
-		__forceinline void atomic_set(void *volatile &ptr, void *newPtr)
+		__forceinline void* atomic_set(void *volatile &ptr, void *newPtr)
 		{
 #ifdef _M_IX86
-			atomic_set(
+			return reinterpret_cast<void*>( atomic_set(
 				reinterpret_cast<volatile long&>(ptr),
-				reinterpret_cast<long>(newPtr) );
+				reinterpret_cast<long>(newPtr) ) );
 #else
-			_InterlockedExchangePointer(&ptr, newPtr);
+			return _InterlockedExchangePointer(&ptr, newPtr);
 #endif
 		}
 
@@ -162,13 +162,13 @@ namespace concurrent
 
 	/// Atomically sets the given value.
 	template <class Integer>
-	LEAN_INLINE void atomic_set(volatile Integer &value, typename identity<Integer>::type newValue)
+	LEAN_INLINE Integer atomic_set(volatile Integer &value, typename identity<Integer>::type newValue)
 	{
 		typedef typename impl::atomic_type<sizeof(Integer)>::type atomic_int;
 
-		impl::atomic_set(
+		return static_cast<Integer>( impl::atomic_set(
 			reinterpret_cast<volatile atomic_int&>(value),
-			static_cast<atomic_int>(newValue) );
+			static_cast<atomic_int>(newValue) ) );
 	}
 
 	/// Atomically tests if the given value is equal to the given expected value, assigning the given new value on success.
@@ -183,11 +183,11 @@ namespace concurrent
 
 	/// Atomically sets the given value.
 	template <class Pointer>
-	LEAN_INLINE void atomic_set(Pointer *volatile &value, typename identity<Pointer>::type *newValue)
+	LEAN_INLINE Pointer* atomic_set(Pointer *volatile &value, typename identity<Pointer>::type *newValue)
 	{
-		impl::atomic_set(
+		return static_cast<Pointer*>( impl::atomic_set(
 			const_cast<void *volatile &>(reinterpret_cast<const void *volatile &>(const_cast<const Pointer *volatile &>(value))),
-			const_cast<void*>(static_cast<const void*>(newValue)) );
+			const_cast<void*>(static_cast<const void*>(newValue)) ) );
 	}
 
 } // namespace

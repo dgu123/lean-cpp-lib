@@ -47,12 +47,21 @@ public:
 	/// Type of the locking policy used by this class.
 	typedef Policy policy_type;
 
+	/// Allows locked lockable objects to be adopted by a scoped lock object on construction.
+	enum adopt_lock_t
+	{
+		adopt_lock	///< Adopts a locked lockable object on scoped lock construction
+	};
+
 	/// Locks the given object, to be unlocked on destruction.
 	LEAN_INLINE explicit scoped_lock(lock_type &lock)
 		: m_lock(lock)
 	{
 		policy_type::lock(m_lock);
 	}
+	/// Assumes that the given object is already locked, obtaining lock ownership and unlocking the lockable object on destruction.
+	LEAN_INLINE scoped_lock(lock_type &lock, adopt_lock_t)
+		: m_lock(lock) { }
 	/// Unlocks the lock object managed by this class.
 	LEAN_INLINE ~scoped_lock()
 	{

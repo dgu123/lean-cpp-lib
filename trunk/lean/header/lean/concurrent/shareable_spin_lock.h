@@ -24,11 +24,13 @@ class shareable_spin_lock : public noncopyable
 {
 private:
 	Counter m_counter;
+	Counter m_exclCounter;
 
 public:
 	/// Constructs a shareable spin lock.
 	shareable_spin_lock()
-		: m_counter(0) {  }
+		: m_counter(0),
+		m_exclCounter(0) {  }
 
 	/// Tries to exclusively lock this spin lock, returning false if currently locked / shared by another user.
 	LEAN_INLINE bool try_lock()
@@ -46,14 +48,23 @@ public:
 	/// Exclusively locks this spin lock, returning immediately on success, otherwise waiting for the lock to become available.
 	LEAN_INLINE void lock()
 	{
+		atomic_increment(m_exclCounter);
 		while (!try_lock());
+		atomic_decrement(m_exclCounter);
 	}
 
 	/// Atomically upgrades shared ownership of this spin lock to exclusive ownership,
 	/// returning immediately on success, otherwise waiting for the lock to become available.
 	LEAN_INLINE void upgrade_lock()
 	{
-		while (!try_upgrade_lock());
+		atomic_increment(m_exclCounter);
+		
+		// Unlock required, otherwise multiple upgrade
+		// calls at the same time will lead to deadlocks
+		unlock_shared();
+		while (!try_lock());
+		
+		atomic_decrement(m_exclCounter);
 	}
 
 	/// Atomically releases exclusive ownership and re-acquires shared ownership, permitting waiting threads to continue execution.
@@ -71,7 +82,7 @@ public:
 	/// Tries to obtain shared ownership of this spin lock, returning false if currently locked exclusively by another user.
 	LEAN_INLINE bool try_lock_shared()
 	{
-		for (;;)
+		while (static_cast<volatile Counter&>(m_exclCounter) == static_cast<Counter>(0))
 		{
 			Counter counter = static_cast<volatile Counter&>(m_counter);
 
@@ -81,7 +92,7 @@ public:
 				return true;
 		}
 
-		LEAN_ASSERT(0);
+		return false;
 	}
 
 	/// Obtains shared ownership of this spin lock, returning immediately on success, otherwise waiting for the lock to become available.
@@ -93,17 +104,14 @@ public:
 	/// Releases shared ownership of this spin lock, permitting waiting threads to continue execution.
 	LEAN_INLINE void unlock_shared()
 	{
-		for (;;)
+		Counter counter;
+
+		do
 		{
-			Counter counter = static_cast<volatile Counter&>(m_counter);
-
-			if (counter == static_cast<Counter>(-1) ||
-				counter == 0 ||
-				atomic_test_and_set(m_counter, counter, static_cast<Counter>(counter - 1)))
-				return;
+			counter = static_cast<volatile Counter&>(m_counter);
 		}
-
-		LEAN_ASSERT(0);
+		while (counter != static_cast<Counter>(-1) && counter != static_cast<Counter>(0) &&
+			atomic_test_and_set(m_counter, counter, static_cast<Counter>(counter - 1)) );
 	}
 };
 

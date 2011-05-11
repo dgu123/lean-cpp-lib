@@ -364,7 +364,7 @@ public:
 	}
 
 	/// Appends a default-constructed element to this vector.
-	LEAN_INLINE value_type& push_back()
+	LEAN_INLINE reference push_back()
 	{
 		if (m_elementsEnd == m_capacityEnd)
 			growHL(1);

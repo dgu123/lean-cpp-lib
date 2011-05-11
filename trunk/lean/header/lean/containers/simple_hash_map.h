@@ -89,6 +89,8 @@ private:
 	size_type_ m_count;
 	size_type_ m_capacity;
 
+	float m_maxLoadFactor;
+
 	typedef Hash hasher_;
 	hasher_ m_hasher;
 	typedef Pred key_equal_;
@@ -100,10 +102,31 @@ private:
 	// Make sure size_type is unsigned
 	LEAN_STATIC_ASSERT(s_maxSize > static_cast<size_type_>(0));
 
+	/// Marks the given element as end element.
+	LEAN_INLINE void mark_end(value_type_ *dest)
+	{
+		new( addressof(dest->first) ) Key(KeyValues::end_key);
+	}
 	/// Invalidates the given element.
 	LEAN_INLINE void invalidate(value_type_ *dest)
 	{
 		new( addressof(dest->first) ) Key(KeyValues::invalid_key);
+	}
+	/// Invalidates the elements in the given range.
+	void invalidate(Element *dest, Element *destEnd)
+	{
+		Element *destr = dest;
+
+		try
+		{
+			for (; dest != destEnd; ++dest)
+				invalidate(dest);
+		}
+		catch(...)
+		{
+			destruct(destr, dest);
+			throw;
+		}
 	}
 	/// Invalidates the given element, terminating the calling application on exception.
 	LEAN_NOINLINE void invalidate_or_terminate(value_type_ *dest)
@@ -121,8 +144,13 @@ private:
 	/// Prepares the given element for actual data storage.
 	LEAN_INLINE void revalidate(value_type_ *dest)
 	{
+		destruct_key(dest);
+	}
+	/// Destructs only the key of the given element.
+	LEAN_INLINE void destruct_key(value_type_ *destr)
+	{
 		if (!Policy::no_key_destruct)
-			dest->first.~Key();
+			destr->first.~Key();
 	}
 
 	/// Default constructs an element at the given location.
@@ -195,7 +223,7 @@ private:
 				if (destr->first != KeyValues::invalid_key)
 					destruct_element(destr);
 				else
-					revalidate(destr);
+					destruct_key(destr);
 	}
 
 	/// Checks whether the given element is physically contained by this hash map.
@@ -210,39 +238,69 @@ private:
 	}
 
 	/// Allocates space for the given number of elements.
-	void reallocate(size_type_ newCapacity)
+	void reallocate(size_type_ newBuckets)
 	{
-		Element *newElements = m_allocator.allocate(newCapacity);
+		value_type_ *newElements = m_allocator.allocate(newBuckets + 1);
+		value_type_ *newElementsEnd = newElements + newBuckets;
 
-		if (!empty())
+		try
+		{
+			// ASSERT: End element always valid to allow for proper iteration termination
+			mark_end(newElementsEnd);
+
 			try
 			{
-				if (Policy::raw_move)
-					memcpy(newElements, m_elements, size() * sizeof(Element));
-				else
-					move_construct(m_elements, m_elementsEnd, newElements);
+				invalidate(newElements, newElementsEnd);
 			}
 			catch(...)
 			{
-				m_allocator.deallocate(newElements, newCapacity);
+				destruct_key(newElementsEnd);
 				throw;
 			}
 
+			if (!empty())
+				try
+				{
+					// ASSERT: one slot always remains open, automatically terminating find loops
+					LEAN_ASSERT(size() < newBuckets);
+
+					for (value_type_ *element = m_elements; element != m_elementsEnd; ++element)
+						if (element->first != KeyValues::invalid_key)
+							move_construct(
+								locate_element(element->first).second,
+								*newElement );
+				}
+				catch(...)
+				{
+					destruct(newElements, newElementsEnd);
+					destruct_key(newElementsEnd);
+					throw;
+				}
+		}
+		catch(...)
+		{
+			m_allocator.deallocate(newElements, newBuckets + 1);
+			throw;
+		}
+		
 		Element *oldElements = m_elements;
 		Element *oldElementsEnd = m_elementsEnd;
-		size_type_ oldCapacity = capacity();
+		size_type_ oldBuckets = bucket_count();
 		
-		// Mind the order, size() based on member variables!
-		m_elementsEnd = newElements + size();
-		m_capacityEnd = newElements + newCapacity;
 		m_elements = newElements;
+		m_elementsEnd = newElementsEnd;
+
+		LEAN_ASSERT(m_maxLoadFactor <= 1.0f);
+
+		// ASSERT: one slot always remains open, automatically terminating find loops
+		m_capacity = static_cast<size_t>((newBuckets - 1) * m_maxLoadFactor);
 
 		if (oldElements)
 		{
 			// Do nothing on exception, resources leaking anyways!
-			if (!Policy::raw_move)
-				destruct(oldElements, oldElementsEnd);
-			m_allocator.deallocate(oldElements, oldCapacity);
+			destruct(oldElements, oldElementsEnd);
+			destruct_key(oldElementsEnd);
+			m_allocator.deallocate(oldElements, oldBuckets + 1);
 		}
 	}
 
@@ -253,7 +311,11 @@ private:
 		{
 			// Do nothing on exception, resources leaking anyways!
 			destruct(m_elements, m_elementsEnd);
-			m_allocator.deallocate(m_elements, actual_capacity());
+			
+			// ASSERT: End element always valid to allow for proper iteration termination
+			destruct_key(m_elementsEnd);
+			
+			m_allocator.deallocate(m_elements, bucket_count() + 1);
 		}
 	}
 
@@ -344,6 +406,13 @@ public:
 	private:
 		Element *m_element;
 
+		/// Allows for the automated validation of iterators on construction.
+		enum search_first_valid_t
+		{
+			/// Allows for the automated validation of iterators on construction.
+			search_first_valid
+		};
+
 		/// Constructs an iterator from the given element.
 		LEAN_INLINE basic_iterator(Element *element)
 			: m_element(element) { }
@@ -427,19 +496,71 @@ public:
 	typedef key_equal_ key_equal;
 
 	/// Constructs an empty hash map.
-	explicit simple_hash_map(size_t capacity)
+	simple_hash_map()
 		: m_elements(nullptr),
-		m_elementsEnd(nullptr) { }
+		m_elementsEnd(nullptr),
+		m_count(0),
+		m_capacity(0),
+		m_maxLoadFactor(0.75f)
+	{
+		reallocate(s_minSize);
+	}
 	/// Constructs an empty hash map.
-	explicit simple_hash_map(allocator_type allocator)
+	explicit simple_hash_map(size_type buckets)
+		: m_elements(nullptr),
+		m_elementsEnd(nullptr),
+		m_count(0),
+		m_capacity(0),
+		m_maxLoadFactor(0.75f)
+	{
+		reallocate(buckets);
+	}
+	/// Constructs an empty hash map.
+	simple_hash_map(size_type buckets, const hasher& hash)
+		: m_elements(nullptr),
+		m_elementsEnd(nullptr),
+		m_count(0),
+		m_capacity(0),
+		m_hasher(hash),
+		m_maxLoadFactor(0.75f)
+	{
+		reallocate(buckets);
+	}
+	/// Constructs an empty hash map.
+	simple_hash_map(size_type buckets, const hasher& hash, const key_equal& keyComp)
+		: m_elements(nullptr),
+		m_elementsEnd(nullptr),
+		m_count(0),
+		m_capacity(0),
+		m_hasher(hash),
+		m_keyEqual(keyComp),
+		m_maxLoadFactor(0.75f)
+	{
+		reallocate(buckets);
+	}
+	/// Constructs an empty hash map.
+	simple_hash_map(size_type buckets, const hasher& hash, const key_equal& keyComp, const allocator_type &allocator)
 		: m_allocator(allocator),
 		m_elements(nullptr),
-		m_elementsEnd(nullptr) { }
+		m_elementsEnd(nullptr),
+		m_count(0),
+		m_capacity(0),
+		m_hasher(hash),
+		m_keyEqual(keyComp),
+		m_maxLoadFactor(0.75f)
+	{
+		reallocate(buckets);
+	}
 	/// Copies all elements from the given hash map to this hash map.
 	simple_hash_map(const simple_hash_map &right)
 		: m_allocator(right.m_allocator),
 		m_elements(nullptr),
-		m_elementsEnd(nullptr)
+		m_elementsEnd(nullptr),
+		m_count(0),
+		m_capacity(0),
+		m_hasher(right.m_hasher),
+		m_keyEqual(right.m_keyEqual),
+		m_maxLoadFactor(right.m_maxLoadFactor)
 	{
 		assign_disj(right.begin(), right.end());
 	}
@@ -448,10 +569,17 @@ public:
 	simple_hash_map(simple_hash_map &&right)
 		: m_allocator(std::move(right.m_allocator)),
 		m_elements(std::move(right.m_elements)),
-		m_elementsEnd(std::move(right.m_elementsEnd))
+		m_elementsEnd(std::move(right.m_elementsEnd)),
+		m_count(std::move(right.m_count)),
+		m_capacity(std::move(right.m_capacity)),
+		m_hasher(std::move(right.m_hasher)),
+		m_keyEqual(std::move(right.m_keyEqual)),
+		m_maxLoadFactor(std::move(right.m_maxLoadFactor))
 	{
 		right.m_elements = nullptr;
 		right.m_elementsEnd = nullptr;
+		right.m_count = 0;
+		right.m_capacity = 0;
 	}
 #endif
 	/// Destroys all elements in this hash map.
@@ -486,8 +614,6 @@ public:
 		return *this;
 	}
 #endif
-
-	
 
 	/// Assigns the given range of elements to this hash map.
 	template <class Iterator>
@@ -602,10 +728,7 @@ public:
 		LEAN_ASSERT(contains_element(where.m_element));
 
 		remove_element(where.m_element);
-		
-		return (where.m_element->first == KeyValues::invalid_key)
-			? ++where
-			: where;
+		return iterator(where.m_element, iterator::search_first_valid);
 	}
 
 	/// Clears all elements from this hash map.
@@ -670,6 +793,11 @@ public:
 	LEAN_INLINE size_type capacity(void) const { return m_capacity; };
 	/// Gets the current number of buckets.
 	LEAN_INLINE size_type bucket_count() const { return m_elementsEnd - m_elements; }
+
+	/// Gets the maximum load factor.
+	LEAN_INLINE float max_load_factor() const { return m_maxLoadFactor; }
+	/// Sets the maximum load factor.
+	LEAN_INLINE void max_load_factor(float factor) { m_maxLoadFactor = factor; }
 
 	/// Computes a new capacity based on the given number of elements to be stored.
 	size_type capacity_hint(size_type count) const

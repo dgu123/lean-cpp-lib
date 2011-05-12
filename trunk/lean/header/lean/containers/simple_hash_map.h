@@ -107,7 +107,7 @@ protected:
 	/// Checks whether the given element is physically contained by this hash map.
 	LEAN_INLINE bool contains_element(const value_type_ *element) const
 	{
-		return (m_elements <= element) || (element < m_elementsEnd);
+		return (m_elements <= element) && (element < m_elementsEnd);
 	}
 	/// Checks whether the given element is physically contained by this hash map.
 	LEAN_INLINE bool contains_element(const value_type_ &element) const

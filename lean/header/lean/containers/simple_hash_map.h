@@ -400,9 +400,9 @@ private:
 	{
 		Element *element = first_element(key);
 		
-		while (element->first != KeyValues::invalid_key)
+		while (!m_keyEqual(element->first, KeyValues::invalid_key))
 		{
-			if (element->first == key)
+			if (m_keyEqual(element->first, key))
 				return std::make_pair(false, element);
 			
 			// Wrap around
@@ -419,9 +419,9 @@ private:
 	{
 		Element *element = first_element(key);
 		
-		while (element->first != KeyValues::invalid_key)
+		while (!m_keyEqual(element->first, KeyValues::invalid_key))
 		{
-			if (element->first == key)
+			if (m_keyEqual(element->first, key))
 				return element;
 			
 			// Wrap around
@@ -436,6 +436,9 @@ private:
 	/// Removes the element stored at the given location.
 	LEAN_INLINE void remove_element(Element *element)
 	{
+		// If anything goes wrong, we won't be able to fix it
+		terminate_guard terminateGuard;
+
 		Element *hole = element;
 		--m_count;
 		
@@ -444,7 +447,7 @@ private:
 			element = m_elements;
 
 		// Find next empty position
-		while (element->first != KeyValues::invalid_key)
+		while (!m_keyEqual(element->first, KeyValues::invalid_key))
 		{
 			Element *auxElement = first_element(element->first);
 			
@@ -455,15 +458,10 @@ private:
 			// Move wrongly positioned elements into hole
 			if (wrong)
 			{
-				m_keys[hole] = m_keys[pos];
-
-				for (Object values : valueArrays)
-					System.arraycopy(values, pos, values, hole, 1);
-
-				hole = pos;
-				m_keys[hole] = INVALID_KEY;
+				move(hole, *element);
+				hole = element;
 			}
-				
+			
 			// Wrap around
 			if (++element == m_elementsEnd)
 				element = m_elements;
@@ -471,7 +469,10 @@ private:
 			// ASSERT: One slot always remains open, automatically terminating this loop
 		}
 
-		// TODO: invalidate hole
+		destruct_element(hole);
+		invalidate(hole);
+
+		terminateGuard.disarm();
 	}
 
 	/// Grows hash map storage to fit the given new count.
@@ -530,7 +531,7 @@ public:
 		/// Constructs an iterator from the given element or the next valid element, should the current element prove invalid.
 		LEAN_INLINE basic_iterator(Element *element, search_first_valid_t)
 			: m_element(
-				(element->first == KeyValues::invalid_key)
+				(element->first == KeyValues::invalid_key) // TODO: somehow use key_equal?
 					? (++basic_iterator(element)).m_element
 					: element
 				) { }
@@ -562,7 +563,7 @@ public:
 				++m_element;
 			}
 			// ASSERT: End element key is always valid
-			while (m_element->first == KeyValues::invalid_key)
+			while (m_element->first == KeyValues::invalid_key) // TODO: somehow use key_equal?
 		}
 		/// Continues iteration.
 		LEAN_INLINE basic_iterator operator ++(int)

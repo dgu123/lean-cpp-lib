@@ -237,6 +237,13 @@ private:
 		return contains_element(addressof(element));
 	}
 
+	/// Gets the number of buckets required from the given capacity.
+	LEAN_INLINE size_type_ buckets_from_capacity(size_type_ capacity)
+	{
+		// ASSERT: One slot always remains open, automatically terminating find loops
+		return max(static_cast<size_type_>(capacity / m_maxLoadFactor), capacity) + 1;
+	}
+
 	/// Allocates space for the given number of elements.
 	void reallocate(size_type_ newBuckets)
 	{
@@ -290,10 +297,8 @@ private:
 		m_elements = newElements;
 		m_elementsEnd = newElementsEnd;
 
-		LEAN_ASSERT(m_maxLoadFactor <= 1.0f);
-
 		// ASSERT: one slot always remains open, automatically terminating find loops
-		m_capacity = static_cast<size_t>((newBuckets - 1) * m_maxLoadFactor);
+		m_capacity = min(static_cast<size_type_>(newBuckets * m_maxLoadFactor), newBuckets - 1);
 
 		if (oldElements)
 		{
@@ -366,7 +371,7 @@ private:
 	/// Grows hash map storage to fit the given new count.
 	LEAN_INLINE void growTo(size_type_ newCount)
 	{
-		reallocate(capacity_hint(newCount));
+		reallocate(buckets_from_capacity(capacity_hint(newCount)));
 	}
 	/// Grows hash map storage to fit the given additional number of elements.
 	LEAN_INLINE void grow(size_type_ count)
@@ -743,28 +748,18 @@ public:
 	LEAN_INLINE void reserve(size_type newCapacity)
 	{
 		if (newCapacity > capacity())
-			reallocate(newCapacity);
+			reallocate(buckets_from_capacity(newCapacity));
 	}
-	/// Resizes this hash map, either appending empty elements to or removing elements from the back of this hash map.
-	void resize(size_type newCount)
+	/// Tries to grow or shrink the hash map to fit the given number of elements given.
+	/// The hash map will never shrink below the number of elements currently stored.
+	LEAN_INLINE void rehash(size_type newCapacity)
 	{
-		if (newCount > count())
-		{
-			if (newCount > capacity())
-				growToHL(newCount);
-			
-			Elements *newElementsEnd = m_elements + newCount;
-			default_construct(m_elementsEnd, newElementsEnd);
-			m_elementsEnd = newElementsEnd;
-		}
-		else
-		{
-			Element *oldElementsEnd = m_elementsEnd;
-			m_elementsEnd = m_elements + newCount;
-			destruct(m_elementsEnd, oldElementsEnd);
-		}
+		newCapacity = max(count(), newCapacity);
+
+		if (newCapacity != capacity())
+			reallocate(buckets_from_capacity(newCapacity));
 	}
-	
+
 	/// Gets an element by key, returning end() on failure.
 	LEAN_INLINE iterator find(const key_type &key) { return iterator(find_element(key)); }
 	/// Gets an element by key, returning end() on failure.

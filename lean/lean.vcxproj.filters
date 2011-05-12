@@ -405,6 +405,9 @@
     <ClInclude Include="header\lean\concurrent\semaphore.h">
       <Filter>Header Files\concurrent</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\containers\simple_hash_map.h">
+      <Filter>Header Files\containers</Filter>
+    </ClInclude>
     <ClInclude Include="header\lean\meta\callable.h">
       <Filter>Header Files\meta</Filter>
     </ClInclude>

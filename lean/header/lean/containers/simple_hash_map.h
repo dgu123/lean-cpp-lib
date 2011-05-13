@@ -6,6 +6,8 @@
 #define LEAN_CONTAINERS_SIMPLE_HASH_MAP
 
 #include "../lean.h"
+#include "../smart/terminate_guard.h"
+#include "../tags/noncopyable.h"
 #include <memory>
 #include <stdexcept>
 #include <functional>
@@ -125,19 +127,6 @@ protected:
 	{
 		new( addressof(dest->first) ) Key(KeyValues::invalid_key);
 	}
-	/// Invalidates the given element, terminating the calling application on exception.
-	LEAN_NOINLINE void invalidate_or_terminate(value_type_ *dest)
-	{
-		try
-		{
-			invalidate(dest);
-		}
-		catch (...)
-		{
-			LEAN_ASSERT_DEBUG(false);
-			std::terminate();
-		}
-	}
 	/// Invalidates the elements in the given range.
 	void invalidate(Element *dest, Element *destEnd)
 	{
@@ -174,48 +163,60 @@ protected:
 				destruct_key(destr);
 	}
 
+	/// Helper class that moves element construction exception handling
+	/// into a destructor, resulting in less code being generated and
+	/// providing automated handling of unexpected invalidation exceptions.
+	class invalidate_guard : public noncopyable
+	{
+	private:
+		value_type_ *m_dest;
+		bool m_armed;
+
+	public:
+		/// Stores an element to be invalidated on destruction, if not disarmed.
+		LEAN_INLINE explicit invalidate_guard(value_type_ *dest, bool armed = true)
+			: m_dest(dest),
+			m_armed(armed) { }
+		/// Destructs the stored element, of not disarmed.
+		LEAN_INLINE ~invalidate_guard()
+		{
+			if (m_armed)
+				invalidate(m_dest);
+		}
+		///  Disarms this guard.
+		LEAN_INLINE void disarm() { m_armed = false; }
+	};
+
 	/// Default constructs an element at the given location.
 	LEAN_INLINE void default_construct(value_type_ *dest, const Key &key)
 	{
-		try
-		{
-			revalidate(dest);
-			m_allocator.construct(dest, value_type_(key, Element()));
-		}
-		catch (...)
-		{
-			invalidate_or_terminate(dest);
-			throw;
-		}
+		invalidate_guard guard(dest);
+
+		revalidate(dest);
+		m_allocator.construct(dest, value_type_(key, Element()));
+
+		guard.disarm();
 	}
 	/// Copies the given source element to the given destination.
 	LEAN_INLINE void copy_construct(value_type_ *dest, const value_type_ &source)
 	{
-		try
-		{
-			revalidate(dest);
-			m_allocator.construct(dest, source);
-		}
-		catch (...)
-		{
-			invalidate_or_terminate(dest);
-			throw;
-		}
+		invalidate_guard guard(dest);
+
+		revalidate(dest);
+		m_allocator.construct(dest, source);
+
+		guard.disarm();
 	}
 	/// Moves the given source element to the given destination.
 	LEAN_INLINE void move_construct(value_type_ *dest, value_type_ &source)
 	{
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
-		try
-		{
-			revalidate(dest);
-			m_allocator.construct(dest, std::move(source));
-		}
-		catch (...)
-		{
-			invalidate_or_terminate(dest);
-			throw;
-		}
+		invalidate_guard guard(dest);
+		
+		revalidate(dest);
+		m_allocator.construct(dest, std::move(source));
+		
+		guard.disarm();
 #else
 		copy_construct(dest, source);
 #endif

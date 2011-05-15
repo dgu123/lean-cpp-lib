@@ -156,6 +156,7 @@
     <ClInclude Include="header\lean\smart\scope_guard.h" />
     <ClInclude Include="header\lean\smart\smart.h" />
     <ClInclude Include="header\lean\smart\cloneable.h" />
+    <ClInclude Include="header\lean\smart\terminate_guard.h" />
     <ClInclude Include="header\lean\smart\weak_resource_ptr.h" />
     <ClInclude Include="header\lean\strings\charstream.h" />
     <ClInclude Include="header\lean\strings\conversions.h" />

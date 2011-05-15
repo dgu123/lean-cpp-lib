@@ -414,6 +414,9 @@
     <ClInclude Include="header\lean\containers\simple_hash_map.h">
       <Filter>Header Files\containers</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\smart\terminate_guard.h">
+      <Filter>Header Files\smart</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

@@ -93,8 +93,12 @@ protected:
 
 	float m_maxLoadFactor;
 	
-	static const size_type_ s_maxSize = static_cast<size_type_>(-1) / sizeof(value_type_);
-	static const size_type_ s_minSize = (32 < s_maxSize) ? 32 : s_maxSize;
+	static const size_type_ s_maxElements = static_cast<size_type_>(-1) / sizeof(value_type_);
+	// Use end element to allow for proper iteration termination
+	static const size_type_ s_maxBuckets = s_maxElements - 1U;
+	// Keep one slot open at all times to simplify wrapped find loop termination conditions
+	static const size_type_ s_maxSize = s_maxBuckets - 1U;
+	static const size_type_ s_minSize = (32U < s_maxSize) ? 32U : s_maxSize;
 
 	// Make sure size_type is unsigned
 	LEAN_STATIC_ASSERT(s_maxSize > static_cast<size_type_>(0));
@@ -102,8 +106,16 @@ protected:
 	/// Gets the number of buckets required from the given capacity.
 	LEAN_INLINE size_type_ buckets_from_capacity(size_type_ capacity)
 	{
-		// ASSERT: One slot always remains open, automatically terminating find loops
-		return max(static_cast<size_type_>(capacity / m_maxLoadFactor), capacity) + 1;
+		LEAN_ASSERT(capacity <= s_maxSize);
+
+		float bucketHint = capacity / m_maxLoadFactor;
+		
+		size_type_ bucketCount = (bucketHint >= s_maxSize)
+			? s_maxSize
+			: static_cast<size_type_>(bucketHint);
+
+		// Keep one slot open at all times to simplify wrapped find loop termination conditions
+		return max(bucketCount, capacity) + 1U;
 	}
 
 	/// Checks whether the given element is physically contained by this hash map.
@@ -118,17 +130,17 @@ protected:
 	}
 
 	/// Marks the given element as end element.
-	LEAN_INLINE void mark_end(value_type_ *dest)
+	static LEAN_INLINE void mark_end(value_type_ *dest)
 	{
 		new( addressof(dest->first) ) Key(KeyValues::end_key);
 	}
 	/// Invalidates the given element.
-	LEAN_INLINE void invalidate(value_type_ *dest)
+	static LEAN_INLINE void invalidate(value_type_ *dest)
 	{
 		new( addressof(dest->first) ) Key(KeyValues::invalid_key);
 	}
 	/// Invalidates the elements in the given range.
-	void invalidate(Element *dest, Element *destEnd)
+	static void invalidate(Element *dest, Element *destEnd)
 	{
 		Element *destr = dest;
 
@@ -144,19 +156,19 @@ protected:
 		}
 	}
 	/// Prepares the given element for actual data storage.
-	LEAN_INLINE void revalidate(value_type_ *dest)
+	static LEAN_INLINE void revalidate(value_type_ *dest)
 	{
 		destruct_key(dest);
 	}
 
 	/// Destructs only the key of the given element.
-	LEAN_INLINE void destruct_key(value_type_ *destr)
+	static LEAN_INLINE void destruct_key(value_type_ *destr)
 	{
 		if (!Policy::no_key_destruct)
 			destr->first.~Key();
 	}
 	/// Destructs the keys of the elements in the given range.
-	void destruct_keys(value_type_ *destr, value_type_ *destrEnd)
+	static void destruct_keys(value_type_ *destr, value_type_ *destrEnd)
 	{
 		if (!Policy::no_key_destruct)
 			for (; destr != destrEnd; ++destr)
@@ -182,6 +194,32 @@ protected:
 		{
 			if (m_armed)
 				invalidate(m_dest);
+		}
+		///  Disarms this guard.
+		LEAN_INLINE void disarm() { m_armed = false; }
+	};
+
+	/// Helper class that moves element destruction exception handling
+	/// into a destructor, resulting in less code being generated and
+	/// providing automated handling of unexpected invalidation exceptions.
+	class invalidate_n_guard : public noncopyable
+	{
+	private:
+		value_type_ *m_dest;
+		value_type_ *m_destEnd;
+		bool m_armed;
+
+	public:
+		/// Stores elements to be invalidated on destruction, if not disarmed.
+		LEAN_INLINE explicit invalidate_guard(value_type_ *dest, value_type_ *destEnd, bool armed = true)
+			: m_dest(dest),
+			m_destEnd(destEnd),
+			m_armed(armed) { }
+		/// Destructs the stored elements, of not disarmed.
+		LEAN_INLINE ~invalidate_guard()
+		{
+			if (m_armed)
+				invalidate(m_dest, m_destEnd);
 		}
 		///  Disarms this guard.
 		LEAN_INLINE void disarm() { m_armed = false; }
@@ -322,10 +360,15 @@ private:
 	}
 
 	/// Allocates space for the given number of elements.
-	void reallocate(size_type_ newBuckets)
+	void reallocate(size_type_ newBucketCount)
 	{
-		value_type_ *newElements = m_allocator.allocate(newBuckets + 1);
-		value_type_ *newElementsEnd = newElements + newBuckets;
+		LEAN_ASSERT(newBuckets <= s_maxBuckets);
+
+		// Use end element to allow for proper iteration termination
+		const size_type_ newElementCount = newBucketCount + 1U;
+
+		value_type_ *newElements = m_allocator.allocate(newElementCount);
+		value_type_ *newElementsEnd = newElements + newBucketCount;
 
 		try
 		{
@@ -346,7 +389,7 @@ private:
 				try
 				{
 					// ASSERT: One slot always remains open, automatically terminating find loops
-					LEAN_ASSERT(size() < newBuckets);
+					LEAN_ASSERT(size() < newBucketCount);
 
 					for (value_type_ *element = m_elements; element != m_elementsEnd; ++element)
 						if (!m_keyEqual(element->first, KeyValues::invalid_key))
@@ -363,19 +406,19 @@ private:
 		}
 		catch(...)
 		{
-			m_allocator.deallocate(newElements, newBuckets + 1);
+			m_allocator.deallocate(newElements, newElementCount);
 			throw;
 		}
 		
 		Element *oldElements = m_elements;
 		Element *oldElementsEnd = m_elementsEnd;
-		size_type_ oldBuckets = bucket_count();
+		const size_type_ oldBucketCount = bucket_count();
 		
 		m_elements = newElements;
 		m_elementsEnd = newElementsEnd;
 
-		// ASSERT: One slot always remains open, automatically terminating find loops
-		m_capacity = min(static_cast<size_type_>(newBuckets * m_maxLoadFactor), newBuckets - 1);
+		// Keep one slot open at all times to simplify wrapped find loop termination conditions
+		m_capacity = min(static_cast<size_type_>(newBucketCount * m_maxLoadFactor), newBucketCount - 1U);
 
 		if (oldElements)
 		{
@@ -384,7 +427,7 @@ private:
 			// Do nothing on exception, resources leaking anyways!
 			destruct(oldElements, oldElementsEnd);
 			destruct_key(oldElementsEnd);
-			m_allocator.deallocate(oldElements, oldBuckets + 1);
+			m_allocator.deallocate(oldElements, oldBucketCount + 1U);
 		}
 	}
 
@@ -510,18 +553,6 @@ private:
 	LEAN_NOINLINE void growHL(size_type_ count)
 	{
 		grow(count);
-	}
-
-	/// Triggers an out of range error.
-	LEAN_NOINLINE static void out_of_range()
-	{
-		throw std::out_of_range("simple_hash_map<T> out of range");
-	}
-	/// Checks the given position.
-	LEAN_INLINE void check_pos(size_type_ pos) const
-	{
-		if (pos >= size())
-			out_of_range();
 	}
 
 public:
@@ -689,7 +720,7 @@ public:
 	simple_hash_map& operator =(const simple_hash_map &right)
 	{
 		if (&right != this)
-			assign_disj(right.begin(), right.end());
+			assign(right.begin(), right.end());
 		return *this;
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
@@ -718,24 +749,6 @@ public:
 	{
 		LEAN_ASSERT(source <= sourceEnd);
 
-		// Index is unsigned, make use of wrap-around
-		if (static_cast<size_type>(addressof(*source) - m_elements) < size())
-		{
-			LEAN_ASSERT(addressof(*sourceEnd) <= m_elementsEnd);
-
-			move(source, sourceEnd, m_elements);
-
-			Element *oldElementsEnd = m_elementsEnd;
-			m_elementsEnd = m_elements + (sourceEnd - source);
-			destruct(m_elementsEnd, oldElementsEnd);
-		}
-		else
-			assign_disj(source, sourceEnd);
-	}
-	/// Assigns the given disjoint range of elements to this hash map.
-	template <class Iterator>
-	void assign_disj(Iterator source, Iterator sourceEnd)
-	{
 		// Clear before reallocation to prevent full-range moves
 		clear();
 
@@ -744,15 +757,15 @@ public:
 		if (count > capacity())
 			growToHL(count);
 
-		copy_construct(source, sourceEnd, m_elements);
-		m_elementsEnd = m_elements + count;
+		while (source != sourceEnd)
+			insert(*(source++));
 	}
 
 	/// Inserts a default-constructed value into the hash map using the given key, if none
 	/// stored under the given key yet, otherwise returns the one currently stored.
 	LEAN_INLINE reference insert(const key_type &key)
 	{
-		if (m_count == m_capacity)
+		if (m_count == capacity())
 			growHL(1);
 
 		std::pair<bool, value_type*> element = locate_element(key);
@@ -767,7 +780,7 @@ public:
 	/// Inserts the given key-value-pair into this hash map.
 	LEAN_INLINE std::pair<bool, iterator> insert(const value_type &value)
 	{
-		if (m_count == m_capacity)
+		if (m_count == capacity())
 		{
 			if (contains_element(value))
 				return std::make_pair( false, iterator(const_cast<value_type*>(addressof(value))) );
@@ -788,7 +801,7 @@ public:
 	/// Inserts the given key-value-pair into this hash map.
 	LEAN_INLINE std::pair<bool, iterator> insert(value_type &&value)
 	{
-		if (m_count == m_capacity)
+		if (m_count == capacity())
 		{
 			if (contains_element(value))
 				return std::make_pair( false, iterator(addressof(value)) );
@@ -831,9 +844,10 @@ public:
 	/// Clears all elements from this hash map.
 	LEAN_INLINE void clear()
 	{
-		Element *oldElementsEnd = m_elementsEnd;
-		m_elementsEnd = m_elements;
-		destruct(m_elements, oldElementsEnd);
+		invalidate_n_guard invalidateGuard(m_elements, m_elementsEnd);
+		// Don't handle exceptions, memory leaking anyways
+		destruct(m_elements, m_elementsEnd);
+		// Elements invalidated by guard in all cases
 	}
 
 	/// Reserves space for the predicted number of elements given.

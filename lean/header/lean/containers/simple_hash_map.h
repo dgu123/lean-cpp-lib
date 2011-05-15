@@ -278,6 +278,17 @@ protected:
 	/// Does nothing.
 	LEAN_INLINE simple_hash_map_base& operator =(simple_hash_map_base&&) { return *this; }
 #endif
+
+	/// Swaps the contents of this hash map base and the given hash map base.
+	LEAN_INLINE void swap(simple_hash_map_base &right) throw()
+	{
+		swap(m_allocator, right.m_allocator);
+		std::swap(m_elements, right.m_elements);
+		std::swap(m_elementsEnd, right.m_elementsEnd);
+		std::swap(m_count, right.m_count);
+		std::swap(m_capacity, right.m_capacity);
+		std::swap(m_maxLoadFactor, right.m_maxLoadFactor);
+	}
 };
 
 }
@@ -479,11 +490,15 @@ private:
 	/// Grows hash map storage to fit the given new count.
 	LEAN_INLINE void growTo(size_type_ newCount)
 	{
-		reallocate(buckets_from_capacity(capacity_hint(newCount)));
+		reallocate(buckets_from_capacity(grow_to_capacity_hint(newCount)));
 	}
 	/// Grows hash map storage to fit the given additional number of elements.
 	LEAN_INLINE void grow(size_type_ count)
 	{
+		// Mind overflow
+		LEAN_ASSERT(count <= s_maxSize);
+		LEAN_ASSERT(s_maxSize - count >= size());
+
 		growTo(size() + count);
 	}
 	/// Grows hash map storage to fit the given new count, not inlined.
@@ -872,23 +887,23 @@ public:
 	LEAN_INLINE void max_load_factor(float factor) { m_maxLoadFactor = factor; }
 
 	/// Computes a new capacity based on the given number of elements to be stored.
-	size_type capacity_hint(size_type count) const
+	size_type grow_to_capacity_hint(size_type count) const
 	{
-		size_type capacityDelta = count / 2;
+		size_type oldCapacity = capacity();
+		LEAN_ASSERT(oldCapacity <= s_maxSize);
 
-		// Assume count <= max size, increase by 1.5 or clamp to max_size, mind overflow
-		size_type capacity = (s_maxSize - capacityDelta < count)
-			? s_maxSize
-			: count + capacityDelta;
+		// Try to double capacity (mind overflow)
+		size_type newCapacity = (s_maxSize - oldCapacity < oldCapacity)
+			? 0
+			: oldCapacity + oldCapacity;
 
-		// Handle cases where count is larger than max size?
-		if (s_maxSize < count)
-			capacity = count;
-
-		if (capacity < s_minSize)
-			capacity = s_minSize;
+		// Mind overflow
+		LEAN_ASSERT(count <= s_maxSize);
 		
-		return capacity;
+		if (newCapacity < count)
+			newCapacity = count;
+		
+		return newCapacity;
 	}
 
 	/// Estimates the maximum number of elements that may be constructed.
@@ -902,11 +917,7 @@ public:
 	{
 		swap(m_keyEqual, right.m_keyEqual);
 		swap(m_hasher, right.m_hasher);
-		swap(m_allocator, right.m_allocator);
-		std::swap(m_elements, right.m_elements);
-		std::swap(m_elementsEnd, right.m_elementsEnd);
-		std::swap(m_count, right.m_count);
-		std::swap(m_capacity, right.m_capacity);
+		base_type::swap(right);
 	}
 };
 

@@ -338,6 +338,8 @@ public:
 		{
 			LEAN_ASSERT(addressof(*sourceEnd) <= m_elementsEnd);
 
+			// Move (always back to front)
+			LEAN_ASSERT(m_elements <= source);
 			move(source, sourceEnd, m_elements);
 
 			Element *oldElementsEnd = m_elementsEnd;

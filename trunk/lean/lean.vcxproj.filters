@@ -79,6 +79,9 @@
     <Filter Include="Header Files\xml">
       <UniqueIdentifier>{476e9021-0055-4b45-b5c6-92f3fa49edf7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\functional">
+      <UniqueIdentifier>{496aadd8-b1dd-4259-99d6-5c7a2971ab9a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -408,14 +411,20 @@
     <ClInclude Include="header\lean\containers\simple_hash_map.h">
       <Filter>Header Files\containers</Filter>
     </ClInclude>
-    <ClInclude Include="header\lean\meta\callable.h">
-      <Filter>Header Files\meta</Filter>
-    </ClInclude>
     <ClInclude Include="header\lean\containers\simple_hash_map.h">
       <Filter>Header Files\containers</Filter>
     </ClInclude>
     <ClInclude Include="header\lean\smart\terminate_guard.h">
       <Filter>Header Files\smart</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\functional\callable.h">
+      <Filter>Header Files\functional</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\functional\functional.h">
+      <Filter>Header Files\functional</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\functional\hashing.h">
+      <Filter>Header Files\functional</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

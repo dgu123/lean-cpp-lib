@@ -1,16 +1,16 @@
 /*****************************************************/
-/* lean Meta                    (c) Tobias Zirr 2011 */
+/* lean Functional              (c) Tobias Zirr 2011 */
 /*****************************************************/
 
-#ifndef LEAN_META_CALLABLE
-#define LEAN_META_CALLABLE
+#ifndef LEAN_FUNCTIONAL_CALLABLE
+#define LEAN_FUNCTIONAL_CALLABLE
 
 #include "../lean.h"
 #include "../tags/noncopyable.h"
 
 namespace lean
 {
-namespace meta
+namespace functional
 {
 
 /// Stores the pointer to a function to be called on invokation of operator ().
@@ -74,10 +74,10 @@ LEAN_INLINE callable_memfun<Class, Signature> make_callable(Class *obj, Signatur
 
 } // namespace
 
-using meta::callable_fun;
-using meta::callable_memfun;
+using functional::callable_fun;
+using functional::callable_memfun;
 
-using meta::make_callable;
+using functional::make_callable;
 
 } // namespace
 

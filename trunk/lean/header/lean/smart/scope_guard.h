@@ -7,7 +7,7 @@
 
 #include "../lean.h"
 #include "../tags/noncopyable.h"
-#include "../meta/callable.h"
+#include "../functional/callable.h"
 
 namespace lean
 {

@@ -8,13 +8,12 @@
 #include "../lean.h"
 #include "../smart/terminate_guard.h"
 #include "../tags/noncopyable.h"
+#include "../functional/hashing.h"
 #include <memory>
-#include <stdexcept>
-#include <functional>
 #include <utility>
+#include <functional>
 #include <limits>
-
-#include <unordered_map>
+#include <string>
 
 namespace lean 
 {
@@ -52,14 +51,6 @@ namespace simple_hash_map_policies
 	typedef policy<true, true> pod;
 }
 
-/// Computes hash values from elements of the given type.
-template<class Element>
-struct hash : public std::unary_function<Element, size_t>
-{
-	/// Computes a hash value for the given element.
-	size_t operator()(const Element &element) const;
-};
-
 /// Defines default values for invalid & end keys.
 template <class Key>
 struct default_keys
@@ -79,27 +70,42 @@ struct default_keys
 namespace impl
 {
 	template <class Key>
-	struct default_numeric_invalid_key
+	struct default_numeric_keys
 	{
 		LEAN_STATIC_ASSERT_MSG_ALT(std::numeric_limits<Key>::is_specialized,
 			"No invalid key default available for the given type.",
 			No_invalid_key_default_available_for_the_given_type);
 
-		static const Key value;
+		static const Key invalid_key;
+		static const Key end_key;
 	};
 
-	template <class Key> const Key default_numeric_invalid_key<Key>::value =
-		(std::numeric_limits<Key>::has_infinity)
-			? std::numeric_limits<Key>::infinity
-			: (std::numeric_limits<Key>::lowest != Key())
-				? std::numeric_limits<Key>::lowest
-				: std::numeric_limits<Key>::max;
+	template <class Key> const Key default_numeric_keys<Key>::invalid_key(
+			(std::numeric_limits<Key>::has_infinity)
+				? std::numeric_limits<Key>::infinity
+				: (std::numeric_limits<Key>::lowest != Key())
+					? std::numeric_limits<Key>::lowest
+					: std::numeric_limits<Key>::max
+		);
+	template <class Key> const Key default_numeric_keys<Key>::end_key(Key());
 }
 
-// Defaults
-template <class Key> const Key default_keys<Key>::invalid_key(impl::default_numeric_invalid_key<Key>::value);
-template <class Key> const Key default_keys<Key>::end_key(Key());
+// Numeric / generic defaults
+template <class Key> const Key default_keys<Key>::invalid_key(impl::default_numeric_keys<Key>::invalid_key);
+template <class Key> const Key default_keys<Key>::end_key(impl::default_numeric_keys<Key>::end_key);
 template <class Key> const std::equal<Key> default_keys<Key>::key_equal::predicate(std::equal<Key>());
+
+// Pointer defaults
+template <class Key> Key* const default_keys<Key*>::invalid_key(nullptr);
+template <class Key> Key* const default_keys<Key*>::end_key( reinterpret_cast<Key*>(static_cast<uintptr_t>(-1)) ); // MONITOR: Standard says UB
+
+// String defaults
+template <class Char, class Traits, class Allocator>
+const std::basic_string<Char, Traits, Allocator>
+	default_keys< std::basic_string<Char, Traits, Allocator> >::invalid_key( std::basic_string<Char, Traits, Allocator>() );
+template <class Char, class Traits, class Allocator>
+const std::basic_string<Char, Traits, Allocator>
+	default_keys< std::basic_string<Char, Traits, Allocator> >::end_key( std::basic_string<Char, Traits, Allocator>(1, Char()) );
 
 namespace impl
 {

@@ -18,6 +18,5 @@ namespace lean
 #include "dereference.h"
 #include "enable_if.h"
 #include "constexpr.h"
-#include "callable.h"
 
 #endif

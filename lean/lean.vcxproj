@@ -90,6 +90,9 @@
     <ClInclude Include="header\lean\containers\simple_hash_map.h" />
     <ClInclude Include="header\lean\containers\simple_vector.h" />
     <ClInclude Include="header\lean\export_all.h" />
+    <ClInclude Include="header\lean\functional\callable.h" />
+    <ClInclude Include="header\lean\functional\functional.h" />
+    <ClInclude Include="header\lean\functional\hashing.h" />
     <ClInclude Include="header\lean\io\endianness.h" />
     <ClInclude Include="header\lean\io\file.h" />
     <ClInclude Include="header\lean\io\io.h" />
@@ -123,7 +126,6 @@
     <ClInclude Include="header\lean\memory\heap_bound.h" />
     <ClInclude Include="header\lean\memory\new_handler.h" />
     <ClInclude Include="header\lean\memory\win_heap.h" />
-    <ClInclude Include="header\lean\meta\callable.h" />
     <ClInclude Include="header\lean\meta\conditional.h" />
     <ClInclude Include="header\lean\meta\constexpr.h" />
     <ClInclude Include="header\lean\meta\dependent_false.h" />

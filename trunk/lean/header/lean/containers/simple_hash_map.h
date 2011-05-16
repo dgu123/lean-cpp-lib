@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <functional>
 #include <utility>
+#include <limits>
 
 #include <unordered_map>
 
@@ -67,7 +68,38 @@ struct default_keys
 	static const Key invalid_key;
 	/// Valid key value used as end marker. May still be used in actual key-value-pairs.
 	static const Key end_key;
+	/// Predicate used in key validity checks.
+	struct key_equal
+	{
+		/// Predicate.
+		static const std::equal<Key> predicate;		
+	};
 };
+
+namespace impl
+{
+	template <class Key>
+	struct default_numeric_invalid_key
+	{
+		LEAN_STATIC_ASSERT_MSG_ALT(std::numeric_limits<Key>::is_specialized,
+			"No invalid key default available for the given type.",
+			No_invalid_key_default_available_for_the_given_type);
+
+		static const Key value;
+	};
+
+	template <class Key> const Key default_numeric_invalid_key<Key>::value =
+		(std::numeric_limits<Key>::has_infinity)
+			? std::numeric_limits<Key>::infinity
+			: (std::numeric_limits<Key>::lowest != Key())
+				? std::numeric_limits<Key>::lowest
+				: std::numeric_limits<Key>::max;
+}
+
+// Defaults
+template <class Key> const Key default_keys<Key>::invalid_key(impl::default_numeric_invalid_key<Key>::value);
+template <class Key> const Key default_keys<Key>::end_key(Key());
+template <class Key> const std::equal<Key> default_keys<Key>::key_equal::predicate(std::equal<Key>());
 
 namespace impl
 {
@@ -362,7 +394,7 @@ private:
 	{
 		if (!Policy::no_destruct || !Policy::no_key_destruct)
 			for (; destr != destrEnd; ++destr)
-				if (!m_keyEqual(destr->first, KeyValues::invalid_key))
+				if (key_valid(destr->first))
 					destruct_element(destr);
 				else
 					destruct_key(destr);
@@ -401,7 +433,7 @@ private:
 					LEAN_ASSERT(size() < newBucketCount);
 
 					for (value_type_ *element = m_elements; element != m_elementsEnd; ++element)
-						if (!m_keyEqual(element->first, KeyValues::invalid_key))
+						if (key_valid(element->first))
 							move_construct(
 								locate_element(element->first).second,
 								*newElement );
@@ -457,9 +489,11 @@ private:
 	/// Gets the element stored under the given key and returns false if existent, otherwise returns true and gets a fitting open element slot.
 	std::pair<bool, value_type_*> locate_element(const key_type &key) const
 	{
+		LEAN_ASSERT(key_valid(key));
+
 		Element *element = first_element(key);
 		
-		while (!m_keyEqual(element->first, KeyValues::invalid_key))
+		while (key_valid(element->first))
 		{
 			if (m_keyEqual(element->first, key))
 				return std::make_pair(false, element);
@@ -478,7 +512,7 @@ private:
 	{
 		Element *element = first_element(key);
 		
-		while (!m_keyEqual(element->first, KeyValues::invalid_key))
+		while (key_valid(element->first))
 		{
 			if (m_keyEqual(element->first, key))
 				return element;
@@ -506,7 +540,7 @@ private:
 			element = m_elements;
 
 		// Find next empty position
-		while (!m_keyEqual(element->first, KeyValues::invalid_key))
+		while (key_valid(element->first))
 		{
 			Element *auxElement = first_element(element->first);
 			
@@ -582,7 +616,7 @@ public:
 		/// Constructs an iterator from the given element or the next valid element, should the current element prove invalid.
 		LEAN_INLINE basic_iterator(Element *element, search_first_valid_t)
 			: m_element(
-				(element->first == KeyValues::invalid_key) // TODO: somehow use key_equal?
+				(!key_valid(element->first))
 					? (++basic_iterator(element)).m_element
 					: element
 				) { }
@@ -614,7 +648,7 @@ public:
 				++m_element;
 			}
 			// ASSERT: End element key is always valid
-			while (m_element->first == KeyValues::invalid_key) // TODO: somehow use key_equal?
+			while (!key_valid(m_element->first))
 		}
 		/// Continues iteration.
 		LEAN_INLINE basic_iterator operator ++(int)
@@ -662,12 +696,14 @@ public:
 	simple_hash_map()
 		: base_type(0.75f)
 	{
+		LEAN_ASSERT(key_valid(KeyValues::end_key));
 		reallocate(s_minSize);
 	}
 	/// Constructs an empty hash map.
 	explicit simple_hash_map(size_type capacity, float maxLoadFactor = 0.75f)
 		: base_type(maxLoadFactor)
 	{
+		LEAN_ASSERT(key_valid(KeyValues::end_key));
 		growTo(capacity);
 	}
 	/// Constructs an empty hash map.
@@ -675,6 +711,7 @@ public:
 		: base_type(maxLoadFactor),
 		m_hasher(hash)
 	{
+		LEAN_ASSERT(key_valid(KeyValues::end_key));
 		growTo(capacity);
 	}
 	/// Constructs an empty hash map.
@@ -683,6 +720,7 @@ public:
 		m_hasher(hash),
 		m_keyEqual(keyComp)
 	{
+		LEAN_ASSERT(key_valid(KeyValues::end_key));
 		growTo(capacity);
 	}
 	/// Constructs an empty hash map.
@@ -691,6 +729,7 @@ public:
 		m_hasher(hash),
 		m_keyEqual(keyComp)
 	{
+		LEAN_ASSERT(key_valid(KeyValues::end_key));
 		growTo(capacity);
 	}
 	/// Copies all elements from the given hash map to this hash map.
@@ -769,6 +808,8 @@ public:
 	/// stored under the given key yet, otherwise returns the one currently stored.
 	LEAN_INLINE reference insert(const key_type &key)
 	{
+		LEAN_ASSERT(key_valid(key));
+
 		if (m_count == capacity())
 			growHL(1);
 
@@ -784,6 +825,8 @@ public:
 	/// Inserts the given key-value-pair into this hash map.
 	LEAN_INLINE std::pair<bool, iterator> insert(const value_type &value)
 	{
+		LEAN_ASSERT(key_valid(value.first));
+
 		if (m_count == capacity())
 		{
 			if (contains_element(value))
@@ -805,6 +848,8 @@ public:
 	/// Inserts the given key-value-pair into this hash map.
 	LEAN_INLINE std::pair<bool, iterator> insert(value_type &&value)
 	{
+		LEAN_ASSERT(key_valid(value.first));
+
 		if (m_count == capacity())
 		{
 			if (contains_element(value))
@@ -891,6 +936,9 @@ public:
 
 	/// Gets a copy of the allocator used by this hash map.
 	LEAN_INLINE allocator_type get_allocator() const { return m_allocator; };
+
+	/// Returns true if the given key is valid.
+	LEAN_INLINE static bool key_valid(const key_type &key) { return !KeyValues::key_equal::predicate(key, KeyValues::invalid_key); }
 
 	/// Returns true if the hash map is empty.
 	LEAN_INLINE bool empty(void) const { return (m_count == 0); };

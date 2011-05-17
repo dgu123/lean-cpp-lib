@@ -61,28 +61,34 @@ namespace impl
 			"No invalid key default available for the given type.",
 			No_invalid_key_default_available_for_the_given_type);
 
-		static const Key invalid_key;
-		static const Key end_key;
-	};
-
-	template <class Key> const Key default_numeric_keys<Key>::invalid_key = Key(
-			(std::numeric_limits<Key>::has_infinity)
+		// WORKAROUND: Using methods here circumvents compiler bug that won't initialize some static constant variables
+		// when these are copied from to initialize other constant static variables
+		LEAN_INLINE static Key invalid_key()
+		{
+			return (std::numeric_limits<Key>::has_infinity)
 				? std::numeric_limits<Key>::infinity()
 				: (std::numeric_limits<Key>::min() != Key())
 					? std::numeric_limits<Key>::min()
-					: std::numeric_limits<Key>::max()
-		);
-	template <class Key> const Key default_numeric_keys<Key>::end_key = Key();
+					: std::numeric_limits<Key>::max();
+		}
+		LEAN_INLINE static Key end_key()
+		{
+			return Key();
+		}
+	};
 
 	template <class Key>
 	struct default_numeric_keys<Key*>
 	{
-		static Key* const invalid_key;
-		static Key* const end_key;
+		LEAN_INLINE static Key* invalid_key()
+		{
+			return nullptr;
+		}
+		LEAN_INLINE static Key* end_key()
+		{
+			return reinterpret_cast<Key*>( static_cast<uintptr_t>(-1) );
+		}
 	};
-
-	template <class Key> Key* const default_numeric_keys<Key*>::invalid_key = nullptr;
-	template <class Key> Key* const default_numeric_keys<Key*>::end_key = reinterpret_cast<Key*>(static_cast<uintptr_t>(-1));
 }
 
 /// Defines default values for invalid & end keys.
@@ -102,8 +108,8 @@ struct default_keys
 };
 
 // Numeric / generic defaults
-template <class Key> const Key default_keys<Key>::invalid_key(impl::default_numeric_keys<Key>::invalid_key);
-template <class Key> const Key default_keys<Key>::end_key(impl::default_numeric_keys<Key>::end_key);
+template <class Key> const Key default_keys<Key>::invalid_key = impl::default_numeric_keys<Key>::invalid_key();
+template <class Key> const Key default_keys<Key>::end_key = impl::default_numeric_keys<Key>::end_key();
 template <class Key> const std::equal_to<Key> default_keys<Key>::key_equal::predicate = std::equal_to<Key>();
 
 template <class Char, class Traits, class Allocator>
@@ -628,6 +634,7 @@ private:
 					for (value_type_ *element = m_elements; element != m_elementsEnd; ++element)
 						if (key_valid(element->first))
 							move_construct(
+								// Oh dear, locale_element works with old pointers!
 								locate_element(element->first).second,
 								*element );
 				}

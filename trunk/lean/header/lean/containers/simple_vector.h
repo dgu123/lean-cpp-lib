@@ -334,9 +334,9 @@ public:
 		LEAN_ASSERT(source <= sourceEnd);
 
 		// Index is unsigned, make use of wrap-around
-		if (static_cast<size_type>(addressof(*source) - m_elements) < size())
+		if (static_cast<size_type>(lean::addressof(*source) - m_elements) < size())
 		{
-			LEAN_ASSERT(addressof(*sourceEnd) <= m_elementsEnd);
+			LEAN_ASSERT(lean::addressof(*sourceEnd) <= m_elementsEnd);
 
 			// Move (always back to front)
 			LEAN_ASSERT(m_elements <= source);
@@ -379,7 +379,7 @@ public:
 	{
 		if (m_elementsEnd == m_capacityEnd)
 		{
-			size_type index = addressof(value) - m_elements;
+			size_type index = lean::addressof(value) - m_elements;
 			growHL(1);
 			
 			// Index is unsigned, make use of wrap-around
@@ -400,7 +400,7 @@ public:
 	{
 		if (m_elementsEnd == m_capacityEnd)
 		{
-			size_type index = addressof(value) - m_elements;
+			size_type index = lean::addressof(value) - m_elements;
 			growHL(1);
 			
 			// Index is unsigned, make use of wrap-around

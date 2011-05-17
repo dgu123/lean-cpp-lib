@@ -50,7 +50,7 @@ private:
 	/// Asserts that the given value lies outside this vector's element range.
 	LEAN_INLINE assert_outside(const value& value)
 	{
-		LEAN_ASSERT(addressof(value) < addressof(*m_container.begin()) || addressof(*m_container.end()) <= addressof(value));
+		LEAN_ASSERT(lean::addressof(value) < lean::addressof(*m_container.begin()) || lean::addressof(*m_container.end()) <= lean::addressof(value));
 	}
 
 	/// Triggers an out of range error.
@@ -326,12 +326,12 @@ public:
 		LEAN_ASSERT(itFirst <= itEnd);
 
 		size_type count = itEnd - itFirst;
-		size_type index = addressof(*itFirst) - addressof(*m_container.begin());
+		size_type index = lean::addressof(*itFirst) - lean::addressof(*m_container.begin());
 
 		// Index is unsigned, make use of wrap-around
 		if (index < m_size)
 		{
-			size_type endIndex = addressof(*itEnd) - addressof(*m_container.begin());
+			size_type endIndex = lean::addressof(*itEnd) - lean::addressof(*m_container.begin());
 			
 			LEAN_ASSERT(itEnd <= itWhere || itWhere <= itFirst);
 
@@ -392,8 +392,8 @@ public:
 		
 		if(count > m_container.size())
 		{
-			size_type index = addressof(*itFirst) - addressof(*m_container.begin());
-			size_type endIndex = addressof(*itEnd) - addressof(*m_container.begin());
+			size_type index = lean::addressof(*itFirst) - lean::addressof(*m_container.begin());
+			size_type endIndex = lean::addressof(*itEnd) - lean::addressof(*m_container.begin());
 
 			growTo(count);
 			m_container.resize(count);

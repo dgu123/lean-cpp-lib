@@ -52,22 +52,6 @@ namespace simple_hash_map_policies
 	typedef policy<true, true> pod;
 }
 
-/// Defines default values for invalid & end keys.
-template <class Key>
-struct default_keys
-{
-	/// Invalid key value that is guaranteed never to be used in key-value-pairs.
-	static const Key invalid_key;
-	/// Valid key value used as end marker. May still be used in actual key-value-pairs.
-	static const Key end_key;
-	/// Predicate used in key validity checks.
-	struct key_equal
-	{
-		/// Predicate.
-		static const std::equal<Key> predicate;		
-	};
-};
-
 namespace impl
 {
 	template <class Key>
@@ -81,41 +65,77 @@ namespace impl
 		static const Key end_key;
 	};
 
-	template <class Key> const Key default_numeric_keys<Key>::invalid_key(
+	template <class Key> const Key default_numeric_keys<Key>::invalid_key = Key(
 			(std::numeric_limits<Key>::has_infinity)
 				? std::numeric_limits<Key>::infinity()
-				: (std::numeric_limits<Key>::lowest() != Key())
-					? std::numeric_limits<Key>::lowest()
+				: (std::numeric_limits<Key>::min() != Key())
+					? std::numeric_limits<Key>::min()
 					: std::numeric_limits<Key>::max()
 		);
-	template <class Key> const Key default_numeric_keys<Key>::end_key(Key());
+	template <class Key> const Key default_numeric_keys<Key>::end_key = Key();
+
+	template <class Key>
+	struct default_numeric_keys<Key*>
+	{
+		static Key* const invalid_key;
+		static Key* const end_key;
+	};
+
+	template <class Key> Key* const default_numeric_keys<Key*>::invalid_key = nullptr;
+	template <class Key> Key* const default_numeric_keys<Key*>::end_key = reinterpret_cast<Key*>(static_cast<uintptr_t>(-1));
 }
+
+/// Defines default values for invalid & end keys.
+template <class Key>
+struct default_keys
+{
+	/// Invalid key value that is guaranteed never to be used in key-value-pairs.
+	static const Key invalid_key;
+	/// Valid key value used as end marker. May still be used in actual key-value-pairs.
+	static const Key end_key;
+	/// Predicate used in key validity checks.
+	struct key_equal
+	{
+		/// Predicate.
+		static const std::equal_to<Key> predicate;		
+	};
+};
 
 // Numeric / generic defaults
 template <class Key> const Key default_keys<Key>::invalid_key(impl::default_numeric_keys<Key>::invalid_key);
 template <class Key> const Key default_keys<Key>::end_key(impl::default_numeric_keys<Key>::end_key);
-template <class Key> const std::equal<Key> default_keys<Key>::key_equal::predicate(std::equal<Key>());
+template <class Key> const std::equal_to<Key> default_keys<Key>::key_equal::predicate = std::equal_to<Key>();
 
-// Pointer defaults
-template <class Key> Key* const default_keys<Key*>::invalid_key(nullptr);
-template <class Key> Key* const default_keys<Key*>::end_key( reinterpret_cast<Key*>(static_cast<uintptr_t>(-1)) ); // MONITOR: Standard says UB
+template <class Char, class Traits, class Allocator>
+struct default_keys< std::basic_string<Char, Traits, Allocator> >
+{
+	typedef std::basic_string<Char, Traits, Allocator> key_type;
+
+	static const key_type invalid_key;
+	static const key_type end_key;
+	struct key_equal
+	{
+		static const std::equal_to<key_type> predicate;		
+	};
+};
 
 // String defaults
 template <class Char, class Traits, class Allocator>
 const std::basic_string<Char, Traits, Allocator>
-	default_keys< std::basic_string<Char, Traits, Allocator> >::invalid_key( std::basic_string<Char, Traits, Allocator>() );
+	default_keys< std::basic_string<Char, Traits, Allocator> >::invalid_key = std::basic_string<Char, Traits, Allocator>();
 template <class Char, class Traits, class Allocator>
 const std::basic_string<Char, Traits, Allocator>
-	default_keys< std::basic_string<Char, Traits, Allocator> >::end_key( std::basic_string<Char, Traits, Allocator>(1, Char()) );
+	default_keys< std::basic_string<Char, Traits, Allocator> >::end_key = std::basic_string<Char, Traits, Allocator>(1, Char());
 
 namespace impl
 {
 
-/// Gets the next available prime number greater than or equal to the given capacity.
+/// Gets the first prime number available that is both less than or equal to the given maximum value
+/// and greater than or equal to the given capacity, if possible.
 inline size_t next_prime_capacity(size_t capacity, size_t max)
 {
+	// Prime numbers growing by 8%
 	static const uint4 primes[] = {
-		// Prime numbers growing by 8%
 		2U, 3U, 5U, 7U, 11U, 13U, 17U, 19U, 23U, 29U, 31U,
 		37U, 41U, 43U, 47U, 53U, 59U, 61U, 67U, 71U, 73U, 79U,     
 		83U, 89U, 97U, 103U, 109U, 113U, 127U, 137U, 139U, 149U,     
@@ -161,14 +181,20 @@ inline size_t next_prime_capacity(size_t capacity, size_t max)
 		// Sentinel
 		4294967291U
 	};
-	static const size_t largePrimeThreshold = 4294967291U;
+	// Exclude sentinel, thus value returned by lower_bound is always valid.
 	static const size_t primeCount = sizeof(primes) / sizeof(primes[0]) - 1U;
 
+	// Smallest prime number.
+	static const uint4 primeThreshold = 2U;
+	// Largest prime number in 4 byte unsigned integer.
+	static const uint4 largePrimeThreshold = 4294967291U;
+
+	// 32 bit size or request <= primeThreshold
 	if (sizeof(size_t) <= sizeof(uint4) || capacity <= largePrimeThreshold || max <= largePrimeThreshold)
 	{
 		const uint4 *primeCapacity = std::lower_bound(primes, primes + primeCount, static_cast<uint4>(capacity));
 		
-		LEAN_ASSERT(max >= 2U);
+		LEAN_ASSERT(max >= primeThreshold);
 
 		while (*primeCapacity > max)
 			--primeCapacity;
@@ -181,6 +207,7 @@ inline size_t next_prime_capacity(size_t capacity, size_t max)
 	}
 	else
 	{
+		// More prime numbers growing by 8%
 		static const uint8 largePrimes[] = {
 			// Sentinel
 			largePrimeThreshold,
@@ -247,6 +274,7 @@ inline size_t next_prime_capacity(size_t capacity, size_t max)
 			// Sentinel
 			18446744073709551557ULL
 		};
+		// Exclude end sentinel, thus value returned by lower_bound is always valid.
 		static const size_t largePrimeCount = sizeof(largePrimes) / sizeof(largePrimes[0]) - 1U;
 
 		const uint8 *primeCapacity = std::lower_bound(largePrimes, largePrimes + largePrimeCount, static_cast<uint8>(capacity));
@@ -266,12 +294,13 @@ inline size_t next_prime_capacity(size_t capacity, size_t max)
 
 /// Simple hash map base.
 template < class Key, class Element,
-	class Policy = simple_hash_map_policies::nonpod,
-	class KeyValues = default_keys<Key> >
+	class Policy,
+	class KeyValues,
+	class Allocator >
 class simple_hash_map_base
 {
 protected:
-	typedef std::pair<Key, Element> value_type_;
+	typedef std::pair<const Key, Element> value_type_;
 
 	typedef typename Allocator::template rebind<value_type_>::other allocator_type_;
 	allocator_type_ m_allocator;
@@ -327,23 +356,23 @@ protected:
 	/// Checks whether the given element is physically contained by this hash map.
 	LEAN_INLINE bool contains_element(const value_type_ &element) const
 	{
-		return contains_element(addressof(element));
+		return contains_element(lean::addressof(element));
 	}
 
 	/// Marks the given element as end element.
 	static LEAN_INLINE void mark_end(value_type_ *dest)
 	{
-		new( addressof(dest->first) ) Key(KeyValues::end_key);
+		new( const_cast<void*>(static_cast<const void*>(lean::addressof(dest->first))) ) Key(KeyValues::end_key);
 	}
 	/// Invalidates the given element.
 	static LEAN_INLINE void invalidate(value_type_ *dest)
 	{
-		new( addressof(dest->first) ) Key(KeyValues::invalid_key);
+		new( const_cast<void*>(static_cast<const void*>(lean::addressof(dest->first))) ) Key(KeyValues::invalid_key);
 	}
 	/// Invalidates the elements in the given range.
-	static void invalidate(Element *dest, Element *destEnd)
+	static void invalidate(value_type_ *dest, value_type_ *destEnd)
 	{
-		Element *destr = dest;
+		value_type_ *destr = dest;
 
 		try
 		{
@@ -412,12 +441,12 @@ protected:
 
 	public:
 		/// Stores elements to be invalidated on destruction, if not disarmed.
-		LEAN_INLINE explicit invalidate_guard(value_type_ *dest, value_type_ *destEnd, bool armed = true)
+		LEAN_INLINE explicit invalidate_n_guard(value_type_ *dest, value_type_ *destEnd, bool armed = true)
 			: m_dest(dest),
 			m_destEnd(destEnd),
 			m_armed(armed) { }
 		/// Destructs the stored elements, of not disarmed.
-		LEAN_INLINE ~invalidate_guard()
+		LEAN_INLINE ~invalidate_n_guard()
 		{
 			if (m_armed)
 				invalidate(m_dest, m_destEnd);
@@ -485,7 +514,7 @@ protected:
 		m_capacity(0),
 		m_maxLoadFactor(maxLoadFactor) { }
 	/// Initializes the this hash map base.
-	LEAN_INLINE simple_hash_map_base(float maxLoadFactor, const allocator_type &allocator)
+	LEAN_INLINE simple_hash_map_base(float maxLoadFactor, const allocator_type_ &allocator)
 		: m_allocator(allocator),
 		m_elements(nullptr),
 		m_elementsEnd(nullptr),
@@ -550,7 +579,7 @@ private:
 	key_equal_ m_keyEqual;
 
 	/// Destructs both valid and invalid elements in the given range.
-	void destruct(Element *destr, Element *destrEnd)
+	void destruct(value_type_ *destr, value_type_ *destrEnd)
 	{
 		if (!Policy::no_destruct || !Policy::no_key_destruct)
 			for (; destr != destrEnd; ++destr)
@@ -565,7 +594,7 @@ private:
 	{
 		// Make prime (required for universal modulo hashing)
 		// TODO: will lead to constant rehashing when reaching s_maxBuckets
-		newBucketCount = next_prime_capacity(newBucketCount, s_maxBuckets);
+		newBucketCount = impl::next_prime_capacity(newBucketCount, s_maxBuckets);
 
 		LEAN_ASSERT(newBucketCount <= s_maxBuckets);
 
@@ -600,7 +629,7 @@ private:
 						if (key_valid(element->first))
 							move_construct(
 								locate_element(element->first).second,
-								*newElement );
+								*element );
 				}
 				catch(...)
 				{
@@ -615,8 +644,8 @@ private:
 			throw;
 		}
 		
-		Element *oldElements = m_elements;
-		Element *oldElementsEnd = m_elementsEnd;
+		value_type_ *oldElements = m_elements;
+		value_type_ *oldElementsEnd = m_elementsEnd;
 		const size_type_ oldBucketCount = bucket_count();
 		
 		m_elements = newElements;
@@ -628,7 +657,7 @@ private:
 	}
 
 	/// Frees the given elements.
-	LEAN_INLINE void free(value_type_ *elements, value_type *elementsEnd, size_type_ elementCount)
+	LEAN_INLINE void free(value_type_ *elements, value_type_ *elementsEnd, size_type_ elementCount)
 	{
 		// ASSERT: End element key always valid to allow for proper iteration termination
 
@@ -646,16 +675,16 @@ private:
 	}
 
 	/// Gets the first element that might contain the given key.
-	LEAN_INLINE value_type_* first_element(const key_type &key) const
+	LEAN_INLINE value_type_* first_element(const Key &key) const
 	{
 		return m_elements + m_hasher(key) % bucket_count();
 	}
 	/// Gets the element stored under the given key and returns false if existent, otherwise returns true and gets a fitting open element slot.
-	std::pair<bool, value_type_*> locate_element(const key_type &key) const
+	std::pair<bool, value_type_*> locate_element(const Key &key) const
 	{
 		LEAN_ASSERT(key_valid(key));
 
-		Element *element = first_element(key);
+		value_type_ *element = first_element(key);
 		
 		while (key_valid(element->first))
 		{
@@ -672,9 +701,9 @@ private:
 		return std::make_pair(true, element);
 	}
 	/// Gets the element stored under the given key, if existent, returns end otherwise.
-	LEAN_INLINE value_type_* find_element(const key_type &key) const
+	LEAN_INLINE value_type_* find_element(const Key &key) const
 	{
-		Element *element = first_element(key);
+		value_type_ *element = first_element(key);
 		
 		while (key_valid(element->first))
 		{
@@ -691,12 +720,12 @@ private:
 		return m_elementsEnd;
 	}
 	/// Removes the element stored at the given location.
-	LEAN_INLINE void remove_element(Element *element)
+	LEAN_INLINE void remove_element(value_type_ *element)
 	{
 		// If anything goes wrong, we won't be able to fix it
 		terminate_guard terminateGuard;
 
-		Element *hole = element;
+		value_type_ *hole = element;
 		--m_count;
 		
 		// Wrap around
@@ -706,7 +735,7 @@ private:
 		// Find next empty position
 		while (key_valid(element->first))
 		{
-			Element *auxElement = first_element(element->first);
+			value_type_ *auxElement = first_element(element->first);
 			
 			bool tooLate = (auxElement <= hole);
 			bool tooEarly = (element < auxElement);
@@ -791,7 +820,7 @@ public:
 		/// Type of references to the values iterated.
 		typedef value_type& reference;
 		/// Type of pointers to the values iterated.
-		typedef value_type& pointer;
+		typedef value_type* pointer;
 
 		/// Gets the current element.
 		LEAN_INLINE reference operator *() const
@@ -805,19 +834,32 @@ public:
 		}
 
 		/// Continues iteration.
-		LEAN_INLINE reference operator ++()
+		LEAN_INLINE basic_iterator& operator ++()
 		{
 			do
 			{
 				++m_element;
 			}
 			// ASSERT: End element key is always valid
-			while (!key_valid(m_element->first))
+			while (!key_valid(m_element->first));
+
+			return *this;
 		}
 		/// Continues iteration.
 		LEAN_INLINE basic_iterator operator ++(int)
 		{
 			return ++basic_iterator(*this);
+		}
+
+		/// Comparison operator.
+		LEAN_INLINE bool operator ==(const basic_iterator &right) const
+		{
+			return (m_element == right.m_element);
+		}
+		/// Comparison operator.
+		LEAN_INLINE bool operator !=(const basic_iterator &right) const
+		{
+			return (m_element != right.m_element);
 		}
 	};
 
@@ -994,12 +1036,12 @@ public:
 		if (m_count == capacity())
 		{
 			if (contains_element(value))
-				return std::make_pair( false, iterator(const_cast<value_type*>(addressof(value))) );
+				return std::make_pair( false, iterator(const_cast<value_type*>(lean::addressof(value))) );
 
 			growHL(1);
 		}
 
-		std::pair<bool, value_type*> element = locate_element(key);
+		std::pair<bool, value_type*> element = locate_element(value.first);
 
 		if (element.first)
 		{
@@ -1017,12 +1059,12 @@ public:
 		if (m_count == capacity())
 		{
 			if (contains_element(value))
-				return std::make_pair( false, iterator(addressof(value)) );
+				return std::make_pair( false, iterator(lean::addressof(value)) );
 
 			growHL(1);
 		}
 
-		std::pair<bool, value_type*> element = locate_element(key);
+		std::pair<bool, value_type*> element = locate_element(value.first);
 
 		if (element.first)
 		{

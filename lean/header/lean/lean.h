@@ -188,14 +188,8 @@ LEAN_INLINE Type max(Type a, Type b)
 template<class Type>
 LEAN_INLINE Type* addressof(Type& value)
 {
-	return reinterpret_cast<Type*>(&reinterpret_cast<char&>(value));
-}
-
-/// Returns the address of the given reference.
-template<class Type>
-LEAN_INLINE const Type* addressof(const Type& value)
-{
-	return reinterpret_cast<const Type*>(&reinterpret_cast<const char&>(value));
+	// Use C-style cast as const_casting would only make it worse
+	return reinterpret_cast<Type*>( &(char&)value );
 }
 
 } // namespace

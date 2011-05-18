@@ -1,3 +1,7 @@
+#ifdef LEAN_BUILD_LIB
+#include "../../depconfig.h"
+#endif
+
 #include "../new_handler.h"
 #include <new>
 #include <stdexcept>

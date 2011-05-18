@@ -1,3 +1,7 @@
+#ifdef LEAN_BUILD_LIB
+#include "../../depconfig.h"
+#endif
+
 #include "../exceptions.h"
 #include "../log.h"
 #include <stdexcept>

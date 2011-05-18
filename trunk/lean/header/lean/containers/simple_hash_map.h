@@ -11,6 +11,7 @@
 #include "../functional/hashing.h"
 #include <memory>
 #include <utility>
+#include <cmath>
 #include <functional>
 #include <limits>
 #include <string>
@@ -162,24 +163,45 @@ protected:
 	float m_maxLoadFactor;
 	
 	static const size_type_ s_maxElements = static_cast<size_type_>(-1) / sizeof(value_type_);
-	// Use end element to allow for proper iteration termination
-	static const size_type_ s_maxBuckets = s_maxElements - 1U;
-	// Keep one slot open at all times to simplify wrapped find loop termination conditions
-	static const size_type_ s_maxSize = s_maxBuckets - 1U;
-	static const size_type_ s_minSize = (32U < s_maxSize) ? 32U : s_maxSize;
 
 	// Make sure size_type is unsigned
-	LEAN_STATIC_ASSERT(s_maxSize > static_cast<size_type_>(0));
+	LEAN_STATIC_ASSERT(s_maxElements > static_cast<size_type_>(0));
+
+	/// Gets the maximum number of buckets.
+	LEAN_INLINE static size_type_ max_bucket_count()
+	{
+		// Reserve end element to allow for proper iteration termination
+		static const size_type_ maxBuckets = s_maxElements - 1U;
+		// Max prime number probably lower
+		static const size_type_ maxPrimeBuckets = next_prime_capacity(maxBuckets, maxBuckets);
+
+		return maxPrimeBuckets;
+	}
+	/// Gets the maximum number of elements that may actually be stored.
+	LEAN_INLINE static size_type_ max_size()
+	{
+		// Keep one slot open at all times to simplify wrapped find loop termination conditions
+		static const size_type_ maxSize = max_bucket_count() - 1U;
+
+		return maxSize;
+	}
+	/// Gets the minimum number of elements that may be allocated.
+	LEAN_INLINE static size_type_ min_size()
+	{
+		static const size_type_ minSize = (32U < max_size()) ? 32U : max_size();
+
+		return minSize;
+	}
 
 	/// Gets the number of buckets required from the given capacity.
 	LEAN_INLINE size_type_ buckets_from_capacity(size_type_ capacity)
 	{
-		LEAN_ASSERT(capacity <= s_maxSize);
+		LEAN_ASSERT(capacity <= max_size());
 
-		float bucketHint = capacity / m_maxLoadFactor;
+		float bucketHint = ceil(capacity / m_maxLoadFactor);
 		
-		size_type_ bucketCount = (bucketHint >= s_maxSize)
-			? s_maxSize
+		size_type_ bucketCount = (bucketHint >= max_size())
+			? max_size()
 			: static_cast<size_type_>(bucketHint);
 
 		// Keep one slot open at all times to simplify wrapped find loop termination conditions
@@ -441,11 +463,10 @@ private:
 	/// Allocates space for the given number of elements.
 	void reallocate(size_type_ newBucketCount)
 	{
-		// Make prime (required for universal modulo hashing)
-		// TODO: will lead to constant rehashing when reaching s_maxBuckets
-		newBucketCount = impl::next_prime_capacity(newBucketCount, s_maxBuckets);
+		LEAN_ASSERT(newBucketCount <= max_bucket_count());
 
-		LEAN_ASSERT(newBucketCount <= s_maxBuckets);
+		// Make prime (required for universal modulo hashing)
+		newBucketCount = impl::next_prime_capacity(newBucketCount, max_bucket_count());
 
 		// Use end element to allow for proper iteration termination
 		const size_type_ newElementCount = newBucketCount + 1U;
@@ -629,8 +650,8 @@ private:
 	LEAN_INLINE void grow(size_type_ count)
 	{
 		// Mind overflow
-		LEAN_ASSERT(count <= s_maxSize);
-		LEAN_ASSERT(s_maxSize - count >= size());
+		LEAN_ASSERT(count <= max_size());
+		LEAN_ASSERT(max_size() - count >= size());
 
 		growTo(size() + count);
 	}
@@ -762,14 +783,14 @@ public:
 		: base_type(0.75f)
 	{
 		LEAN_ASSERT(key_valid(KeyValues::end_key));
-		reallocate(s_minSize);
+		reallocate( min_size() );
 	}
 	/// Constructs an empty hash map.
 	explicit simple_hash_map(size_type capacity, float maxLoadFactor = 0.75f)
 		: base_type(maxLoadFactor)
 	{
 		LEAN_ASSERT(key_valid(KeyValues::end_key));
-		growTo(capacity);
+		growTo( max(capacity, min_size()) );
 	}
 	/// Constructs an empty hash map.
 	simple_hash_map(size_type capacity, float maxLoadFactor, const hasher& hash)
@@ -777,7 +798,7 @@ public:
 		m_hasher(hash)
 	{
 		LEAN_ASSERT(key_valid(KeyValues::end_key));
-		growTo(capacity);
+		growTo( max(capacity, min_size()) );
 	}
 	/// Constructs an empty hash map.
 	simple_hash_map(size_type capacity, float maxLoadFactor, const hasher& hash, const key_equal& keyComp)
@@ -786,7 +807,7 @@ public:
 		m_keyEqual(keyComp)
 	{
 		LEAN_ASSERT(key_valid(KeyValues::end_key));
-		growTo(capacity);
+		growTo( max(capacity, min_size()) );
 	}
 	/// Constructs an empty hash map.
 	simple_hash_map(size_type capacity, float maxLoadFactor, const hasher& hash, const key_equal& keyComp, const allocator_type &allocator)
@@ -795,7 +816,7 @@ public:
 		m_keyEqual(keyComp)
 	{
 		LEAN_ASSERT(key_valid(KeyValues::end_key));
-		growTo(capacity);
+		growTo( max(capacity, min_size()) );
 	}
 	/// Copies all elements from the given hash map to this hash map.
 	simple_hash_map(const simple_hash_map &right)
@@ -1032,26 +1053,20 @@ public:
 	size_type grow_to_capacity_hint(size_type count) const
 	{
 		size_type oldCapacity = capacity();
-		LEAN_ASSERT(oldCapacity <= s_maxSize);
+		LEAN_ASSERT(oldCapacity <= max_size());
 
 		// Try to double capacity (mind overflow)
-		size_type newCapacity = (s_maxSize - oldCapacity < oldCapacity)
+		size_type newCapacity = (max_size() - oldCapacity < oldCapacity)
 			? 0
 			: oldCapacity + oldCapacity;
 
 		// Mind overflow
-		LEAN_ASSERT(count <= s_maxSize);
+		LEAN_ASSERT(count <= max_size());
 		
 		if (newCapacity < count)
 			newCapacity = count;
 		
 		return newCapacity;
-	}
-
-	/// Estimates the maximum number of elements that may be constructed.
-	LEAN_INLINE size_type max_size() const
-	{
-		return s_maxSize;
 	}
 
 	/// Swaps the contents of this hash map and the given hash map.
@@ -1060,6 +1075,11 @@ public:
 		swap(m_keyEqual, right.m_keyEqual);
 		swap(m_hasher, right.m_hasher);
 		base_type::swap(right);
+	}
+	/// Estimates the maximum number of elements that may be constructed.
+	LEAN_INLINE size_type max_size() const
+	{
+		return base_type::max_size();
 	}
 };
 

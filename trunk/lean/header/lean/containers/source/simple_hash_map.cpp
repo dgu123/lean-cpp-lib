@@ -60,9 +60,9 @@ LEAN_MAYBE_LINK size_t lean::containers::impl::next_prime_capacity(size_t capaci
 	static const size_t primeCount = sizeof(primes) / sizeof(primes[0]) - 1U;
 
 	// Smallest prime number.
-	static const uint4 primeThreshold = 2U;
+	static const uint4 primeThreshold = primes[0];
 	// Largest prime number in 4 byte unsigned integer.
-	static const uint4 largePrimeThreshold = 4294967291U;
+	static const uint4 largePrimeThreshold = primes[primeCount];
 
 	// 32 bit size or request <= primeThreshold
 	if (sizeof(size_t) <= sizeof(uint4) || capacity <= largePrimeThreshold || max <= largePrimeThreshold)

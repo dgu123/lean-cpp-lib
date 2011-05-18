@@ -499,9 +499,11 @@ protected:
 	LEAN_INLINE void move(value_type_ *dest, value_type_ &source)
 	{
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
-		*dest = std::move(source);
+		const_cast<Key&>(dest->first) = std::move(const_cast<Key&>(source.first));
+		dest->second = std::move(source.second);
 #else
-		*dest = source;
+		const_cast<Key&>(dest->first) = const_cast<Key&>(source.first);
+		dest->second = source.second;
 #endif
 	}
 	
@@ -634,8 +636,7 @@ private:
 					for (value_type_ *element = m_elements; element != m_elementsEnd; ++element)
 						if (key_valid(element->first))
 							move_construct(
-								// Oh dear, locale_element works with old pointers!
-								locate_element(element->first).second,
+								locate_element(element->first, newElements, newElementsEnd, newBucketCount).second,
 								*element );
 				}
 				catch(...)
@@ -684,14 +685,24 @@ private:
 	/// Gets the first element that might contain the given key.
 	LEAN_INLINE value_type_* first_element(const Key &key) const
 	{
-		return m_elements + m_hasher(key) % bucket_count();
+		return first_element(key, m_elements, bucket_count());
+	}
+	/// Gets the first element that might contain the given key.
+	LEAN_INLINE value_type_* first_element(const Key &key, value_type_ *elements, size_type_ bucketCount) const
+	{
+		return elements + m_hasher(key) % bucketCount;
 	}
 	/// Gets the element stored under the given key and returns false if existent, otherwise returns true and gets a fitting open element slot.
-	std::pair<bool, value_type_*> locate_element(const Key &key) const
+	LEAN_INLINE std::pair<bool, value_type_*> locate_element(const Key &key) const
+	{
+		return locate_element(key, m_elements, m_elementsEnd, bucket_count());
+	}
+	/// Gets the element stored under the given key and returns false if existent, otherwise returns true and gets a fitting open element slot.
+	std::pair<bool, value_type_*> locate_element(const Key &key, value_type_ *elements, value_type_ *elementsEnd, size_type_ bucketCount) const
 	{
 		LEAN_ASSERT(key_valid(key));
 
-		value_type_ *element = first_element(key);
+		value_type_ *element = first_element(key, elements, bucketCount);
 		
 		while (key_valid(element->first))
 		{
@@ -699,8 +710,8 @@ private:
 				return std::make_pair(false, element);
 			
 			// Wrap around
-			if (++element == m_elementsEnd)
-				element = m_elements;
+			if (++element == elementsEnd)
+				element = elements;
 
 			// ASSERT: One slot always remains open, automatically terminating this loop
 		}

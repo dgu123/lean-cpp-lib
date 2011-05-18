@@ -41,6 +41,22 @@ BOOST_AUTO_TEST_CASE( int_pod )
 		BOOST_CHECK_EQUAL(3 * itElem->first, itElem->second);
 
 	// erase
+	for (int i = 0; i < count; i += 100)
+		map.erase(i);
+
+	for (int i = 0; i < count; ++i)
+	{
+		map_type::iterator itElem = map.find(i);
+
+		if (i % 100)
+		{
+			BOOST_CHECK(itElem != map.end());
+			BOOST_CHECK_EQUAL(itElem->first, i);
+			BOOST_CHECK_EQUAL(itElem->second, 3 * i);
+		}
+		else
+			BOOST_CHECK(itElem == map.end());
+	}
 
 	// clear
 	map.clear();

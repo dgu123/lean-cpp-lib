@@ -1,3 +1,7 @@
+#ifdef LEAN_BUILD_LIB
+#include "../../depconfig.h"
+#endif
+
 #include "../win_errors.h"
 #include "../exceptions.h"
 #include "../../strings/utility.h"

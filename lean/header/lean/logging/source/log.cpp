@@ -1,3 +1,7 @@
+#ifdef LEAN_BUILD_LIB
+#include "../../depconfig.h"
+#endif
+
 #include "../log.h"
 #include <sstream>
 #include <algorithm>

@@ -82,6 +82,9 @@
     <Filter Include="Header Files\functional">
       <UniqueIdentifier>{496aadd8-b1dd-4259-99d6-5c7a2971ab9a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\containers">
+      <UniqueIdentifier>{80228357-14f3-4861-8647-61504697e831}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -466,6 +469,9 @@
     </ClCompile>
     <ClCompile Include="header\lean\io\source\mapped_file.cpp">
       <Filter>Source Files\io</Filter>
+    </ClCompile>
+    <ClCompile Include="header\lean\containers\source\simple_hash_map.cpp">
+      <Filter>Source Files\containers</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

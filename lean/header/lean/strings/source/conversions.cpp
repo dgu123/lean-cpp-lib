@@ -1,5 +1,5 @@
 #ifdef LEAN_BUILD_LIB
-#include "lean/config/windows.h"
+#include "../../depconfig.h"
 #endif
 
 #include "../conversions.h"

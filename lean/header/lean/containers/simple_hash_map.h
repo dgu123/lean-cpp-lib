@@ -625,6 +625,20 @@ private:
 
 		terminateGuard.disarm();
 	}
+	/// Copies all elements from the given hash map into this _empty_ hash map of sufficient capacity.
+	LEAN_INLINE void copy_elements_to_empty(const value_type_ *elements, const value_type_ *elementsEnd)
+	{
+		LEAN_ASSERT(empty());
+
+		for (value_type *element = elements; element != elementsEnd; ++element)
+			if (key_valid(element->first))
+			{
+				copy_construct(
+					locate_element(element->first).second,
+					*element );
+				++m_count;
+			}
+	}
 
 	/// Grows hash map storage to fit the given new count.
 	LEAN_INLINE void growTo(size_type_ newCount)
@@ -814,7 +828,11 @@ public:
 		m_hasher(right.m_hasher),
 		m_keyEqual(right.m_keyEqual)
 	{
-		assign(right.begin(), right.end());
+		if (!right.empty())
+		{
+			growTo(right.size());
+			copy_elements_to_empty(right.m_elements, right.m_elementsEnd);
+		}
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given hash map to this hash map.
@@ -839,7 +857,18 @@ public:
 	simple_hash_map& operator =(const simple_hash_map &right)
 	{
 		if (&right != this)
-			assign(right.begin(), right.end());
+		{
+			// Clear before reallocation to prevent full-range moves
+			clear();
+
+			if (!right.empty())
+			{
+				if (right.size() > capacity())
+					growToHL(right.size());
+				
+				copy_elements_to_empty(right.m_elements, right.m_elementsEnd);
+			}
+		}
 		return *this;
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
@@ -861,24 +890,6 @@ public:
 		return *this;
 	}
 #endif
-
-	/// Assigns the given range of elements to this hash map.
-	template <class Iterator>
-	void assign(Iterator source, Iterator sourceEnd)
-	{
-		LEAN_ASSERT(source <= sourceEnd);
-
-		// Clear before reallocation to prevent full-range moves
-		clear();
-
-		size_type count = sourceEnd - source;
-
-		if (count > capacity())
-			growToHL(count);
-
-		while (source != sourceEnd)
-			insert(*(source++));
-	}
 
 	/// Inserts a default-constructed value into the hash map using the given key, if none
 	/// stored under the given key yet, otherwise returns the one currently stored.
@@ -983,6 +994,10 @@ public:
 	/// Reserves space for the predicted number of elements given.
 	LEAN_INLINE void reserve(size_type newCapacity)
 	{
+		// Mind overflow
+		if (newCapacity > s_maxSize)
+			length_exceeded();
+
 		if (newCapacity > capacity())
 			reallocate(buckets_from_capacity(newCapacity), newCapacity);
 	}
@@ -990,7 +1005,11 @@ public:
 	/// The hash map will never shrink below the number of elements currently stored.
 	LEAN_INLINE void rehash(size_type newCapacity)
 	{
-		newCapacity = max(count(), newCapacity);
+		newCapacity = max(size(), newCapacity);
+
+		// Mind overflow
+		if (newCapacity > s_maxSize)
+			length_exceeded();
 
 		if (newCapacity != capacity())
 			reallocate(buckets_from_capacity(newCapacity), newCapacity);

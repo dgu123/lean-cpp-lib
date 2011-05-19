@@ -61,11 +61,10 @@ struct default_keys
 	/// Valid key value used as end marker. May still be used in actual key-value-pairs.
 	static const Key end_key;
 	/// Predicate used in key validity checks.
-	struct key_equal
+	LEAN_INLINE static bool is_valid(const Key &key)
 	{
-		/// Predicate.
-		static const std::equal_to<Key> predicate;		
-	};
+		return (key != invalid_key);
+	}
 };
 
 // Numeric (generic) defaults
@@ -78,8 +77,6 @@ const Key default_keys<Key>::invalid_key =
 			: numeric_limits<Key>::min;
 template <class Key>
 const Key default_keys<Key>::end_key = Key();
-template <class Key>
-const std::equal_to<Key> default_keys<Key>::key_equal::predicate = std::equal_to<Key>();
 
 // Pointer defaults
 template <class Value>
@@ -87,18 +84,17 @@ struct default_keys<Value*>
 {
 	static Value* const invalid_key;
 	static Value* const end_key;
-	struct key_equal
+
+	LEAN_INLINE static bool is_valid(Value *ptr)
 	{
-		static const std::equal_to<Value*> predicate;		
-	};
+		return (ptr != nullptr);
+	}
 };
 
 template <class Value>
 Value* const default_keys<Value*>::invalid_key = nullptr;
 template <class Value>
 Value* const default_keys<Value*>::end_key = reinterpret_cast<Value*>( static_cast<uintptr_t>(-1) );
-template <class Value>
-const std::equal_to<Value*> default_keys<Value*>::key_equal::predicate = std::equal_to<Value*>();
 
 // String defaults
 template <class Char, class Traits, class Allocator>
@@ -108,10 +104,11 @@ struct default_keys< std::basic_string<Char, Traits, Allocator> >
 
 	static const key_type invalid_key;
 	static const key_type end_key;
-	struct key_equal
+
+	LEAN_INLINE static bool is_valid(const key_type &key)
 	{
-		static const std::equal_to<key_type> predicate;		
-	};
+		return !key.empty();
+	}
 };
 
 template <class Char, class Traits, class Allocator>
@@ -120,9 +117,6 @@ const std::basic_string<Char, Traits, Allocator>
 template <class Char, class Traits, class Allocator>
 const std::basic_string<Char, Traits, Allocator>
 	default_keys< std::basic_string<Char, Traits, Allocator> >::end_key = std::basic_string<Char, Traits, Allocator>(1, Char());
-template <class Char, class Traits, class Allocator>
-const std::equal_to< std::basic_string<Char, Traits, Allocator> >
-	default_keys< std::basic_string<Char, Traits, Allocator> >::key_equal::predicate = std::equal_to< std::basic_string<Char, Traits, Allocator> >();
 
 namespace impl
 {
@@ -431,7 +425,7 @@ protected:
 #endif
 
 	/// Returns true if the given key is valid.
-	LEAN_INLINE static bool key_valid(const Key &key) { return !KeyValues::key_equal::predicate(key, KeyValues::invalid_key); }
+	LEAN_INLINE static bool key_valid(const Key &key) { return KeyValues::is_valid(key); }
 
 	/// Swaps the contents of this hash map base and the given hash map base.
 	LEAN_INLINE void swap(simple_hash_map_base &right) throw()
@@ -503,7 +497,7 @@ private:
 					LEAN_ASSERT(size() < newBucketCount);
 
 					for (value_type_ *element = m_elements; element != m_elementsEnd; ++element)
-						if (key_valid(element->first))
+						if (base_type::key_valid(element->first))
 							move_construct(
 								locate_element(element->first, newElements, newElementsEnd, newBucketCount).second,
 								*element );
@@ -566,13 +560,13 @@ private:
 		return locate_element(key, m_elements, m_elementsEnd, bucket_count());
 	}
 	/// Gets the element stored under the given key and returns false if existent, otherwise returns true and gets a fitting open element slot.
-	std::pair<bool, value_type_*> locate_element(const Key &key, value_type_ *elements, value_type_ *elementsEnd, size_type_ bucketCount) const
+	LEAN_INLINE std::pair<bool, value_type_*> locate_element(const Key &key, value_type_ *elements, value_type_ *elementsEnd, size_type_ bucketCount) const
 	{
-		LEAN_ASSERT(key_valid(key));
+		LEAN_ASSERT(base_type::key_valid(key));
 
 		value_type_ *element = first_element(key, elements, bucketCount);
 		
-		while (key_valid(element->first))
+		while (base_type::key_valid(element->first))
 		{
 			if (m_keyEqual(element->first, key))
 				return std::make_pair(false, element);
@@ -591,7 +585,7 @@ private:
 	{
 		value_type_ *element = first_element(key);
 		
-		while (key_valid(element->first))
+		while (base_type::key_valid(element->first))
 		{
 			if (m_keyEqual(element->first, key))
 				return element;
@@ -618,7 +612,7 @@ private:
 			element = m_elements;
 
 		// Find next empty position
-		while (key_valid(element->first))
+		while (base_type::key_valid(element->first))
 		{
 			value_type_ *auxElement = first_element(element->first);
 			
@@ -652,7 +646,7 @@ private:
 		LEAN_ASSERT(empty());
 
 		for (value_type *element = elements; element != elementsEnd; ++element)
-			if (key_valid(element->first))
+			if (base_type::key_valid(element->first))
 			{
 				copy_construct(
 					locate_element(element->first).second,
@@ -916,7 +910,7 @@ public:
 	/// stored under the given key yet, otherwise returns the one currently stored.
 	LEAN_INLINE reference insert(const key_type &key)
 	{
-		LEAN_ASSERT(key_valid(key));
+		LEAN_ASSERT(base_type::key_valid(key));
 
 		if (m_count == capacity())
 			growHL(1);
@@ -933,7 +927,7 @@ public:
 	/// Inserts the given key-value-pair into this hash map.
 	LEAN_INLINE std::pair<bool, iterator> insert(const value_type &value)
 	{
-		LEAN_ASSERT(key_valid(value.first));
+		LEAN_ASSERT(base_type::key_valid(value.first));
 
 		if (m_count == capacity())
 		{
@@ -956,7 +950,7 @@ public:
 	/// Inserts the given key-value-pair into this hash map.
 	LEAN_INLINE std::pair<bool, iterator> insert(value_type &&value)
 	{
-		LEAN_ASSERT(key_valid(value.first));
+		LEAN_ASSERT(base_type::key_valid(value.first));
 
 		if (m_count == capacity())
 		{

@@ -13,6 +13,7 @@
 #include <lean/time/highres_timer.h>
 
 #include <iostream>
+#include <random>
 
 inline void print_results(const char *test, const char *name1, double time1, const char *name2, double time2)
 {

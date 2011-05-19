@@ -429,6 +429,9 @@
     <ClInclude Include="header\lean\functional\hashing.h">
       <Filter>Header Files\functional</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\limits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

@@ -6,6 +6,7 @@
 #define LEAN_CONTAINERS_SIMPLE_HASH_MAP
 
 #include "../lean.h"
+#include "../limits.h"
 #include "../smart/terminate_guard.h"
 #include "../tags/noncopyable.h"
 #include "../functional/hashing.h"
@@ -13,7 +14,6 @@
 #include <utility>
 #include <cmath>
 #include <functional>
-#include <limits>
 #include <string>
 
 namespace lean 
@@ -52,45 +52,6 @@ namespace simple_hash_map_policies
 	typedef policy<true, true> pod;
 }
 
-namespace impl
-{
-	template <class Key>
-	struct default_numeric_keys
-	{
-		LEAN_STATIC_ASSERT_MSG_ALT(std::numeric_limits<Key>::is_specialized,
-			"No invalid key default available for the given type.",
-			No_invalid_key_default_available_for_the_given_type);
-
-		// WORKAROUND: Using methods here circumvents compiler bug that won't initialize some static constant variables
-		// when these are copied from to initialize other constant static variables
-		LEAN_INLINE static Key invalid_key()
-		{
-			return (std::numeric_limits<Key>::has_infinity)
-				? std::numeric_limits<Key>::infinity()
-				: (std::numeric_limits<Key>::min() != Key())
-					? std::numeric_limits<Key>::min()
-					: std::numeric_limits<Key>::max();
-		}
-		LEAN_INLINE static Key end_key()
-		{
-			return Key();
-		}
-	};
-
-	template <class Key>
-	struct default_numeric_keys<Key*>
-	{
-		LEAN_INLINE static Key* invalid_key()
-		{
-			return nullptr;
-		}
-		LEAN_INLINE static Key* end_key()
-		{
-			return reinterpret_cast<Key*>( static_cast<uintptr_t>(-1) );
-		}
-	};
-}
-
 /// Defines default values for invalid & end keys.
 template <class Key>
 struct default_keys
@@ -107,11 +68,39 @@ struct default_keys
 	};
 };
 
-// Numeric / generic defaults
-template <class Key> const Key default_keys<Key>::invalid_key = impl::default_numeric_keys<Key>::invalid_key();
-template <class Key> const Key default_keys<Key>::end_key = impl::default_numeric_keys<Key>::end_key();
-template <class Key> const std::equal_to<Key> default_keys<Key>::key_equal::predicate = std::equal_to<Key>();
+// Numeric (generic) defaults
+template <class Key>
+const Key default_keys<Key>::invalid_key =
+	(numeric_limits<Key>::has_infinity)
+		? numeric_limits<Key>::infinity
+		: (numeric_limits<Key>::is_unsigned)
+			? numeric_limits<Key>::max
+			: numeric_limits<Key>::min;
+template <class Key>
+const Key default_keys<Key>::end_key = Key();
+template <class Key>
+const std::equal_to<Key> default_keys<Key>::key_equal::predicate = std::equal_to<Key>();
 
+// Pointer defaults
+template <class Value>
+struct default_keys<Value*>
+{
+	static Value* const invalid_key;
+	static Value* const end_key;
+	struct key_equal
+	{
+		static const std::equal_to<Value*> predicate;		
+	};
+};
+
+template <class Value>
+Value* const default_keys<Value*>::invalid_key = nullptr;
+template <class Value>
+Value* const default_keys<Value*>::end_key = reinterpret_cast<Value*>( static_cast<uintptr_t>(-1) );
+template <class Value>
+const std::equal_to<Value*> default_keys<Value*>::key_equal::predicate = std::equal_to<Value*>();
+
+// String defaults
 template <class Char, class Traits, class Allocator>
 struct default_keys< std::basic_string<Char, Traits, Allocator> >
 {
@@ -125,7 +114,6 @@ struct default_keys< std::basic_string<Char, Traits, Allocator> >
 	};
 };
 
-// String defaults
 template <class Char, class Traits, class Allocator>
 const std::basic_string<Char, Traits, Allocator>
 	default_keys< std::basic_string<Char, Traits, Allocator> >::invalid_key = std::basic_string<Char, Traits, Allocator>();

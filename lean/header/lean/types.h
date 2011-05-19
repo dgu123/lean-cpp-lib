@@ -6,7 +6,19 @@
 #define LEAN_TYPES
 
 #include <cstddef>
-#include <limits>
+#include <climits>
+#include "cpp0x.h"
+
+#ifdef DOXYGEN_READ_THIS
+	/// Define this if sizeof(long) != sizeof(int).
+	/// @ingroup GlobalSwitches
+	#define LEAN_LONG_LONGER
+	#undef LEAN_LONG_LONGER
+	/// Define this if sizeof(short) == sizeof(int).
+	/// @ingroup GlobalSwitches
+	#define LEAN_INT_SHORTER
+	#undef LEAN_INT_SHORTER
+#endif
 
 namespace lean
 {
@@ -43,13 +55,23 @@ struct int_type
 
 // Defaults that should work with most compilers
 template<> struct int_type<sign_class::sign, sizeof(char)> { typedef char type; };
+#ifndef LEAN_INT_SHORTER
 template<> struct int_type<sign_class::sign, sizeof(short)> { typedef short type; };
+#endif
 template<> struct int_type<sign_class::sign, sizeof(int)> { typedef int type; };
+#ifdef LEAN_LONG_LONGER
+template<> struct int_type<sign_class::sign, sizeof(long)> { typedef long type; };
+#endif
 template<> struct int_type<sign_class::sign, sizeof(long long)> { typedef long long type; };
 
 template<> struct int_type<sign_class::no_sign, sizeof(unsigned char)> { typedef unsigned char type; };
+#ifndef LEAN_INT_SHORTER
 template<> struct int_type<sign_class::no_sign, sizeof(unsigned short)> { typedef unsigned short type; };
+#endif
 template<> struct int_type<sign_class::no_sign, sizeof(unsigned int)> { typedef unsigned int type; };
+#ifdef LEAN_LONG_LONGER
+template<> struct int_type<sign_class::sign, sizeof(unsigned long)> { typedef unsigned long type; };
+#endif
 template<> struct int_type<sign_class::no_sign, sizeof(unsigned long long)> { typedef unsigned long long type; };
 
 #endif

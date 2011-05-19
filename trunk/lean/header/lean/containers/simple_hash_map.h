@@ -351,6 +351,17 @@ protected:
 			m_allocator.destroy(destr);
 	}
 
+	/// Destructs both valid and invalid elements in the given range.
+	void destruct(value_type_ *destr, value_type_ *destrEnd)
+	{
+		if (!Policy::no_destruct || !Policy::no_key_destruct)
+			for (; destr != destrEnd; ++destr)
+				if (key_valid(destr->first))
+					destruct_element(destr);
+				else
+					destruct_key(destr);
+	}
+
 	/// Triggers an out of range error.
 	LEAN_NOINLINE static void length_exceeded()
 	{
@@ -398,6 +409,9 @@ protected:
 	LEAN_INLINE simple_hash_map_base& operator =(simple_hash_map_base&&) { return *this; }
 #endif
 
+	/// Returns true if the given key is valid.
+	LEAN_INLINE static bool key_valid(const Key &key) { return !KeyValues::key_equal::predicate(key, KeyValues::invalid_key); }
+
 	/// Swaps the contents of this hash map base and the given hash map base.
 	LEAN_INLINE void swap(simple_hash_map_base &right) throw()
 	{
@@ -429,34 +443,23 @@ private:
 	typedef Pred key_equal_;
 	key_equal_ m_keyEqual;
 
-	/// Destructs both valid and invalid elements in the given range.
-	void destruct(value_type_ *destr, value_type_ *destrEnd)
-	{
-		if (!Policy::no_destruct || !Policy::no_key_destruct)
-			for (; destr != destrEnd; ++destr)
-				if (key_valid(destr->first))
-					destruct_element(destr);
-				else
-					destruct_key(destr);
-	}
-
 	/// Allocates space for the given number of elements.
 	void reallocate(size_type_ newBucketCount, size_type_ minCapacity = 0U)
 	{
 		// Make prime (required for universal modulo hashing)
 		newBucketCount = impl::next_prime_capacity(newBucketCount, s_maxBucketCount);
-
+		
 		// Guarantee minimum capacity
 		// ASSERT: One slot always remains open, automatically terminating find loops
 		if (newBucketCount <= minCapacity)
 			length_exceeded();
-
+		
 		// Use end element to allow for proper iteration termination
 		const size_type_ newElementCount = newBucketCount + 1U;
-
+		
 		value_type_ *newElements = m_allocator.allocate(newElementCount);
 		value_type_ *newElementsEnd = newElements + newBucketCount;
-
+		
 		try
 		{
 			// ASSERT: End element key always valid to allow for proper iteration termination
@@ -471,7 +474,7 @@ private:
 				destruct_key(newElementsEnd);
 				throw;
 			}
-
+			
 			if (!empty())
 				try
 				{
@@ -504,11 +507,17 @@ private:
 		m_elements = newElements;
 		m_elementsEnd = newElementsEnd;
 		m_capacity = capacity_from_buckets(newBucketCount, minCapacity);
-
+		
 		if (oldElements)
 			free(oldElements, oldElementsEnd, oldBucketCount + 1U);
 	}
-
+	
+	/// Frees all elements.
+	LEAN_INLINE void free()
+	{
+		if (m_elements)
+			free(m_elements, m_elementsEnd, bucket_count() + 1U);
+	}
 	/// Frees the given elements.
 	LEAN_INLINE void free(value_type_ *elements, value_type_ *elementsEnd, size_type_ elementCount)
 	{
@@ -518,13 +527,6 @@ private:
 		destruct(elements, elementsEnd);
 		destruct_key(elementsEnd);
 		m_allocator.deallocate(elements, elementCount);
-	}
-
-	/// Frees all elements.
-	LEAN_INLINE void free()
-	{
-		if (m_elements)
-			free(m_elements, m_elementsEnd, bucket_count() + 1U);
 	}
 
 	/// Gets the first element that might contain the given key.
@@ -589,7 +591,6 @@ private:
 		terminate_guard terminateGuard;
 
 		value_type_ *hole = element;
-		--m_count;
 		
 		// Wrap around
 		if (++element == m_elementsEnd)
@@ -620,6 +621,7 @@ private:
 
 		destruct_element(hole);
 		invalidate(hole);
+		--m_count;
 
 		terminateGuard.disarm();
 	}
@@ -627,7 +629,11 @@ private:
 	/// Grows hash map storage to fit the given new count.
 	LEAN_INLINE void growTo(size_type_ newCount)
 	{
-		reallocate(buckets_from_capacity(grow_to_capacity_hint(newCount)), newCount);
+		// Mind overflow
+		if (newCount > s_maxSize)
+			length_exceeded();
+
+		reallocate(buckets_from_capacity(next_capacity_hint(newCount)), newCount);
 	}
 	/// Grows hash map storage to fit the given additional number of elements.
 	LEAN_INLINE void grow(size_type_ count)
@@ -674,7 +680,7 @@ public:
 		/// Constructs an iterator from the given element or the next valid element, should the current element prove invalid.
 		LEAN_INLINE basic_iterator(Element *element, search_first_valid_t)
 			: m_element(
-				(!key_valid(element->first))
+				(element && !base_type::key_valid(element->first))
 					? (++basic_iterator(element)).m_element
 					: element
 				) { }
@@ -706,7 +712,7 @@ public:
 				++m_element;
 			}
 			// ASSERT: End element key is always valid
-			while (!key_valid(m_element->first));
+			while (!base_type::key_valid(m_element->first));
 
 			return *this;
 		}
@@ -768,14 +774,13 @@ public:
 		: base_type(0.75f)
 	{
 		LEAN_ASSERT(key_valid(KeyValues::end_key));
-		reallocate(s_minSize);
 	}
 	/// Constructs an empty hash map.
 	explicit simple_hash_map(size_type capacity, float maxLoadFactor = 0.75f)
 		: base_type(maxLoadFactor)
 	{
 		LEAN_ASSERT(key_valid(KeyValues::end_key));
-		growTo( max(capacity, s_minSize) );
+		growTo(capacity);
 	}
 	/// Constructs an empty hash map.
 	simple_hash_map(size_type capacity, float maxLoadFactor, const hasher& hash)
@@ -783,7 +788,7 @@ public:
 		m_hasher(hash)
 	{
 		LEAN_ASSERT(key_valid(KeyValues::end_key));
-		growTo( max(capacity, s_minSize) );
+		growTo(capacity);
 	}
 	/// Constructs an empty hash map.
 	simple_hash_map(size_type capacity, float maxLoadFactor, const hasher& hash, const key_equal& keyComp)
@@ -792,7 +797,7 @@ public:
 		m_keyEqual(keyComp)
 	{
 		LEAN_ASSERT(key_valid(KeyValues::end_key));
-		growTo( max(capacity, s_minSize) );
+		growTo(capacity);
 	}
 	/// Constructs an empty hash map.
 	simple_hash_map(size_type capacity, float maxLoadFactor, const hasher& hash, const key_equal& keyComp, const allocator_type &allocator)
@@ -801,7 +806,7 @@ public:
 		m_keyEqual(keyComp)
 	{
 		LEAN_ASSERT(key_valid(KeyValues::end_key));
-		growTo( max(capacity, s_minSize) );
+		growTo(capacity);
 	}
 	/// Copies all elements from the given hash map to this hash map.
 	simple_hash_map(const simple_hash_map &right)
@@ -942,7 +947,10 @@ public:
 	/// Removes the element stored under the given key, if any.
 	LEAN_INLINE size_type erase(const key_type &key)
 	{
-		value_type* element = find_element(key);
+		// Explicitly handle unallocated state
+		value_type* element = (empty())
+			? m_elementsEnd
+			: find_element(key);
 
 		if (element != m_elementsEnd)
 		{
@@ -989,9 +997,9 @@ public:
 	}
 
 	/// Gets an element by key, returning end() on failure.
-	LEAN_INLINE iterator find(const key_type &key) { return iterator(find_element(key)); }
+	LEAN_INLINE iterator find(const key_type &key) { return (empty()) ? end() : iterator(find_element(key)); }
 	/// Gets an element by key, returning end() on failure.
-	LEAN_INLINE const_iterator find(const key_type &key) const { return const_iterator(find_element(key)); }
+	LEAN_INLINE const_iterator find(const key_type &key) const { return (empty()) ? end() : const_iterator(find_element(key)); }
 
 	/// Gets an element by key, inserts a new default-constructed one if none existent yet.
 	LEAN_INLINE reference operator [](const key_type &key) { return insert(key); }
@@ -1009,7 +1017,7 @@ public:
 	LEAN_INLINE allocator_type get_allocator() const { return m_allocator; };
 
 	/// Returns true if the given key is valid.
-	LEAN_INLINE static bool key_valid(const key_type &key) { return !KeyValues::key_equal::predicate(key, KeyValues::invalid_key); }
+	LEAN_INLINE bool key_valid(const key_type &key) const { return base_type::key_valid(key); }
 
 	/// Returns true if the hash map is empty.
 	LEAN_INLINE bool empty(void) const { return (m_count == 0); };
@@ -1038,7 +1046,7 @@ public:
 	LEAN_INLINE float load_factor() const { return static_cast<float>(m_count) / static_cast<float>(m_capacity); };
 
 	/// Computes a new capacity based on the given number of elements to be stored.
-	size_type grow_to_capacity_hint(size_type count) const
+	size_type next_capacity_hint(size_type count) const
 	{
 		size_type oldCapacity = capacity();
 		LEAN_ASSERT(oldCapacity <= s_maxSize);
@@ -1047,12 +1055,12 @@ public:
 		size_type newCapacity = (s_maxSize - oldCapacity < oldCapacity)
 			? 0
 			: oldCapacity + oldCapacity;
-
-		// Mind overflow
-		LEAN_ASSERT(count <= s_maxSize);
 		
 		if (newCapacity < count)
 			newCapacity = count;
+
+		if (newCapacity < s_minSize)
+			newCapacity = s_minSize;
 		
 		return newCapacity;
 	}

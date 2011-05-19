@@ -120,6 +120,9 @@ const std::basic_string<Char, Traits, Allocator>
 template <class Char, class Traits, class Allocator>
 const std::basic_string<Char, Traits, Allocator>
 	default_keys< std::basic_string<Char, Traits, Allocator> >::end_key = std::basic_string<Char, Traits, Allocator>(1, Char());
+template <class Char, class Traits, class Allocator>
+const std::equal_to< std::basic_string<Char, Traits, Allocator> >
+	default_keys< std::basic_string<Char, Traits, Allocator> >::key_equal::predicate = std::equal_to< std::basic_string<Char, Traits, Allocator> >();
 
 namespace impl
 {
@@ -362,6 +365,24 @@ protected:
 					destruct_key(destr);
 	}
 
+	/// Destructs and invalidates valid elements in the given range.
+	void destruct_and_invalidate(value_type_ *destr, value_type_ *destrEnd)
+	{
+		// Elements invalidated (overwritten) by guard on exception
+		invalidate_n_guard invalidateGuard(destr, destrEnd);
+
+		for (; destr != destrEnd; ++destr)
+			if (key_valid(destr->first))
+			{
+				// Don't handle exceptions explicitly, resources leaking anyways
+				destruct_element(destr);
+				invalidate(destr);
+			}
+
+		// Everything has been invalidated correctly
+		invalidateGuard.disarm();
+	}
+
 	/// Triggers an out of range error.
 	LEAN_NOINLINE static void length_exceeded()
 	{
@@ -562,7 +583,7 @@ private:
 
 			// ASSERT: One slot always remains open, automatically terminating this loop
 		}
-
+		
 		return std::make_pair(true, element);
 	}
 	/// Gets the element stored under the given key, if existent, returns end otherwise.
@@ -959,9 +980,9 @@ public:
 	LEAN_INLINE size_type erase(const key_type &key)
 	{
 		// Explicitly handle unallocated state
-		value_type* element = (empty())
-			? m_elementsEnd
-			: find_element(key);
+		value_type* element = (!empty())
+			? find_element(key)
+			: m_elementsEnd;
 
 		if (element != m_elementsEnd)
 		{
@@ -983,12 +1004,8 @@ public:
 	/// Clears all elements from this hash map.
 	LEAN_INLINE void clear()
 	{
-		// Elements invalidated by guard in all cases
-		invalidate_n_guard invalidateGuard(m_elements, m_elementsEnd);
 		m_count = 0;
-
-		// Don't handle exceptions, memory leaking anyways
-		destruct(m_elements, m_elementsEnd);
+		destruct_and_invalidate(m_elements, m_elementsEnd);
 	}
 
 	/// Reserves space for the predicted number of elements given.
@@ -1016,12 +1033,12 @@ public:
 	}
 
 	/// Gets an element by key, returning end() on failure.
-	LEAN_INLINE iterator find(const key_type &key) { return (empty()) ? end() : iterator(find_element(key)); }
+	LEAN_INLINE iterator find(const key_type &key) { return (!empty()) ? iterator(find_element(key)) : end(); }
 	/// Gets an element by key, returning end() on failure.
-	LEAN_INLINE const_iterator find(const key_type &key) const { return (empty()) ? end() : const_iterator(find_element(key)); }
+	LEAN_INLINE const_iterator find(const key_type &key) const { return (!empty()) ? const_iterator(find_element(key)) : end(); }
 
 	/// Gets an element by key, inserts a new default-constructed one if none existent yet.
-	LEAN_INLINE reference operator [](const key_type &key) { return insert(key); }
+	LEAN_INLINE mapped_type& operator [](const key_type &key) { return insert(key).second; }
 
 	/// Returns an iterator to the first element contained by this hash map.
 	LEAN_INLINE iterator begin(void) { return iterator(m_elements, iterator::search_first_valid); }

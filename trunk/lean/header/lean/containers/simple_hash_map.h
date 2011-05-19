@@ -136,8 +136,9 @@ const std::basic_string<Char, Traits, Allocator>
 namespace impl
 {
 
-/// Gets the first prime number available that is both less than or equal to the given maximum value
-/// and greater than or equal to the given capacity, if possible.
+/// Gets the first prime number available that is greater than or equal to the given capacity,
+/// may only return a prime number smaller than the given capacity when the actual result would
+/// be greater than the given maximum value.
 LEAN_MAYBE_EXPORT size_t next_prime_capacity(size_t capacity, size_t max);
 
 /// Simple hash map base.
@@ -161,60 +162,45 @@ protected:
 	size_type_ m_capacity;
 
 	float m_maxLoadFactor;
-	
-	static const size_type_ s_maxElements = static_cast<size_type_>(-1) / sizeof(value_type_);
 
+	static const size_type_ s_maxElementCount = static_cast<size_type_>(-1) / sizeof(value_type_);
 	// Make sure size_type is unsigned
-	LEAN_STATIC_ASSERT(s_maxElements > static_cast<size_type_>(0));
-
-	/// Gets the maximum number of buckets.
-	LEAN_INLINE static size_type_ max_bucket_count()
-	{
-		// Reserve end element to allow for proper iteration termination
-		static const size_type_ maxBuckets = s_maxElements - 1U;
-		// Max prime number probably lower
-		static const size_type_ maxPrimeBuckets = next_prime_capacity(maxBuckets, maxBuckets);
-
-		return maxPrimeBuckets;
-	}
-	/// Gets the maximum number of elements that may actually be stored.
-	LEAN_INLINE static size_type_ max_size()
-	{
-		// Keep one slot open at all times to simplify wrapped find loop termination conditions
-		static const size_type_ maxSize = max_bucket_count() - 1U;
-
-		return maxSize;
-	}
-	/// Gets the minimum number of elements that may be allocated.
-	LEAN_INLINE static size_type_ min_size()
-	{
-		static const size_type_ minSize = (32U < max_size()) ? 32U : max_size();
-
-		return minSize;
-	}
+	LEAN_STATIC_ASSERT(s_maxElementCount > static_cast<size_type_>(0));
+	// Reserve end element to allow for proper iteration termination
+	static const size_type_ s_maxBucketCount = s_maxElementCount - 1U;
+	// Keep one slot open at all times to simplify wrapped find loop termination
+	static const size_type_ s_maxSize = s_maxBucketCount - 1U;
+	static const size_type_ s_minSize = (32U < s_maxSize) ? 32U : s_maxSize;
 
 	/// Gets the number of buckets required from the given capacity.
 	LEAN_INLINE size_type_ buckets_from_capacity(size_type_ capacity)
 	{
-		LEAN_ASSERT(capacity <= max_size());
+		LEAN_ASSERT(capacity <= s_maxSize);
 
 		float bucketHint = ceil(capacity / m_maxLoadFactor);
 		
-		size_type_ bucketCount = (bucketHint >= max_size())
-			? max_size()
+		size_type_ bucketCount = (bucketHint >= s_maxBucketCount)
+			? s_maxBucketCount
 			: static_cast<size_type_>(bucketHint);
 
 		// Keep one slot open at all times to simplify wrapped find loop termination conditions
-		return max(bucketCount, capacity) + 1U;
+		return max(bucketCount, capacity + 1U);
 	}
 	/// Gets the capacity from the given number of buckets.
-	LEAN_INLINE size_type_ capacity_from_buckets(size_type_ buckets)
+	LEAN_INLINE size_type_ capacity_from_buckets(size_type_ buckets, size_type_ minCapacity)
 	{
+		LEAN_ASSERT(buckets <= s_maxBucketCount);
+		LEAN_ASSERT(minCapacity <= s_maxSize);
+
 		// Keep one slot open at all times to simplify wrapped find loop termination conditions
-		// -> Unsigned overflow handles buckets == 0
-		return min(
-			static_cast<size_type_>(buckets * m_maxLoadFactor),
-			buckets - 1U );
+		LEAN_ASSERT(minCapacity < buckets);
+
+		return max(
+				// Keep one slot open at all times to simplify wrapped find loop termination conditions
+				// -> Unsigned overflow handles buckets == 0
+				min(static_cast<size_type_>(buckets * m_maxLoadFactor), buckets - 1U),
+				// Guarantee minimum capacity
+				minCapacity);
 	}
 
 	/// Checks whether the given element is physically contained by this hash map.
@@ -377,6 +363,12 @@ protected:
 			m_allocator.destroy(destr);
 	}
 
+	/// Triggers an out of range error.
+	LEAN_NOINLINE static void length_exceeded()
+	{
+		throw std::length_error("simple_hash_map<K, E> too long");
+	}
+
 	/// Initializes the this hash map base.
 	LEAN_INLINE explicit simple_hash_map_base(float maxLoadFactor)
 		: m_elements(nullptr),
@@ -461,12 +453,15 @@ private:
 	}
 
 	/// Allocates space for the given number of elements.
-	void reallocate(size_type_ newBucketCount)
+	void reallocate(size_type_ newBucketCount, size_type_ minCapacity = 0U)
 	{
-		LEAN_ASSERT(newBucketCount <= max_bucket_count());
-
 		// Make prime (required for universal modulo hashing)
-		newBucketCount = impl::next_prime_capacity(newBucketCount, max_bucket_count());
+		newBucketCount = impl::next_prime_capacity(newBucketCount, s_maxBucketCount);
+
+		// Guarantee minimum capacity
+		// ASSERT: One slot always remains open, automatically terminating find loops
+		if (newBucketCount <= minCapacity)
+			length_exceeded();
 
 		// Use end element to allow for proper iteration termination
 		const size_type_ newElementCount = newBucketCount + 1U;
@@ -520,7 +515,7 @@ private:
 		
 		m_elements = newElements;
 		m_elementsEnd = newElementsEnd;
-		m_capacity = capacity_from_buckets(newBucketCount);
+		m_capacity = capacity_from_buckets(newBucketCount, minCapacity);
 
 		if (oldElements)
 			free(oldElements, oldElementsEnd, oldBucketCount + 1U);
@@ -644,16 +639,18 @@ private:
 	/// Grows hash map storage to fit the given new count.
 	LEAN_INLINE void growTo(size_type_ newCount)
 	{
-		reallocate(buckets_from_capacity(grow_to_capacity_hint(newCount)));
+		reallocate(buckets_from_capacity(grow_to_capacity_hint(newCount)), newCount);
 	}
 	/// Grows hash map storage to fit the given additional number of elements.
 	LEAN_INLINE void grow(size_type_ count)
 	{
-		// Mind overflow
-		LEAN_ASSERT(count <= max_size());
-		LEAN_ASSERT(max_size() - count >= size());
+		size_type_ oldSize = size();
 
-		growTo(size() + count);
+		// Mind overflow
+		if (count > s_maxSize || s_maxSize - count < oldSize)
+			length_exceeded();
+
+		growTo(oldSize + count);
 	}
 	/// Grows hash map storage to fit the given new count, not inlined.
 	LEAN_NOINLINE void growToHL(size_type_ newCount)
@@ -783,14 +780,14 @@ public:
 		: base_type(0.75f)
 	{
 		LEAN_ASSERT(key_valid(KeyValues::end_key));
-		reallocate( min_size() );
+		reallocate(s_minSize);
 	}
 	/// Constructs an empty hash map.
 	explicit simple_hash_map(size_type capacity, float maxLoadFactor = 0.75f)
 		: base_type(maxLoadFactor)
 	{
 		LEAN_ASSERT(key_valid(KeyValues::end_key));
-		growTo( max(capacity, min_size()) );
+		growTo( max(capacity, s_minSize) );
 	}
 	/// Constructs an empty hash map.
 	simple_hash_map(size_type capacity, float maxLoadFactor, const hasher& hash)
@@ -798,7 +795,7 @@ public:
 		m_hasher(hash)
 	{
 		LEAN_ASSERT(key_valid(KeyValues::end_key));
-		growTo( max(capacity, min_size()) );
+		growTo( max(capacity, s_minSize) );
 	}
 	/// Constructs an empty hash map.
 	simple_hash_map(size_type capacity, float maxLoadFactor, const hasher& hash, const key_equal& keyComp)
@@ -807,7 +804,7 @@ public:
 		m_keyEqual(keyComp)
 	{
 		LEAN_ASSERT(key_valid(KeyValues::end_key));
-		growTo( max(capacity, min_size()) );
+		growTo( max(capacity, s_minSize) );
 	}
 	/// Constructs an empty hash map.
 	simple_hash_map(size_type capacity, float maxLoadFactor, const hasher& hash, const key_equal& keyComp, const allocator_type &allocator)
@@ -816,7 +813,7 @@ public:
 		m_keyEqual(keyComp)
 	{
 		LEAN_ASSERT(key_valid(KeyValues::end_key));
-		growTo( max(capacity, min_size()) );
+		growTo( max(capacity, s_minSize) );
 	}
 	/// Copies all elements from the given hash map to this hash map.
 	simple_hash_map(const simple_hash_map &right)
@@ -991,7 +988,7 @@ public:
 	LEAN_INLINE void reserve(size_type newCapacity)
 	{
 		if (newCapacity > capacity())
-			reallocate(buckets_from_capacity(newCapacity));
+			reallocate(buckets_from_capacity(newCapacity), newCapacity);
 	}
 	/// Tries to grow or shrink the hash map to fit the given number of elements given.
 	/// The hash map will never shrink below the number of elements currently stored.
@@ -1000,7 +997,7 @@ public:
 		newCapacity = max(count(), newCapacity);
 
 		if (newCapacity != capacity())
-			reallocate(buckets_from_capacity(newCapacity));
+			reallocate(buckets_from_capacity(newCapacity), newCapacity);
 	}
 
 	/// Gets an element by key, returning end() on failure.
@@ -1049,19 +1046,22 @@ public:
 			count());
 	}
 
+	/// Gets the current load factor.
+	LEAN_INLINE float load_factor() const { return static_cast<float>(m_count) / static_cast<float>(m_capacity); };
+
 	/// Computes a new capacity based on the given number of elements to be stored.
 	size_type grow_to_capacity_hint(size_type count) const
 	{
 		size_type oldCapacity = capacity();
-		LEAN_ASSERT(oldCapacity <= max_size());
+		LEAN_ASSERT(oldCapacity <= s_maxSize);
 
 		// Try to double capacity (mind overflow)
-		size_type newCapacity = (max_size() - oldCapacity < oldCapacity)
+		size_type newCapacity = (s_maxSize - oldCapacity < oldCapacity)
 			? 0
 			: oldCapacity + oldCapacity;
 
 		// Mind overflow
-		LEAN_ASSERT(count <= max_size());
+		LEAN_ASSERT(count <= s_maxSize);
 		
 		if (newCapacity < count)
 			newCapacity = count;
@@ -1079,7 +1079,7 @@ public:
 	/// Estimates the maximum number of elements that may be constructed.
 	LEAN_INLINE size_type max_size() const
 	{
-		return base_type::max_size();
+		return s_maxSize;
 	}
 };
 

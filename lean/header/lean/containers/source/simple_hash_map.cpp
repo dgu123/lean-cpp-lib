@@ -5,10 +5,14 @@
 #include "../simple_hash_map.h"
 #include <algorithm>
 
-// Gets the first prime number available that is both less than or equal to the given maximum value
-// and greater than or equal to the given capacity, if possible.
+// Gets the first prime number available that is greater than or equal to the given capacity,
+// may only return a prime number smaller than the given capacity when the actual result would
+// be greater than the given maximum value.
 LEAN_MAYBE_LINK size_t lean::containers::impl::next_prime_capacity(size_t capacity, size_t max)
 {
+	// Enforce capacity <= max
+	capacity = min(capacity, max);
+
 	// Prime numbers growing by 8%
 	static const uint4 primes[] = {
 		2U, 3U, 5U, 7U, 11U, 13U, 17U, 19U, 23U, 29U, 31U,
@@ -59,25 +63,22 @@ LEAN_MAYBE_LINK size_t lean::containers::impl::next_prime_capacity(size_t capaci
 	// Exclude sentinel, thus value returned by lower_bound is always valid.
 	static const size_t primeCount = sizeof(primes) / sizeof(primes[0]) - 1U;
 
-	// Smallest prime number.
-	static const uint4 primeThreshold = primes[0];
-	// Largest prime number in 4 byte unsigned integer.
-	static const uint4 largePrimeThreshold = primes[primeCount];
-
 	// 32 bit size or request <= primeThreshold
-	if (sizeof(size_t) <= sizeof(uint4) || capacity <= largePrimeThreshold || max <= largePrimeThreshold)
+	if (sizeof(size_t) < sizeof(uint8) || capacity <= 4294967291U)
 	{
-		const uint4 *primeCapacity = std::lower_bound(primes, primes + primeCount, static_cast<uint4>(capacity));
-		
-		LEAN_ASSERT(max >= primeThreshold);
+		const uint4 *primeCapacity = std::lower_bound(primes, primes + primeCount, capacity);
 
-		while (*primeCapacity > max)
+		LEAN_ASSERT(max >= 2U);
+
+		// *primeCapacity is at worst the first prime number greater than max
+		if (*primeCapacity > max)
+		{
 			--primeCapacity;
+			LEAN_ASSERT(primeCapacity >= primes);
+			LEAN_ASSERT(*primeCapacity < max);
+		}
 
-		LEAN_ASSERT(primeCapacity >= primes);
-		LEAN_ASSERT(*primeCapacity <= max);
-
-		// Legal as max is of type size_t
+		// Legal as max is of type size_t and *primeCapacity is less-or-equal than max
 		return static_cast<size_t>(*primeCapacity);
 	}
 	else
@@ -85,7 +86,7 @@ LEAN_MAYBE_LINK size_t lean::containers::impl::next_prime_capacity(size_t capaci
 		// More prime numbers growing by 8%
 		static const uint8 largePrimes[] = {
 			// Sentinel
-			largePrimeThreshold,
+			4294967291U,
 
 			4429680911ULL, 4784055401ULL, 5166779851ULL, 5580122297ULL, 6026532101ULL,
 			6508654673ULL, 7029347053ULL, 7591694819ULL, 8199030421ULL, 8854952867ULL,
@@ -152,17 +153,19 @@ LEAN_MAYBE_LINK size_t lean::containers::impl::next_prime_capacity(size_t capaci
 		// Exclude end sentinel, thus value returned by lower_bound is always valid.
 		static const size_t largePrimeCount = sizeof(largePrimes) / sizeof(largePrimes[0]) - 1U;
 
-		const uint8 *primeCapacity = std::lower_bound(largePrimes, largePrimes + largePrimeCount, static_cast<uint8>(capacity));
-		
-		LEAN_ASSERT(max > largePrimeThreshold);
+		const uint8 *primeCapacity = std::lower_bound(largePrimes, largePrimes + largePrimeCount, capacity);
 
-		while (*primeCapacity > max)
+		LEAN_ASSERT(max > 4294967291U);
+
+		// *primeCapacity is at worst the first prime number greater than max
+		if (*primeCapacity > max)
+		{
 			--primeCapacity;
+			LEAN_ASSERT(primeCapacity >= largePrimes);
+			LEAN_ASSERT(*primeCapacity < max);
+		}
 
-		LEAN_ASSERT(primeCapacity >= largePrimes);
-		LEAN_ASSERT(*primeCapacity <= max);
-
-		// Legal as max is of type size_t
+		// Legal as max is of type size_t and *primeCapacity is less-or-equal than max
 		return static_cast<size_t>(*primeCapacity);
 	}
 }

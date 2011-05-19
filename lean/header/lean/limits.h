@@ -23,6 +23,9 @@ namespace lean
 namespace types
 {
 
+namespace
+{
+
 /// Provides literal numeric limits information.
 template <class Type>
 struct numeric_limits
@@ -186,6 +189,8 @@ const long double numeric_limits<long double>::min = LDBL_MIN;
 const long double numeric_limits<long double>::max = LDBL_MAX;
 const long double numeric_limits<long double>::has_infinity = std::numeric_limits<long double>::has_infinity;
 const long double numeric_limits<long double>::infinity = std::numeric_limits<long double>::infinity();
+
+}
 
 }
 

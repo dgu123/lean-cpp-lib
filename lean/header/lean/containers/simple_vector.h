@@ -81,7 +81,8 @@ private:
 		m_allocator.construct(dest, source);
 	}
 	/// Copies elements from the given source range to the given destination.
-	void copy_construct(const Element *source, const Element *sourceEnd, Element *dest)
+	template <class Iterator>
+	void copy_construct(Iterator source, Iterator sourceEnd, Element *dest)
 	{
 		Element *destr = dest;
 
@@ -200,14 +201,24 @@ private:
 	}
 
 	/// Grows vector storage to fit the given new count.
-	LEAN_INLINE void growTo(size_type_ newCount)
+	LEAN_INLINE void growTo(size_type_ newCount, bool checkLength = true)
 	{
-		reallocate(capacity_hint(newCount));
+		// Mind overflow
+		if (checkLength)
+			check_length(newCount);
+
+		reallocate(next_capacity_hint(newCount));
 	}
 	/// Grows vector storage to fit the given additional number of elements.
 	LEAN_INLINE void grow(size_type_ count)
 	{
-		growTo(size() + count);
+		size_type_ oldSize = size();
+
+		// Mind overflow
+		if (count > s_maxSize || s_maxSize - count < oldSize)
+			length_exceeded();
+
+		growTo(oldSize + count, false);
 	}
 	/// Grows vector storage to fit the given new count, not inlined.
 	LEAN_NOINLINE void growToHL(size_type_ newCount)
@@ -230,6 +241,17 @@ private:
 	{
 		if (pos >= size())
 			out_of_range();
+	}
+	/// Triggers a length error.
+	LEAN_NOINLINE static void length_exceeded()
+	{
+		throw std::length_error("simple_vector<T> too long");
+	}
+	/// Checks the given length.
+	LEAN_INLINE static void check_length(size_type_ count)
+	{
+		if (count > s_maxSize)
+			length_exceeded();
 	}
 
 public:
@@ -333,17 +355,20 @@ public:
 	{
 		LEAN_ASSERT(source <= sourceEnd);
 
+		Element *sourceElements = const_cast<Element*>( lean::addressof(*source) );
+
 		// Index is unsigned, make use of wrap-around
-		if (static_cast<size_type>(lean::addressof(*source) - m_elements) < size())
+		if (static_cast<size_type>(sourceElements - m_elements) < size())
 		{
-			LEAN_ASSERT(lean::addressof(*sourceEnd) <= m_elementsEnd);
+			Element *sourceElementsEnd = const_cast<Element*>( lean::addressof(*sourceEnd) );
+			LEAN_ASSERT(sourceElementsEnd <= m_elementsEnd);
 
 			// Move (always back to front)
-			LEAN_ASSERT(m_elements <= source);
-			move(source, sourceEnd, m_elements);
+			LEAN_ASSERT(m_elements <= sourceElements);
+			move(sourceElements, sourceElementsEnd, m_elements);
 
 			Element *oldElementsEnd = m_elementsEnd;
-			m_elementsEnd = m_elements + (sourceEnd - source);
+			m_elementsEnd = m_elements + (sourceElementsEnd - sourceElements);
 			destruct(m_elementsEnd, oldElementsEnd);
 		}
 		else
@@ -435,12 +460,18 @@ public:
 	/// Reserves space for the predicted number of elements given.
 	LEAN_INLINE void reserve(size_type newCapacity)
 	{
+		// Mind overflow
+		check_length(newCapacity);
+
 		if (newCapacity > capacity())
 			reallocate(newCapacity);
 	}
 	/// Resizes this vector, either appending empty elements to or removing elements from the back of this vector.
 	void resize(size_type newCount)
 	{
+		// Mind overflow
+		check_length(newCapacity);
+
 		if (newCount > count())
 		{
 			if (newCount > capacity())
@@ -496,17 +527,18 @@ public:
 	LEAN_INLINE size_type capacity(void) const { return m_capacityEnd - m_elements; };
 
 	/// Computes a new capacity based on the given number of elements to be stored.
-	size_type capacity_hint(size_type count) const
+	size_type next_capacity_hint(size_type count) const
 	{
-		size_type capacityDelta = count / 2;
+		size_type oldCapacity = capacity();
+		LEAN_ASSERT(oldCapacity <= s_maxSize);
+		size_type capacityDelta = oldCapacity / 2;
 
-		// Assume count <= max size, increase by 1.5 or clamp to max_size, mind overflow
-		size_type capacity = (s_maxSize - capacityDelta < count)
-			? s_maxSize
-			: count + capacityDelta;
+		// Try to increase capacity by 1.5 (mind overflow)
+		size_type capacity = (s_maxSize - capacityDelta < oldCapacity)
+			? 0
+			: oldCapacity + capacityDelta;
 
-		// Handle cases where count is larger than max size?
-		if (s_maxSize < count)
+		if (capacity < count)
 			capacity = count;
 
 		if (capacity < s_minSize)

@@ -490,8 +490,10 @@ public:
 	// Swaps the elements of two accumulation vectors.
 	LEAN_INLINE void swap(accumulation_vector& right)
 	{
+		using std::swap;
+
 		swap(m_container, right.m_container);
-		std::swap(m_size, right.m_size);
+		swap(m_size, right.m_size);
 	}
 };
 

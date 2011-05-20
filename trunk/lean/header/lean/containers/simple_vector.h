@@ -524,10 +524,12 @@ public:
 	/// Swaps the contents of this vector and the given vector.
 	LEAN_INLINE void swap(simple_vector &right) throw()
 	{
+		using std::swap;
+
 		swap(m_allocator, right.m_allocator);
-		std::swap(m_elements, right.m_elements);
-		std::swap(m_elementsEnd, right.m_elementsEnd);
-		std::swap(m_capacityEnd, right.m_capacityEnd);
+		swap(m_elements, right.m_elements);
+		swap(m_elementsEnd, right.m_elementsEnd);
+		swap(m_capacityEnd, right.m_capacityEnd);
 	}
 };
 

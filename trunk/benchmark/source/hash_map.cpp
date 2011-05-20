@@ -69,7 +69,7 @@ struct string_string_test
 			for (int i = 0; i < element_count; ++i)
 			{
 				*lean::int_to_char(buffer, rand() ^ i) = 0;
-				map[buffer] = buffer;
+				map[std::string(buffer)] = std::string(buffer);
 			}
 		}
 
@@ -92,7 +92,7 @@ struct string_string_test
 			for (int i = 0; i < element_count; ++i)
 			{
 				*lean::int_to_char(buffer, rand() ^ i) = 0;
-				map[buffer] = buffer;
+				map[std::string(buffer)] = std::string(buffer);
 			}
 		}
 
@@ -114,9 +114,9 @@ void run_test(const char *name)
 
 LEAN_NOLTINLINE void hash_map_benchmark()
 {
-//	run_test< int_int_test<false> >("int_int_hash_map");
+	run_test< int_int_test<false> >("int_int_hash_map");
 	run_test< int_int_test<true> >("int_int_hash_map_preall");
 
-//	run_test< string_string_test<false> >("string_string_hash_map");
+	run_test< string_string_test<false> >("string_string_hash_map");
 	run_test< string_string_test<true> >("string_string_hash_map_preall");
 }

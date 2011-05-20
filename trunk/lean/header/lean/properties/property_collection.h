@@ -59,6 +59,8 @@ public:
 	/// Moves the contents of the given collection to this collection.
 	property_collection(inplace_collection<> &right)
 	{
+		using std::swap;
+
 		swap(m_properties, right.m_collection.m_properties);
 	}
 	/// Constructs a new temporary collection that may be filled using operator <<.
@@ -78,6 +80,8 @@ public:
 	/// Moves the contents of the given collection to this collection.
 	LEAN_INLINE property_collection& operator =(inplace_collection<> &right)
 	{
+		using std::swap;
+
 		swap(m_properties, right.m_collection.m_properties);
 		return *this;
 	}

@@ -272,6 +272,8 @@ public:
 	// Swaps the elements of two accumulation maps.
 	LEAN_INLINE void swap(accumulation_map& right)
 	{
+		using std::swap;
+
 		swap(m_container, right.m_container);
 	}
 };

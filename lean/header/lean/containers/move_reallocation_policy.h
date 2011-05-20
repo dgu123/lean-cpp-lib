@@ -47,6 +47,7 @@ public:
 				 itNew != newContainer.end(); ++itOld, ++itNew)
 				itNew->move(*itOld);
 
+			using std::swap;
 			swap(container, newContainer);
 		}
 

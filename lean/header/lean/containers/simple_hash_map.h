@@ -305,6 +305,18 @@ protected:
 
 		guard.disarm();
 	}
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Default constructs an element at the given location.
+	LEAN_INLINE void default_construct(value_type_ *dest, Key &&key)
+	{
+		invalidate_guard guard(dest);
+
+		revalidate(dest);
+		m_allocator.construct(dest, value_type_(std::move(key), Element()));
+
+		guard.disarm();
+	}
+#endif
 	/// Copies the given source element to the given destination.
 	LEAN_INLINE void copy_construct(value_type_ *dest, const value_type_ &source)
 	{
@@ -430,12 +442,14 @@ protected:
 	/// Swaps the contents of this hash map base and the given hash map base.
 	LEAN_INLINE void swap(simple_hash_map_base &right) throw()
 	{
+		using std::swap;
+
 		swap(m_allocator, right.m_allocator);
-		std::swap(m_elements, right.m_elements);
-		std::swap(m_elementsEnd, right.m_elementsEnd);
-		std::swap(m_count, right.m_count);
-		std::swap(m_capacity, right.m_capacity);
-		std::swap(m_maxLoadFactor, right.m_maxLoadFactor);
+		swap(m_elements, right.m_elements);
+		swap(m_elementsEnd, right.m_elementsEnd);
+		swap(m_count, right.m_count);
+		swap(m_capacity, right.m_capacity);
+		swap(m_maxLoadFactor, right.m_maxLoadFactor);
 	}
 };
 
@@ -924,6 +938,26 @@ public:
 		}
 		return *element.second;
 	}
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Inserts a default-constructed value into the hash map using the given key, if none
+	/// stored under the given key yet, otherwise returns the one currently stored.
+	LEAN_INLINE reference insert(key_type &&key)
+	{
+		LEAN_ASSERT(base_type::key_valid(key));
+
+		if (m_count == capacity())
+			growHL(1);
+
+		std::pair<bool, value_type*> element = locate_element(key);
+		
+		if (element.first)
+		{
+			default_construct(element.second, std::move(key));
+			++m_count;
+		}
+		return *element.second;
+	}
+#endif
 	/// Inserts the given key-value-pair into this hash map.
 	LEAN_INLINE std::pair<bool, iterator> insert(const value_type &value)
 	{
@@ -1033,6 +1067,10 @@ public:
 
 	/// Gets an element by key, inserts a new default-constructed one if none existent yet.
 	LEAN_INLINE mapped_type& operator [](const key_type &key) { return insert(key).second; }
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Gets an element by key, inserts a new default-constructed one if none existent yet.
+	LEAN_INLINE mapped_type& operator [](key_type &&key) { return insert(std::move(key)).second; }
+#endif
 
 	/// Returns an iterator to the first element contained by this hash map.
 	LEAN_INLINE iterator begin(void) { return iterator(m_elements, iterator::search_first_valid); }
@@ -1098,6 +1136,8 @@ public:
 	/// Swaps the contents of this hash map and the given hash map.
 	LEAN_INLINE void swap(simple_hash_map &right) throw()
 	{
+		using std::swap;
+
 		swap(m_keyEqual, right.m_keyEqual);
 		swap(m_hasher, right.m_hasher);
 		base_type::swap(right);

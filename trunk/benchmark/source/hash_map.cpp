@@ -55,15 +55,15 @@ struct string_string_test
 
 	static double stl()
 	{
+		std::unordered_map<std::string, std::string> map;
+
+		if (PreAllocate)
+			map.rehash(element_count);
+
 		lean::highres_timer timer;
 
 		for (int x = 0; x < run_count; ++x)
 		{
-			std::unordered_map<std::string, std::string> map;
-
-			if (PreAllocate)
-				map.rehash(element_count);
-
 			char buffer[lean::max_int_string_length<int>::value];
 
 			for (int i = 0; i < element_count; ++i)
@@ -78,15 +78,15 @@ struct string_string_test
 
 	static double lean()
 	{
+		lean::simple_hash_map<std::string, std::string> map;
+
+		if (PreAllocate)
+			map.rehash(element_count);
+
 		lean::highres_timer timer;
 
 		for (int x = 0; x < run_count; ++x)
 		{
-			lean::simple_hash_map<std::string, std::string> map;
-
-			if (PreAllocate)
-				map.rehash(element_count);
-
 			char buffer[lean::max_int_string_length<int>::value];
 
 			for (int i = 0; i < element_count; ++i)
@@ -103,11 +103,15 @@ struct string_string_test
 template <class Test>
 void run_test(const char *name)
 {
-	double leanTime = Test::lean();
+	srand(12452);
 	double stlTime = Test::stl();
+	srand(12452);
+	double leanTime = Test::lean();
 
-	leanTime += Test::lean();
+	srand(12452);
 	stlTime += Test::stl();
+	srand(12452);
+	leanTime += Test::lean();
 
 	print_results(name, "std", stlTime, "lean", leanTime);
 }

@@ -389,10 +389,16 @@ protected:
 		invalidateGuard.disarm();
 	}
 
-	/// Triggers an out of range error.
+	/// Triggers a length error.
 	LEAN_NOINLINE static void length_exceeded()
 	{
 		throw std::length_error("simple_hash_map<K, E> too long");
+	}
+	/// Checks the given length.
+	LEAN_INLINE static void check_length(size_type_ count)
+	{
+		if (count > s_maxSize)
+			length_exceeded();
 	}
 
 	/// Initializes the this hash map base.
@@ -579,7 +585,7 @@ private:
 		LEAN_ASSERT(base_type::key_valid(key));
 
 		value_type_ *element = first_element(key, elements, bucketCount);
-		
+
 		while (base_type::key_valid(element->first))
 		{
 			if (m_keyEqual(element->first, key))
@@ -591,7 +597,7 @@ private:
 
 			// ASSERT: One slot always remains open, automatically terminating this loop
 		}
-		
+
 		return std::make_pair(true, element);
 	}
 	/// Gets the element stored under the given key, if existent, returns end otherwise.
@@ -670,11 +676,11 @@ private:
 	}
 
 	/// Grows hash map storage to fit the given new count.
-	LEAN_INLINE void growTo(size_type_ newCount)
+	LEAN_INLINE void growTo(size_type_ newCount, bool checkLength = true)
 	{
 		// Mind overflow
-		if (newCount > s_maxSize)
-			length_exceeded();
+		if (checkLength)
+			check_length(newCount);
 
 		reallocate(buckets_from_capacity(next_capacity_hint(newCount)), newCount);
 	}
@@ -687,7 +693,7 @@ private:
 		if (count > s_maxSize || s_maxSize - count < oldSize)
 			length_exceeded();
 
-		growTo(oldSize + count);
+		growTo(oldSize + count, false);
 	}
 	/// Grows hash map storage to fit the given new count, not inlined.
 	LEAN_NOINLINE void growToHL(size_type_ newCount)
@@ -1040,8 +1046,7 @@ public:
 	LEAN_INLINE void reserve(size_type newCapacity)
 	{
 		// Mind overflow
-		if (newCapacity > s_maxSize)
-			length_exceeded();
+		check_length(newCapacity);
 
 		if (newCapacity > capacity())
 			reallocate(buckets_from_capacity(newCapacity), newCapacity);
@@ -1053,8 +1058,7 @@ public:
 		newCapacity = max(size(), newCapacity);
 
 		// Mind overflow
-		if (newCapacity > s_maxSize)
-			length_exceeded();
+		check_length(newCapacity);
 
 		if (newCapacity != capacity())
 			reallocate(buckets_from_capacity(newCapacity), newCapacity);

@@ -1,4 +1,4 @@
-@boost-dir.bat
+@CALL boost-dir.bat
 @pushd
 @cd "%LE_BJAMDIR%"
 bjam --show-libraries

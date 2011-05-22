@@ -1,4 +1,4 @@
-@boost-dir.bat
+@CALL boost-dir.bat
 @set LE_CALLDIR=%CD%
 @cd "%LE_BJAMDIR%"
 bjam stage ^

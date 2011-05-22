@@ -1,11 +1,12 @@
-@set /p LE_BJAMDIR=Enter Boost/BJam directory: 
+@boost-dir.bat
 @set LE_CALLDIR=%CD%
 @cd "%LE_BJAMDIR%"
 bjam stage ^
  link=static ^
  --toolset=msvc-10.0 ^
  --build-dir="%LE_CALLDIR%/build" ^
- --stage-dir="%LE_CALLDIR%/lib" ^
+ --stagedir="%LE_CALLDIR%/lib" ^
+ --with-date_time ^
  --with-filesystem ^
  --with-regex ^
  --wigh-signals ^

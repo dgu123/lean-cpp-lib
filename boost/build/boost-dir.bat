@@ -1,1 +1,1 @@
-@CALL reconfigure.bat
+@reconfigure.bat

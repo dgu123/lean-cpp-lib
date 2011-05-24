@@ -35,5 +35,11 @@
     <ClCompile Include="source\hash_map.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\com_ptr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\vector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

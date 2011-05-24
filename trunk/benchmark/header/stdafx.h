@@ -15,6 +15,12 @@
 #include <iostream>
 #include <random>
 
+#ifdef LEAN_DEBUG_BUILD
+	#define DEBUG_DENOMINATOR 100
+#else
+	#define DEBUG_DENOMINATOR 1
+#endif
+
 inline void print_results(const char *test, const char *name1, double time1, const char *name2, double time2)
 {
 	std::cout << test << ":" << std::endl

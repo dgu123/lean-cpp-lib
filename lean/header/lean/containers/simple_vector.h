@@ -220,6 +220,18 @@ private:
 
 		growTo(oldSize + count, false);
 	}
+	/// Grows vector storage and inserts the given element at the end of the vector.
+	LEAN_INLINE Element& grow_and_relocate(Element &value)
+	{
+		size_type_ index = lean::addressof(value) - m_elements;
+		grow(1);
+		
+		// Index is unsigned, make use of wrap-around
+		return (index < size())
+			? m_elements[index]
+			: value;
+	}
+
 	/// Grows vector storage to fit the given new count, not inlined.
 	LEAN_NOINLINE void growToHL(size_type_ newCount)
 	{
@@ -229,6 +241,18 @@ private:
 	LEAN_NOINLINE void growHL(size_type_ count)
 	{
 		grow(count);
+	}
+	/// Grows vector storage and inserts the given element at the end of the vector.
+	LEAN_NOINLINE void grow_and_pushHL(const Element &value)
+	{
+		copy_construct(m_elementsEnd, grow_and_relocate(const_cast<Element&>(value)));
+		++m_elementsEnd;
+	}
+	/// Grows vector storage and inserts the given element at the end of the vector.
+	LEAN_NOINLINE void grow_and_pushHL(Element &&value)
+	{
+		move_construct(m_elementsEnd, grow_and_relocate(value));
+		++m_elementsEnd;
 	}
 
 	/// Triggers an out of range error.
@@ -403,42 +427,24 @@ public:
 	LEAN_INLINE void push_back(const value_type &value)
 	{
 		if (m_elementsEnd == m_capacityEnd)
+			grow_and_pushHL(value);
+		else
 		{
-			size_type index = lean::addressof(value) - m_elements;
-			growHL(1);
-			
-			// Index is unsigned, make use of wrap-around
-			if (index < size())
-			{
-				copy_construct(m_elementsEnd, m_elements[index]);
-				++m_elementsEnd;
-				return;
-			}
+			copy_construct(m_elementsEnd, value);
+			++m_elementsEnd;
 		}
-
-		copy_construct(m_elementsEnd, value);
-		++m_elementsEnd;
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Appends the given element to this vector.
 	LEAN_INLINE void push_back(value_type &&value)
 	{
 		if (m_elementsEnd == m_capacityEnd)
+			grow_and_pushHL(std::move(value));
+		else
 		{
-			size_type index = lean::addressof(value) - m_elements;
-			growHL(1);
-			
-			// Index is unsigned, make use of wrap-around
-			if (index < size())
-			{
-				move_construct(m_elementsEnd, m_elements[index]);
-				++m_elementsEnd;
-				return;
-			}
+			move_construct(m_elementsEnd, value);
+			++m_elementsEnd;
 		}
-
-		move_construct(m_elementsEnd, value);
-		++m_elementsEnd;
 	}
 #endif
 	/// Removes the last element from this vector.

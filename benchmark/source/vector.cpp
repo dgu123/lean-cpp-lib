@@ -1,10 +1,10 @@
 #include "stdafx.h"
-#include <lean/containers/simple_hash_map.h>
-#include <unordered_map>
 #include <lean/io/numeric.h>
+#include <lean/containers/simple_vector.h>
+#include <vector>
 
 template <bool PreAllocate>
-struct int_int_test
+struct int_test
 {
 	static const int element_count = 1000000 / DEBUG_DENOMINATOR;
 
@@ -13,13 +13,13 @@ struct int_int_test
 		lean::highres_timer timer;
 
 		{
-			std::unordered_map<int, int> map;
+			std::vector<int> vec;
 
 			if (PreAllocate)
-				map.rehash(element_count);
+				vec.reserve(element_count);
 
 			for (int i = 0; i < element_count; ++i)
-				map[rand() ^ i]++;
+				vec.push_back(i);
 		}
 
 		return timer.milliseconds();
@@ -30,14 +30,14 @@ struct int_int_test
 		lean::highres_timer timer;
 
 		{
-			typedef lean::simple_hash_map<int, int, lean::simple_hash_map_policies::pod> map_type;
-			map_type map;
+			typedef lean::simple_vector<int, lean::simple_vector_policies::pod> vec_type;
+			vec_type vec;
 
 			if (PreAllocate)
-				map.rehash(element_count);
+				vec.reserve(element_count);
 
 			for (int i = 0; i < element_count; ++i)
-				map[rand() ^ i]++;
+				vec.push_back(i);
 		}
 
 		return timer.milliseconds();
@@ -45,28 +45,25 @@ struct int_int_test
 };
 
 template <bool PreAllocate>
-struct string_string_test
+struct string_test
 {
 	static const int element_count = 1000000 / DEBUG_DENOMINATOR;
 
 	static double stl()
 	{
-		std::unordered_map<std::string, std::string> map;
-
-		// Don't include re-hashing in timing
-		if (PreAllocate)
-			map.rehash(element_count);
-
 		lean::highres_timer timer;
 
 		{
+			std::vector<std::string> vec;
+		
+			if (PreAllocate)
+				vec.reserve(element_count);
+
 			char buffer[lean::max_int_string_length<int>::value];
+			*lean::int_to_char(buffer, rand()) = 0;
 
 			for (int i = 0; i < element_count; ++i)
-			{
-				*lean::int_to_char(buffer, rand() ^ i) = 0;
-				map[std::string(buffer)] = std::string(buffer);
-			}
+				vec.push_back(std::string(buffer));
 		}
 
 		return timer.milliseconds();
@@ -74,22 +71,19 @@ struct string_string_test
 
 	static double lean()
 	{
-		lean::simple_hash_map<std::string, std::string> map;
-
-		// Don't include re-hashing in timing, evidently takes much longer with open hashing
-		if (PreAllocate)
-			map.rehash(element_count);
-
 		lean::highres_timer timer;
-		
+
 		{
+			lean::simple_vector<std::string> vec;
+
+			if (PreAllocate)
+				vec.reserve(element_count);
+
 			char buffer[lean::max_int_string_length<int>::value];
+			*lean::int_to_char(buffer, rand()) = 0;
 
 			for (int i = 0; i < element_count; ++i)
-			{
-				*lean::int_to_char(buffer, rand() ^ i) = 0;
-				map[std::string(buffer)] = std::string(buffer);
-			}
+				vec.push_back(std::string(buffer));
 		}
 
 		return timer.milliseconds();
@@ -99,7 +93,7 @@ struct string_string_test
 template <class Test>
 void run_test(const char *name)
 {
-	static const int run_count = 10;
+	static const int run_count = 100;
 
 	double stlTime = 0.0;
 	double leanTime = 0.0;
@@ -115,11 +109,11 @@ void run_test(const char *name)
 	print_results(name, "std", stlTime, "lean", leanTime);
 }
 
-LEAN_NOLTINLINE void hash_map_benchmark()
+LEAN_NOLTINLINE void vector_benchmark()
 {
-	run_test< int_int_test<false> >("int_int_hash_map");
-	run_test< int_int_test<true> >("int_int_hash_map_preall");
+	run_test< int_test<false> >("int_vec");
+	run_test< int_test<true> >("int_vec_preall");
 
-	run_test< string_string_test<false> >("string_string_hash_map");
-	run_test< string_string_test<true> >("string_string_hash_map_preall");
+	run_test< string_test<false> >("string_vec");
+	run_test< string_test<true> >("string_vec_preall");
 }

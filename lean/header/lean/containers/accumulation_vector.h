@@ -242,7 +242,7 @@ public:
 			itWhere = m_container.insert(m_container.begin() + index, Element());
 		}
 		else
-			std::copy_backward(itWhere, end(), ++iterator(itWhere));
+			std::copy_backward(itWhere, end(), ++end());
 
 		++m_size;
 		return itWhere;
@@ -261,7 +261,7 @@ public:
 		}
 		else
 		{
-			std::copy_backward(itWhere, end(), ++iterator(itWhere));
+			std::copy_backward(itWhere, end(), ++end());
 			++m_size;
 			*itWhere = value;
 		}
@@ -283,7 +283,7 @@ public:
 		}
 		else
 		{
-			std::copy_backward(itWhere, end(), ++iterator(itWhere));
+			std::copy_backward(itWhere, end(), ++end());
 			++m_size;
 			*itWhere = std::move(value);
 		}
@@ -305,7 +305,7 @@ public:
 			itWhere = m_container.begin() + index;
 		}
 		
-		std::copy_backward(itWhere, end(), itWhere + count);
+		std::copy_backward(itWhere, end(), end() + count);
 		m_size = newSize;
 
 		return itWhere;

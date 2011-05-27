@@ -95,6 +95,7 @@
     <ClInclude Include="header\lean\functional\hashing.h" />
     <ClInclude Include="header\lean\io\endianness.h" />
     <ClInclude Include="header\lean\io\file.h" />
+    <ClInclude Include="header\lean\io\filesystem.h" />
     <ClInclude Include="header\lean\io\io.h" />
     <ClInclude Include="header\lean\io\mapped_file.h" />
     <ClInclude Include="header\lean\io\numeric.h" />
@@ -166,6 +167,7 @@
     <ClInclude Include="header\lean\strings\nullterminated.h" />
     <ClInclude Include="header\lean\strings\char_traits.h" />
     <ClInclude Include="header\lean\strings\nullterminated_range.h" />
+    <ClInclude Include="header\lean\strings\range.h" />
     <ClInclude Include="header\lean\strings\strings.h" />
     <ClInclude Include="header\lean\strings\types.h" />
     <ClInclude Include="header\lean\strings\utf_traits.h" />

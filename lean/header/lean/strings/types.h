@@ -10,6 +10,7 @@
 #include "utf_traits.h"
 #include "nullterminated.h"
 #include "nullterminated_range.h"
+#include "range.h"
 #include <string>
 
 namespace lean

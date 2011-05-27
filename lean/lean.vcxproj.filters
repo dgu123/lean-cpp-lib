@@ -432,6 +432,12 @@
     <ClInclude Include="header\lean\limits.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\io\filesystem.h">
+      <Filter>Header Files\io</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\strings\range.h">
+      <Filter>Header Files\strings</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

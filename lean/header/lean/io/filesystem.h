@@ -162,74 +162,99 @@ inline String absolute_path(const String &base, const String &path)
 }
 
 /// Gets a canonical relative path euqivalent to the given relative path.
-template <class String>
-inline String canonical_path(const String &path)
+template <class String, class Range>
+inline String canonical_path(const Range &path)
 {
-	String result(path);
+	String result;
+	result.resize(path.size());
 
-	typename String::const_iterator srcEnd = path.end(),
-		srcInsertEnd = path.end();
-	typename String::iterator destBegin = result.end();
+	typename Range::const_iterator srcCursor = path.end(),
+		srcMarker = path.end();
+	typename String::iterator destCursor = result.end();
 
 	int skipCounter = 0;
 	int redirCounter = 0;
 
-	bool endOfPath = (srcEnd == path.begin());
+	bool endOfPath = (srcCursor == path.begin());
 
 	while (!endOfPath)
 	{
 		// Pre-decrement, end never dereferenceable
-		endOfPath = (--srcEnd == path.begin());
+		endOfPath = (--srcCursor == path.begin());
 
-		bool isPathSeparator = is_path_separator(*srcEnd);
+		bool isPathSeparator = is_path_separator(*srcCursor);
+
+		if (is_redirection(*srcCursor))
+		{
+			// Count redirection characters, as long as no other characters around
+			if (redirCounter != -1)
+				++redirCounter;
+		}
+		else if (!isPathSeparator)
+			// Not a redirection, treat as actual directory name
+			redirCounter = -1;
 
 		// End of current directory
 		if (isPathSeparator || endOfPath)
 		{
-			typename String::const_iterator srcInsertBegin = destEnd;
+			typename Range::const_iterator srcInsertionCursor = srcCursor;
 
 			// Don't copy leading path separators
 			if (isPathSeparator)
-				++srcInsertBegin;
+				++srcInsertionCursor;
 
 			// Ignore empty directory names & local directory
 			if (redirCounter != 0 && redirCounter != 1)
 			{
-				// Up one directory, skip next actual directory name
+				// Up one directory
 				if(redirCounter == 2)
+					// Skip this & also skip next actual directory name
 					++skipCounter;
-				// Actual directory name, prepend or skip
+				// Actual directory name
 				else if (skipCounter == 0)
-					destBegin = std::copy_backward(srcInsertBegin, srcInsertEnd, destBegin);
+					// Prepend directory
+					destCursor = std::copy_backward(srcInsertionCursor, srcMarker, destCursor);
 				else
+					// Skip directory
 					--skipCounter;
 			}
 
-			srcInsertEnd = srcInsertBegin;
+			// Remember insertion cursor, any leading path separator copied as trailing path separator next time
+			srcMarker = srcInsertionCursor;
+
 			redirCounter = 0;
 		}
-		// Count redirection characters, as long as no other characters around
-		else if (is_redirection(*srcEnd) && redirCounter != -1)
-			++redirCounter;
-		// Not a redirection, treat as actual directory name
-		else
-			redirCounter = -1;
+		
 	}
 
 	// Prepend unresolved redirections
 	while (skipCounter != 0)
 	{
-		*(--destBegin) = PathSeparator;
-		*(--destBegin) = RedirectionCharacter;
-		*(--destBegin) = RedirectionCharacter;
+		assign_path_separator(*(--destCursor));
+		assign_redirection(*(--destCursor));
+		assign_redirection(*(--destCursor));
 		--skipCounter;
 	}
 
-	// Move to front
-	if (destBegin != result.begin())
-		result.assign(destBegin, result.end());
+	// ASSERT: size of canonical path <= size of source path
+
+	// Move canonical path to front
+	if (destCursor != result.begin())
+		result.assign(destCursor, result.end());
 
 	return result;
+}
+/// Gets a canonical relative path euqivalent to the given relative path.
+template <class String, class Char>
+LEAN_INLINE String canonical_path(const Char *path)
+{
+	return canonical_path<String>(make_char_range(path));
+}
+/// Gets a canonical relative path euqivalent to the given relative path.
+template <class Char>
+LEAN_INLINE std::basic_string<Char> canonical_path(const Char *path)
+{
+	return canonical_path< std::basic_string<Char> >(path);
 }
 
 /// Appends the given file or directory to the given path.
@@ -459,6 +484,7 @@ LEAN_INLINE const Char* get_extension(const Char *file)
 
 } // namespace
 
+using io::canonical_path;
 using io::append_path;
 
 using io::get_directory;

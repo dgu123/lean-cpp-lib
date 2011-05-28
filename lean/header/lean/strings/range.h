@@ -73,6 +73,7 @@ LEAN_INLINE Class from_range(const Range &range)
 
 using strings::range;
 using strings::make_range;
+using strings::make_char_range;
 using strings::from_range;
 
 } // namespace

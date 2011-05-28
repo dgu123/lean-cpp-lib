@@ -6,6 +6,7 @@
 #define LEAN_STRINGS_RANGE
 
 #include "../lean.h"
+#include "../meta/strip.h"
 
 namespace lean
 {
@@ -30,6 +31,11 @@ public:
 	LEAN_INLINE range(iterator begin, iterator end)
 		: m_begin(begin), m_end(end) { }
 
+	/// Gets whether this range is empty.
+	LEAN_INLINE bool empty() const { return (m_begin == m_end); }
+	/// Gets the size of this range (only valid for random access iterators).
+	LEAN_INLINE size_t size() const { return m_end - m_begin; }
+
 	/// Gets the beginning of this range.
 	LEAN_INLINE iterator& begin() { return m_begin; }
 	/// Gets the beginning of this range.
@@ -45,6 +51,15 @@ template <class Iterator>
 LEAN_INLINE range<Iterator> make_range(Iterator begin, Iterator end)
 {
 	return range<Iterator>(begin, end);
+}
+
+/// Makes a range from the given null-terminated charcter string.
+template <class Char>
+LEAN_INLINE range<Char*> make_char_range(Char *nts)
+{
+	return range<Char*>(
+		nts,
+		nts + std::char_traits<typename strip_modifiers<Char>::type>::length(nts) );
 }
 
 /// Constructs an object of the given type from the given range.

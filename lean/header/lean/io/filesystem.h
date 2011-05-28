@@ -7,7 +7,7 @@
 
 #include "../lean.h"
 #include "../strings/types.h"
-#include <utility>
+#include <algorithm>
 
 namespace lean
 {
@@ -30,7 +30,7 @@ struct filesystem_chars
 
 /// Checks if the given character is a path separator.
 template <class Char>
-inline bool is_path_separator(Char chr)
+LEAN_INLINE bool is_path_separator(Char chr)
 {
 	return (chr == filesystem_chars<Char>::path_separator) ||
 		(chr == filesystem_chars<Char>::alt_path_separator);
@@ -38,16 +38,61 @@ inline bool is_path_separator(Char chr)
 
 /// Checks if the given character is an extension separator.
 template <class Char>
-inline bool is_extension_separator(Char chr)
+LEAN_INLINE bool is_extension_separator(Char chr)
 {
 	return (chr == filesystem_chars<Char>::extension_separator);
 }
 
 /// Checks if the given character is a redirection character.
 template <class Char>
-inline bool is_redirection(Char chr)
+LEAN_INLINE bool is_redirection(Char chr)
 {
 	return (chr == filesystem_chars<Char>::redirection);
+}
+
+/// Assigns a path separator to the given character.
+template <class Char>
+LEAN_INLINE Char& assign_path_separator(Char &chr)
+{
+	return (chr = filesystem_chars<Char>::path_separator);
+}
+
+/// Assigns an extension separator to the given character.
+template <class Char>
+LEAN_INLINE Char& assign_extension_separator(Char &chr)
+{
+	return (chr = filesystem_chars<Char>::extension_separator);
+}
+
+/// Assigns a redirection character to the given character.
+template <class Char>
+LEAN_INLINE Char& assign_redirection(Char &chr)
+{
+	return (chr = filesystem_chars<Char>::redirection);
+}
+
+/// Inserts a path separator.
+template <class Iterator>
+LEAN_INLINE Iterator insert_path_separator(Iterator iterator)
+{
+	assign_path_separator(*iterator);
+	return ++iterator;
+}
+
+/// Inserts an extension separator.
+template <class Iterator>
+LEAN_INLINE Iterator insert_extension_separator(Iterator iterator)
+{
+	assign_extension_separator(*iterator);
+	return ++iterator;
+}
+
+/// Inserts a redirection character.
+template <class Iterator>
+LEAN_INLINE Iterator insert_redirection(Iterator iterator)
+{
+	assign_redirection(*iterator);
+	return ++iterator;
 }
 
 /// Gets the relative path euqivalent to the given absolute path when starting at the given base.
@@ -188,24 +233,66 @@ inline String canonical_path(const String &path)
 }
 
 /// Appends the given file or directory to the given path.
-template <class String>
-inline String append_path(const String &path, const String &file)
+template <class String, class Range1, class Range2>
+inline String append_path(const Range1 &path, const Range2 &file)
 {
 	String result;
 
-	result.reserve(path.size() + 1 + file.size());
-	result.append(path);
+	result.resize(path.size() + 1 + file.size());
+	typename String::iterator insertCursor = result.begin();
 
-	if (!path.empty())
-	{
-		typename String::const_iterator pathBack = --path.end();
+	insertCursor = std::copy(path.begin(), path.end(), insertCursor);
 
-		if (!is_path_separator(*pathBack))
-			result.append(PathSeparator);
-	}
+	if (!path.empty() && !file.empty() &&
+		!is_path_separator(*(path.end() - 1)) && !is_path_separator(*file.begin()))
+		insertCursor = insert_path_separator(insertCursor);
 
-	result.append(file);
+	insertCursor = std::copy(file.begin(), file.end(), insertCursor);
+
+	result.erase(insertCursor, result.end());
 	return result;
+}
+/// Appends the given file or directory to the given path.
+template <class String>
+LEAN_INLINE String append_path(const String &path, const String &file)
+{
+	return append_path<String>(path, file);
+}
+/// Appends the given file or directory to the given path.
+template <class String, class Char, class Range>
+LEAN_INLINE String append_path(const Char *path, const Range &file)
+{
+	return append_path<String>(make_char_range(path), file);
+}
+/// Appends the given file or directory to the given path.
+template <class String, class Char, class Range>
+LEAN_INLINE String append_path(const Range &path, const Char *file)
+{
+	return append_path<String>(path, make_char_range(file));
+}
+/// Appends the given file or directory to the given path.
+template <class String, class Char>
+LEAN_INLINE String append_path(const Char *path, const Char *file)
+{
+	return append_path<String>(make_char_range(path), make_char_range(file));
+}
+/// Appends the given file or directory to the given path.
+template <class Char, class Range>
+LEAN_INLINE std::basic_string<Char> append_path(const Char *path, const Range &file)
+{
+	return append_path< std::basic_string<Char> >(path, file);
+}
+/// Appends the given file or directory to the given path.
+template <class Char, class Range>
+LEAN_INLINE std::basic_string<Char> append_path(const Range &path, const Char *file)
+{
+	return append_path< std::basic_string<Char> >(path, file);
+}
+/// Appends the given file or directory to the given path.
+template <class Char>
+LEAN_INLINE std::basic_string<Char> append_path(const Char *path, const Char *file)
+{
+	return append_path< std::basic_string<Char> >(path, file);
 }
 
 /// Gets the end of the parent directory, e.g. '..' from '../test.txt'.

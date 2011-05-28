@@ -97,11 +97,13 @@ LEAN_INLINE Iterator insert_redirection(Iterator iterator)
 
 /// Gets the relative path euqivalent to the given absolute path when starting at the given base.
 /// Does not resolve redirections, use CanonicalPath prior to calling this function to resolve these.
-template <class String>
-inline String relative_path(const String &base, const String &path)
+template <class String, class Range1, class Range2>
+inline String relative_path(const Range1 &base, const Range2 &path)
 {
-	typename String::const_iterator baseMarker = base.begin(), baseCursor = base.begin(),
-		pathMarker = path.begin(), pathCursor = path.begin();
+	typename Range1::const_iterator baseMarker = base.begin(),
+		baseCursor = base.begin();
+	typename Range2::const_iterator pathMarker = path.begin(),
+		pathCursor = path.begin();
 
 	bool endOfBase = (baseCursor == base.end()),
 		endOfPath = (pathCursor == path.end());
@@ -110,55 +112,121 @@ inline String relative_path(const String &base, const String &path)
 	// Skip identical parts
 	while (!divergent && !endOfBase && !endOfPath)
 	{
+		// Move forward to the end of the next directory name
 		while (!endOfBase && !is_path_separator(*baseCursor))
 			endOfBase = (++baseCursor == base.end());
 		while (!endOfPath && !is_path_separator(*pathCursor))
 			endOfPath = (++pathCursor == path.end());
 
+		// Compare directory names
 		divergent = (baseCursor - baseMarker != pathCursor - pathMarker)
 			|| !std::equal(baseMarker, baseCursor, pathMarker);
 
+		// Skip path separator
 		if (!endOfBase)
 			endOfBase = (++baseCursor == base.end());
 		if (!endOfPath)
 			endOfPath = (++pathCursor == path.end());
 
-		baseMarker = baseCursor;
-		pathMarker = pathCursor;
+		if (!divergent)
+		{
+			// Mark beginning of next directory name
+			baseMarker = baseCursor;
+			pathMarker = pathCursor;
+		}
 	}
+
+	// ASSERT: paths equal up to their corresponding markers
 
 	String result;
-	result.reserve( static_cast<size_t>(base.end() - baseMarker) + static_cast<size_t>(path.end() - pathMarker) );
+	result.reserve( static_cast<size_t>(base.end() - baseMarker)
+		+ static_cast<size_t>(path.end() - pathMarker) );
 
-	while (baseCursor != base.end())
-	{
+	// Trailing slashes already skipped, don't lose corresponding directory
+	int mismatchCount = (baseMarker != base.end()) ? 1 : 0;
+	
+	// Count mismatching base sub-directories
+	for (baseCursor = baseMarker; baseCursor != base.end(); ++baseCursor)
 		if (is_path_separator(*baseCursor))
-		{
-			if (!result.empty())
-				result.append(PathSeparator);
-			result.append(RedirectionCharacter);
-			result.append(RedirectionCharacter);
-		}
+			++mismatchCount;
 
-		++baseCursor;
+	if (mismatchCount != 0)
+	{
+		result.resize(3U * mismatchCount - 1U);
+		typename String::iterator insertCursor = result.begin();
+
+		// Add redirection for each mismatching sub-directory
+		for (int i = 0; i < mismatchCount; ++i)
+		{
+			if (i != 0)
+				assign_path_separator(*(insertCursor++));
+			assign_redirection(*(insertCursor++));
+			assign_redirection(*(insertCursor++));
+		}
 	}
 
-	if (pathCursor != path.end())
+	// Append remaining sub-directories
+	if (pathMarker != path.end())
 	{
-		if (!result.empty())
-			result.append(PathSeparator);
+		bool needSeparation = !result.empty();
+		
+		size_t insertPos = result.size();
+		result.resize(insertPos + static_cast<size_t>(path.end() - pathMarker) + needSeparation);
+		typename String::iterator insertCursor = result.begin() + insertPos;
+		
+		if (needSeparation)
+			assign_path_separator(*(insertCursor++));
 
-		result.append(pathCursor, path.end());
+		insertCursor = std::copy(pathMarker, path.end(), insertCursor);
 	}
 
 	return result;
 }
+/// Gets the relative path euqivalent to the given absolute path when starting at the given base.
+/// Does not resolve redirections, use CanonicalPath prior to calling this function to resolve these.
+template <class Char, class Range>
+LEAN_INLINE std::basic_string<Char> relative_path(const Char *base, const Range &path)
+{
+	return relative_path< std::basic_string<Char> >(make_char_range(base), path);
+}
+/// Gets the relative path euqivalent to the given absolute path when starting at the given base.
+/// Does not resolve redirections, use CanonicalPath prior to calling this function to resolve these.
+template <class Char, class Range>
+LEAN_INLINE std::basic_string<Char> relative_path(const Range &base, const Char *path)
+{
+	return relative_path< std::basic_string<Char> >(base, make_char_range(path));
+}
+/// Gets the relative path euqivalent to the given absolute path when starting at the given base.
+/// Does not resolve redirections, use CanonicalPath prior to calling this function to resolve these.
+template <class Char>
+LEAN_INLINE std::basic_string<Char> relative_path(const Char *base, const Char *path)
+{
+	return relative_path< std::basic_string<Char> >(make_char_range(base), make_char_range(path));
+}
 
 /// Gets the absolute path euqivalent to the given relative path.
-template <class String>
-inline String absolute_path(const String &base, const String &path)
+template <class String, class Range1, class Range2>
+LEAN_INLINE String absolute_path(const Range1 &base, const Range2 &path)
 {
-	return CanonicalPath(AppendPath(base, path));
+	return canonical_path<String>( append_path<String>(base, path) );
+}
+/// Gets the absolute path euqivalent to the given relative path.
+template <class Char, class Range>
+LEAN_INLINE std::basic_string<Char> absolute_path(const Char *base, const Range &path)
+{
+	return canonical_path< std::basic_string<Char> >( append_path(base, path) );
+}
+/// Gets the absolute path euqivalent to the given relative path.
+template <class Char, class Range>
+LEAN_INLINE std::basic_string<Char> absolute_path(const Range &base, const Char *path)
+{
+	return canonical_path< std::basic_string<Char> >( append_path(base, path) );
+}
+/// Gets the absolute path euqivalent to the given relative path.
+template <class Char>
+LEAN_INLINE std::basic_string<Char> absolute_path(const Char *base, const Char *path)
+{
+	return canonical_path< std::basic_string<Char> >( append_path(base, path) );
 }
 
 /// Gets a canonical relative path euqivalent to the given relative path.
@@ -200,7 +268,7 @@ inline String canonical_path(const Range &path)
 			typename Range::const_iterator srcInsertionCursor = srcCursor;
 
 			// Don't copy leading path separators
-			if (isPathSeparator)
+			if (!endOfPath) // == isPathSeparator, except that leading unix-style root slashes are kept
 				++srcInsertionCursor;
 
 			// Ignore empty directory names & local directory
@@ -270,7 +338,7 @@ inline String append_path(const Range1 &path, const Range2 &file)
 
 	if (!path.empty() && !file.empty() &&
 		!is_path_separator(*(path.end() - 1)) && !is_path_separator(*file.begin()))
-		insertCursor = insert_path_separator(insertCursor);
+		assign_path_separator(*(insertCursor++));
 
 	insertCursor = std::copy(file.begin(), file.end(), insertCursor);
 
@@ -484,6 +552,8 @@ LEAN_INLINE const Char* get_extension(const Char *file)
 
 } // namespace
 
+using io::relative_path;
+using io::absolute_path;
 using io::canonical_path;
 using io::append_path;
 

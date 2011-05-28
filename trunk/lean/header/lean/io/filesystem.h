@@ -253,12 +253,6 @@ inline String append_path(const Range1 &path, const Range2 &file)
 	return result;
 }
 /// Appends the given file or directory to the given path.
-template <class String>
-LEAN_INLINE String append_path(const String &path, const String &file)
-{
-	return append_path<String>(path, file);
-}
-/// Appends the given file or directory to the given path.
 template <class String, class Char, class Range>
 LEAN_INLINE String append_path(const Char *path, const Range &file)
 {
@@ -322,12 +316,6 @@ LEAN_INLINE String get_directory(const Range &file)
 		get_directory(file.begin(), file.end()) );
 }
 /// Gets the parent directory, e.g. '..' from '../test.txt'.
-template <class String>
-LEAN_INLINE String get_directory(const String &file)
-{
-	return get_directory<String>(file);
-}
-/// Gets the parent directory, e.g. '..' from '../test.txt'.
 template <class String, class Char>
 LEAN_INLINE std::basic_string<Char> get_directory(const Char *file)
 {
@@ -374,12 +362,6 @@ LEAN_INLINE String get_filename(const Range &file)
 		file.end() );
 }
 /// Gets the file name, e.g. 'test.txt' from '../test.txt'.
-template <class String>
-LEAN_INLINE String get_filename(const String &file)
-{
-	return get_filename<String>(file);
-}
-/// Gets the file name, e.g. 'test.txt' from '../test.txt'.
 template <class Char>
 LEAN_INLINE const Char* get_filename(const Char *file)
 {
@@ -419,12 +401,6 @@ LEAN_INLINE String get_stem(const Range &file)
 {
 	return from_range<String>(
 		get_stem(file.begin(), file.end()) );
-}
-/// Gets the file stem, e.g. 'test' from '../test.txt'.
-template <class String>
-LEAN_INLINE String get_stem(const String &file)
-{
-	return get_stem<String>(file);
 }
 /// Gets the file stem, e.g. 'test' from '../test.txt'.
 template <class String, class Char>
@@ -473,12 +449,6 @@ LEAN_INLINE String get_extension(const Range &file)
 		file.end() );
 }
 /// Gets the file extension, e.g. '.txt' from 'test.txt'.
-template <class String>
-LEAN_INLINE String get_extension(const String &file)
-{
-	return get_extension<String>(file);
-}
-/// Gets the file extension, e.g. '.txt' from 'test.txt'.
 template <class Char>
 LEAN_INLINE const Char* get_extension(const Char *file)
 {
@@ -488,6 +458,8 @@ LEAN_INLINE const Char* get_extension(const Char *file)
 }
 
 } // namespace
+
+using io::append_path;
 
 using io::get_directory;
 using io::get_filename;

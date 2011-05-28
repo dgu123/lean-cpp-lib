@@ -43,4 +43,17 @@ BOOST_AUTO_TEST_CASE( extension )
 	BOOST_CHECK_EQUAL( lean::get_extension(""), "" );
 }
 
+BOOST_AUTO_TEST_CASE( append )
+{
+	BOOST_CHECK_EQUAL( lean::append_path("abc/def", "ghi/test.txt"), "abc/def/ghi/test.txt" );
+	BOOST_CHECK_EQUAL( lean::append_path("abc/def\\", "ghi/test.txt"), "abc/def\\ghi/test.txt" );
+	BOOST_CHECK_EQUAL( lean::append_path("abc/def", "\\ghi/test.txt"), "abc/def\\ghi/test.txt" );
+	BOOST_CHECK_EQUAL( lean::append_path("abc/def/", "ghi/test.txt"), "abc/def/ghi/test.txt" );
+	BOOST_CHECK_EQUAL( lean::append_path("abc/def", "/ghi/test.txt"), "abc/def/ghi/test.txt" );
+	BOOST_CHECK_EQUAL( lean::append_path("abc/def/", "/ghi/test.txt"), "abc/def//ghi/test.txt" );
+	BOOST_CHECK_EQUAL( lean::append_path("", "ghi/test.txt"), "ghi/test.txt" );
+	BOOST_CHECK_EQUAL( lean::append_path("abc/def", ""), "abc/def" );
+	BOOST_CHECK_EQUAL( lean::append_path("", ""), "" );
+}
+
 BOOST_AUTO_TEST_SUITE_END()

@@ -67,8 +67,27 @@ BOOST_AUTO_TEST_CASE( canonical )
 	BOOST_CHECK_EQUAL( lean::canonical_path("test.txt"), "test.txt" );
 	BOOST_CHECK_EQUAL( lean::canonical_path("../test.txt"), "../test.txt" );
 	BOOST_CHECK_EQUAL( lean::canonical_path("./test.txt"), "test.txt" );
-	BOOST_CHECK_EQUAL( lean::canonical_path("/test.txt"), "test.txt" );
+	BOOST_CHECK_EQUAL( lean::canonical_path("/test.txt"), "/test.txt" );
 	BOOST_CHECK_EQUAL( lean::canonical_path(""), "" );
+}
+
+BOOST_AUTO_TEST_CASE( absolute )
+{
+	BOOST_CHECK_EQUAL( lean::absolute_path("abc/def///", "../ghi/./test.txt"), "abc/ghi/test.txt" );
+	BOOST_CHECK_EQUAL( lean::absolute_path("abc/def///", "../../ghi/../test.txt"), "test.txt" );
+	BOOST_CHECK_EQUAL( lean::absolute_path("abc/def///", "../../../ghi/../test.txt"), "../test.txt" );
+	BOOST_CHECK_EQUAL( lean::absolute_path("", ""), "" );
+}
+
+BOOST_AUTO_TEST_CASE( relative )
+{
+	BOOST_CHECK_EQUAL( lean::relative_path("abc/def", "abc/def/ghi/test.txt"), "ghi/test.txt" );
+	BOOST_CHECK_EQUAL( lean::relative_path("abc/def/xyz", "abc/def/ghi/test.txt"), "../ghi/test.txt" );
+	BOOST_CHECK_EQUAL( lean::relative_path("abc/def/xyz", "def/ghi/test.txt"), "../../../def/ghi/test.txt" );
+	BOOST_CHECK_EQUAL( lean::relative_path("abc/def/xyz", "test.txt"), "../../../test.txt" );
+	BOOST_CHECK_EQUAL( lean::relative_path("", "test.txt"), "test.txt" );
+	BOOST_CHECK_EQUAL( lean::relative_path("test", ""), ".." );
+	BOOST_CHECK_EQUAL( lean::relative_path("", ""), "" );
 }
 
 BOOST_AUTO_TEST_SUITE_END()

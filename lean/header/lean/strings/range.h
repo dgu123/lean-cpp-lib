@@ -47,10 +47,18 @@ LEAN_INLINE range<Iterator> make_range(Iterator begin, Iterator end)
 	return range<Iterator>(begin, end);
 }
 
+/// Constructs an object of the given type from the given range.
+template <class Class, class Range>
+LEAN_INLINE Class from_range(const Range &range)
+{
+	return Class(range.begin(), range.end());
+}
+
 } // namespace
 
 using strings::range;
 using strings::make_range;
+using strings::from_range;
 
 } // namespace
 

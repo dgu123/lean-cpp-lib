@@ -241,10 +241,19 @@ LEAN_INLINE String get_directory(const String &file)
 	return get_directory<String>(file);
 }
 /// Gets the parent directory, e.g. '..' from '../test.txt'.
+template <class String, class Char>
+LEAN_INLINE std::basic_string<Char> get_directory(const Char *file)
+{
+	return get_directory<String>(
+		make_range(
+			file,
+			file + std::char_traits<Char>::length(file) ) );
+}
+/// Gets the parent directory, e.g. '..' from '../test.txt'.
 template <class Char>
 LEAN_INLINE std::basic_string<Char> get_directory(const Char *file)
 {
-	return get_directory< std::basic_string<Char> >( make_range(file, file + std::char_traits<Char>::length(file)) );
+	return get_directory< std::basic_string<Char> >(file);
 }
 
 /// Gets the beginning of the file name, e.g. 'test.txt' from '../test.txt'.
@@ -287,7 +296,9 @@ LEAN_INLINE String get_filename(const String &file)
 template <class Char>
 LEAN_INLINE const Char* get_filename(const Char *file)
 {
-	return get_filename(file, file + std::char_traits<Char>::length(file));
+	return get_filename(
+		file,
+		file + std::char_traits<Char>::length(file) );
 }
 
 /// Gets the file stem, e.g. 'test' from '../test.txt'.
@@ -319,9 +330,8 @@ inline range<Iterator> get_stem(Iterator fileBegin, Iterator fileEnd)
 template <class String, class Range>
 LEAN_INLINE String get_stem(const Range &file)
 {
-	range<typename Range::const_iterator> stemRange = get_stem(file.begin(), file.end());
-
-	return String(stemRange.begin(), stemRange.end());
+	return from_range<String>(
+		get_stem(file.begin(), file.end()) );
 }
 /// Gets the file stem, e.g. 'test' from '../test.txt'.
 template <class String>
@@ -330,10 +340,19 @@ LEAN_INLINE String get_stem(const String &file)
 	return get_stem<String>(file);
 }
 /// Gets the file stem, e.g. 'test' from '../test.txt'.
+template <class String, class Char>
+LEAN_INLINE String get_stem(const Char *file)
+{
+	return from_range<String>(
+		get_stem(
+			file,
+			file + std::char_traits<Char>::length(file) ) );
+}
+/// Gets the file stem, e.g. 'test' from '../test.txt'.
 template <class Char>
 LEAN_INLINE std::basic_string<Char> get_stem(const Char *file)
 {
-	return get_stem< std::basic_string<Char> >( make_range(file, file + std::char_traits<Char>::length(file)) );
+	return get_stem< std::basic_string<Char> >(file);
 }
 
 /// Gets the beginning of the file extension, e.g. '.txt' from 'test.txt'.
@@ -376,7 +395,9 @@ LEAN_INLINE String get_extension(const String &file)
 template <class Char>
 LEAN_INLINE const Char* get_extension(const Char *file)
 {
-	return get_extension(file, file + std::char_traits<Char>::length(file));
+	return get_extension(
+		file,
+		file + std::char_traits<Char>::length(file) );
 }
 
 } // namespace

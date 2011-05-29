@@ -37,9 +37,9 @@ LEAN_INLINE uint8 file_size(const utf8_ntri& file)
 	return file_size(utf_to_utf16(file));
 }
 
-/// Gets the last modification time in microseconds since 1/1/1901. Returns 0 on error.
+/// Gets the last modification time in microseconds since 1/1/1970. Returns 0 on error.
 LEAN_MAYBE_EXPORT uint8 file_revision(const utf16_nti& file);
-/// Gets the last modification time in microseconds since 1/1/1901. Returns 0 on error.
+/// Gets the last modification time in microseconds since 1/1/1970. Returns 0 on error.
 LEAN_INLINE uint8 file_revision(const utf8_ntri& file)
 {
 	return file_revision(utf_to_utf16(file));

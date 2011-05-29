@@ -74,7 +74,7 @@ public:
 	/// Resizes the file, either extending or truncating it. Throws a runtime_exception on error.
 	LEAN_MAYBE_EXPORT void resize(uint8 newSize);
 
-	/// Gets the last modification time in microseconds since 1/1/1901. Returns 0 if file is currently open for writing.
+	/// Gets the last modification time in microseconds since 1/1/1970. Returns 0 if file is currently open for writing.
 	LEAN_MAYBE_EXPORT uint8 revision() const;
 	/// Gets the size of this file, in bytes.
 	LEAN_MAYBE_EXPORT uint8 size() const;

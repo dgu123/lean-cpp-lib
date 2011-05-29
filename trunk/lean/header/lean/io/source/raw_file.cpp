@@ -26,7 +26,7 @@ LEAN_MAYBE_INLINE size_t lean::io::raw_file::read(char *begin, size_t count) con
 
 	// Thread-safe: http://msdn.microsoft.com/en-us/library/ms810467
 	if (!::ReadFile(handle(), begin, count, &read, nullptr))
-		LEAN_LOG_ERROR("Error reading from file: " << get_last_win_error_msg() << " << " << name());
+		LEAN_LOG_WIN_ERROR_CTX("ReadFile()", name().c_str());
 	
 	return read;
 }
@@ -38,7 +38,7 @@ LEAN_MAYBE_INLINE size_t lean::io::raw_file::write(const char *begin, size_t cou
 
 	// Thread-safe: http://msdn.microsoft.com/en-us/library/ms810467
 	if (!::WriteFile(handle(), begin, count, &written, nullptr))
-		LEAN_LOG_ERROR("Error writing to file: " << get_last_win_error_msg() << " << " << name());
+		LEAN_LOG_WIN_ERROR_CTX("WriteFile()", name().c_str());
 	
 	return written;
 }

@@ -15,12 +15,10 @@ LEAN_MAYBE_LINK bool lean::io::file_exists(const utf16_nti& file)
 	return (::GetFileAttributesW(file.c_str()) != INVALID_FILE_ATTRIBUTES);
 }
 
-// Gets the last modification time in microseconds since 1/1/1901. Returns 0 on error.
+// Gets the last modification time in microseconds since 1/1/1970. Returns 0 on error.
 LEAN_MAYBE_LINK lean::uint8 lean::io::file_revision(const utf16_nti& file)
 {
 	uint8 revision = 0;
-
-	LEAN_ASSERT(sizeof(uint8) == sizeof(::FILETIME));
 
 	impl::handle_guard fileHandle( ::CreateFileW(file.c_str(),
 		FILE_READ_ATTRIBUTES,
@@ -31,16 +29,15 @@ LEAN_MAYBE_LINK lean::uint8 lean::io::file_revision(const utf16_nti& file)
 		NULL) );
 
 	if (fileHandle == INVALID_HANDLE_VALUE)
-		LEAN_LOG_ERROR("Error opening file for revision: " << get_last_win_error_msg() << " << " << file.c_str());
+		LEAN_LOG_WIN_ERROR_CTX("CreateFile()", file);
 	else
 	{
-		if (!::GetFileTime(fileHandle, nullptr, nullptr, reinterpret_cast<FILETIME*>(&revision)))
-			LEAN_LOG_ERROR("Error reading file revision: " << get_last_win_error_msg() << " << " << file.c_str());
+		LEAN_ASSERT(sizeof(uint8) == sizeof(::FILETIME));
 
-		static const uint8 null_revision_offset = impl::get_null_revision_offset();
-		
-		if (revision != 0)
-			revision = (revision - null_revision_offset) / 10U;
+		if (!::GetFileTime(fileHandle, nullptr, nullptr, reinterpret_cast<FILETIME*>(&revision)))
+			LEAN_LOG_WIN_ERROR_CTX("GetFileTime()", file);
+
+		revision = impl::get_revision_from_filetime(revision);
 	}
 
 	return revision;
@@ -62,9 +59,9 @@ LEAN_MAYBE_LINK lean::uint8 lean::io::file_size(const utf16_nti& file)
 		NULL) );
 
 	if (fileHandle == INVALID_HANDLE_VALUE)
-		LEAN_LOG_ERROR("Error opening file for size: " << get_last_win_error_msg() << " << " << file.c_str());
+		LEAN_LOG_WIN_ERROR_CTX("CreateFile()", file);
 	else if (!::GetFileSizeEx(fileHandle, reinterpret_cast<LARGE_INTEGER*>(&size)))
-		LEAN_LOG_ERROR("Error reading file size: " << get_last_win_error_msg() << " << " << file.c_str());
+		LEAN_LOG_WIN_ERROR_CTX("GetFileSizeEx()", file);
 
 	return size;
 }

@@ -30,7 +30,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source)
 {
 	// Store valid source, re-used in throw clause!
 	source = impl::make_source_valid(source);
-	log_stream(error_log()) << source << ": An error occured." << std::endl;
+	log_stream(error_log()) << source << ": An error occurred." << std::endl;
 	throw std::runtime_error(source);
 }
 
@@ -40,7 +40,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source, const char 
 	if (!reason)
 		return throw_error(source);
 
-	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occured: " << reason << std::endl;
+	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << std::endl;
 	throw std::runtime_error(reason);
 }
 
@@ -52,7 +52,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source, const char 
 	if (!reason)
 		return throw_error(source, context);
 
-	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occured: " << reason << " (" << context << ")" << std::endl;
+	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << " (" << context << ")" << std::endl;
 	throw std::runtime_error(reason);
 }
 

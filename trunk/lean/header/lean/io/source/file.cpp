@@ -5,6 +5,7 @@
 #include <windows.h>
 #include "../file.h"
 #include "../../strings/conversions.h"
+#include "../../logging/log.h"
 #include "../../logging/win_errors.h"
 
 #include "common.cpp"
@@ -136,18 +137,17 @@ LEAN_MAYBE_INLINE void lean::io::file::resize(uint8 newSize)
 	pos(0);
 }
 
-// Gets the last modification time in microseconds since 1/1/1901. Returns 0 if file is currently open for writing.
+// Gets the last modification time in microseconds since 1/1/1970. Returns 0 if file is currently open for writing.
 LEAN_MAYBE_INLINE lean::uint8 lean::io::file::revision() const
 {
 	uint8 revision = 0;
 
 	LEAN_ASSERT(sizeof(uint8) == sizeof(::FILETIME));
 
-	::GetFileTime(m_handle, nullptr, nullptr, reinterpret_cast<FILETIME*>(&revision));
+	if (!::GetFileTime(m_handle, nullptr, nullptr, reinterpret_cast<FILETIME*>(&revision)))
+		LEAN_LOG_WIN_ERROR_CTX("GetFileTime()", name().c_str());
 
-	static const uint8 null_revision_offset = impl::get_null_revision_offset();
-	// Return 0 in write-access scenarios
-	return (revision != 0) ? (revision - null_revision_offset) / 10U : 0;
+	return impl::get_revision_from_filetime(revision);
 }
 
 // Gets the size of this file, in bytes.
@@ -157,6 +157,8 @@ LEAN_MAYBE_INLINE lean::uint8 lean::io::file::size() const
 
 	LEAN_ASSERT(sizeof(uint8) == sizeof(::LARGE_INTEGER));
 
-	::GetFileSizeEx(m_handle, reinterpret_cast<LARGE_INTEGER*>(&size));
+	if (!::GetFileSizeEx(m_handle, reinterpret_cast<LARGE_INTEGER*>(&size)))
+		LEAN_LOG_WIN_ERROR_CTX("GetFileSizeEx()", name().c_str());
+
 	return size;
 }

@@ -13,13 +13,13 @@ namespace io
 namespace impl
 {
 
-	/// Gets the file time null revision offset (1901-1-1).
-	LEAN_NOINLINE uint8 get_null_revision_offset()
+	/// Gets the file time null revision offset (midnight 1/1/1970).
+	LEAN_NOINLINE uint8 get_null_revision_filetime_offset()
 	{
-		uint8 revision_offset = 0;
+		uint8 revisionOffset = 0;
 
 		::SYSTEMTIME refTime;
-		refTime.wYear = 1901;
+		refTime.wYear = 1970;
 		refTime.wMonth = 1;
 		refTime.wDay = 1;
 		refTime.wHour = 0;
@@ -29,10 +29,21 @@ namespace impl
 
 		LEAN_ASSERT(sizeof(uint8) == sizeof(::FILETIME));
 
-		if (!::SystemTimeToFileTime(&refTime, reinterpret_cast<::FILETIME*>(&revision_offset)))
+		if (!::SystemTimeToFileTime(&refTime, reinterpret_cast<::FILETIME*>(&revisionOffset)))
 			LEAN_THROW_WIN_ERROR_CTX("SystemTimeToFileTime()", "Null revision offset");
 
-		return revision_offset;
+		return revisionOffset;
+	}
+
+	/// Converts the given windows file time to microseconds since midnight 1/1/1970.
+	inline uint8 get_revision_from_filetime(uint8 fileTime)
+	{
+		static const uint8 nullOffset = impl::get_null_revision_filetime_offset();
+
+		// File time in 100 ns intervals, 100 ns * 10 = 1 mys
+		return (fileTime > nullOffset)
+			? (fileTime - nullOffset) / 10U
+			: 0U;
 	}
 
 	/// Handle wrapper.

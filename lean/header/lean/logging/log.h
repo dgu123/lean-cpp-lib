@@ -125,6 +125,32 @@ LEAN_MAYBE_EXPORT log& error_log();
 /// Gets the info log.
 LEAN_MAYBE_EXPORT log& info_log();
 
+/// Logs an error.
+LEAN_MAYBE_EXPORT void log_error(const char *source);
+/// Logs an error.
+LEAN_MAYBE_EXPORT void log_error(const char *source, const char *reason);
+/// Logs an error.
+LEAN_MAYBE_EXPORT void log_error(const char *source, const char *reason, const char *context);
+
+/// Logs an error.
+template <class String1>
+LEAN_INLINE void log_error(const String1 &source)
+{
+	log_error(utf_to_utf8(source).c_str());
+}
+/// Logs an error.
+template <class String1, class String2>
+LEAN_INLINE void log_error(const String1 &source, const String2 &reason)
+{
+	log_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str());
+}
+/// Logs an error.
+template <class String1, class String2, class String3>
+LEAN_INLINE void log_error(const String1 &source, const String2 &reason, const String3 &context)
+{
+	log_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(context).c_str());
+}
+
 } // namespace
 
 using logging::log;
@@ -132,6 +158,8 @@ using logging::log_stream;
 
 using logging::error_log;
 using logging::info_log;
+
+using logging::log_error;
 
 } // namespace
 
@@ -198,6 +226,12 @@ inline std::basic_ostream<lean::utf32_t, Traits>& operator <<(std::basic_ostream
 
 /// Logs the given error message, prepending the caller's file and line.
 #define LEAN_LOG_ERROR(msg) ::lean::log_stream(::lean::error_log()) << __FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) "): " << msg << ::std::endl
+/// Logs an error message, prepending the caller's file and line.
+#define LEAN_LOG_ERROR_NIL() ::lean::logging::log_error(__FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) ")")
+/// Logs the given error message, prepending the caller's file and line.
+#define LEAN_LOG_ERROR_MSG(msg) ::lean::logging::log_error(__FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) ")", msg)
+/// Logs the given error message and context, prepending the caller's file and line.
+#define LEAN_LOG_ERROR_CTX(msg, ctx) ::lean::logging::log_error(__FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) ")", msg, ctx)
 
 /// @}
 

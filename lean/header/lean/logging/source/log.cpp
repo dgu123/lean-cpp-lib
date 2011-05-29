@@ -111,3 +111,46 @@ LEAN_ALWAYS_LINK lean::logging::log& lean::logging::info_log()
 	static log infoLog(&log_debugger::get());
 	return infoLog;
 }
+
+namespace lean
+{
+namespace logging
+{
+namespace impl
+{
+
+	/// Makes the given source string valid in any case.
+	inline const char* make_source_valid(const char *source)
+	{
+		return (source) ? source : "Unknown source";
+	}
+
+} // namespace
+} // namespace
+} // namespace
+
+// Logs an error.
+LEAN_ALWAYS_LINK void lean::logging::log_error(const char *source)
+{
+	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred." << std::endl;
+}
+
+// Logs an error.
+LEAN_ALWAYS_LINK void lean::logging::log_error(const char *source, const char *reason)
+{
+	if (!reason)
+		return log_error(source);
+
+	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << std::endl;
+}
+
+// Logs an error.
+LEAN_ALWAYS_LINK void lean::logging::log_error(const char *source, const char *reason, const char *context)
+{
+	if (!context)
+		return log_error(source, reason);
+	if (!reason)
+		return log_error(source, context);
+
+	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << " (" << context << ")" << std::endl;
+}

@@ -54,13 +54,11 @@ LEAN_ALWAYS_LINK size_t lean::logging::get_last_win_error_msg(char *buffer, size
 
 	if (count == 0)
 		count = strmcpy(buffer, "Error unknown.", maxCount);
-	else if (count == maxCount)
-		buffer[--count] = 0;
+	else if (count >= maxCount)
+		buffer[count = maxCount - 1] = 0;
 
-	if (buffer[count - 1] == '\n' || buffer[count - 1] == '\r')
-		buffer[count - 1] = 0;
-	if (buffer[count - 2] == '\n' || buffer[count - 2] == '\r')
-		buffer[count - 2] = 0;
+	while (buffer[count - 1] == '\n' || buffer[count - 1] == '\r')
+		buffer[--count] = 0;
 
 	return count;
 }

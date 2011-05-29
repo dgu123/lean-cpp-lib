@@ -26,7 +26,8 @@ LEAN_MAYBE_EXPORT size_t get_last_win_error_msg(char *buffer, size_t maxCount);
 /// Gets an error message describing the last WinAPI error that occurred.
 inline std::string get_last_win_error_msg()
 {
-	std::string msg(1024, 0);
+	std::string msg;
+	msg.resize(1024);
 	msg.erase(get_last_win_error_msg(&msg[0], msg.size()));
 	return msg;
 }

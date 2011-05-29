@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include <lean/io/filesystem.h>
+#include <lean/io/raw_file.h>
+#include <lean/time/timer.h>
 
 BOOST_AUTO_TEST_SUITE( filesystem )
 
@@ -88,6 +90,46 @@ BOOST_AUTO_TEST_CASE( relative )
 	BOOST_CHECK_EQUAL( lean::relative_path("", "test.txt"), "test.txt" );
 	BOOST_CHECK_EQUAL( lean::relative_path("test", ""), ".." );
 	BOOST_CHECK_EQUAL( lean::relative_path("", ""), "" );
+}
+
+BOOST_AUTO_TEST_CASE( exists )
+{
+	BOOST_CHECK_EQUAL( lean::file_exists("abcdefghijklmnopqrstuvwxyz"), false );
+	BOOST_CHECK_EQUAL( lean::file_exists(MAKE_TEST_FILENAME(".")), true );
+}
+
+BOOST_AUTO_TEST_CASE( revision )
+{
+	BOOST_CHECK_EQUAL( lean::file_revision("abcdefghijklmnopqrstuvwxyz"), 0 );
+
+	{
+		lean::raw_file file1(MAKE_TEST_FILENAME("first.txt"));
+		file1.print("First one!");
+	}
+	lean::timer wait;
+	while (wait.milliseconds() < 10);
+	{
+		lean::raw_file file2(MAKE_TEST_FILENAME("second.txt"));
+		file2.print("Second one!");
+	}
+	BOOST_CHECK_GT( lean::file_revision(MAKE_TEST_FILENAME("second.txt")),
+		lean::file_revision(MAKE_TEST_FILENAME("first.txt")) );
+}
+
+BOOST_AUTO_TEST_CASE( size )
+{
+	BOOST_CHECK_EQUAL( lean::file_size("abcdefghijklmnopqrstuvwxyz"), 0 );
+
+	{
+		lean::raw_file file1(MAKE_TEST_FILENAME("35bytes.txt"));
+		file1.print("This file contains exactly 35 bytes");
+	}
+	{
+		lean::raw_file file2(MAKE_TEST_FILENAME("55bytes.txt"));
+		file2.print("This file, on the other hand, contains exactly 55 bytes");
+	}
+	BOOST_CHECK_EQUAL( lean::file_size(MAKE_TEST_FILENAME("35bytes.txt")), 35 );
+	BOOST_CHECK_EQUAL( lean::file_size(MAKE_TEST_FILENAME("55bytes.txt")), 55 );
 }
 
 BOOST_AUTO_TEST_SUITE_END()

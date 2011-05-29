@@ -7,12 +7,89 @@
 
 #include "../lean.h"
 #include "../strings/types.h"
+#include "../strings/conversions.h"
 #include <algorithm>
+
+#ifndef LEAN_FILESYSTEM_PATH_LENGTH_HINT
+	/// Estimated length of filesystem paths (in characters).
+	/// @ingroup AssortedSwitches
+	#define LEAN_FILESYSTEM_PATH_LENGTH_HINT 256
+#endif
 
 namespace lean
 {
 namespace io
 {
+
+/// Checks whether the given file exists.
+LEAN_MAYBE_EXPORT bool file_exists(const utf16_nti& file);
+/// Checks whether the given file exists.
+LEAN_INLINE bool file_exists(const utf8_ntri& file)
+{
+	return file_exists(utf_to_utf16(file));
+}
+
+/// Gets the size of the given file, in bytes.
+LEAN_MAYBE_EXPORT uint8 file_size(const utf16_nti& file);
+/// Gets the size of the given file, in bytes.
+LEAN_INLINE uint8 file_size(const utf8_ntri& file)
+{
+	return file_size(utf_to_utf16(file));
+}
+
+/// Gets the last modification time in microseconds since 1/1/1901. Returns 0 on error.
+LEAN_MAYBE_EXPORT uint8 file_revision(const utf16_nti& file);
+/// Gets the last modification time in microseconds since 1/1/1901. Returns 0 on error.
+LEAN_INLINE uint8 file_revision(const utf8_ntri& file)
+{
+	return file_revision(utf_to_utf16(file));
+}
+
+/// Gets the current directory. Will return the buffer size required to store the
+/// current directory, if the given buffer is too small, the number of characters
+/// written otherwise.
+LEAN_MAYBE_EXPORT size_t current_directory(utf16_t *buffer, size_t bufferSize);
+/// Gets the current directory.
+template <class String>
+String current_directory();
+
+#ifndef DOXYGEN_SKIP_THIS
+template <>
+inline utf16_string current_directory()
+{
+	utf16_string result;
+	
+	result.resize(LEAN_FILESYSTEM_PATH_LENGTH_HINT);
+	size_t actualLength = current_directory(&result[0], LEAN_FILESYSTEM_PATH_LENGTH_HINT);
+	
+	if (actualLength > LEAN_FILESYSTEM_PATH_LENGTH_HINT)
+	{
+		result.resize(actualLength);
+		actualLength = current_directory(&result[0], actualLength);
+	}
+
+	result.erase(actualLength);
+	return result;
+}
+template <>
+LEAN_INLINE utf8_string current_directory()
+{
+	return utf_to_utf8(current_directory<utf16_string>());
+}
+template <>
+LEAN_INLINE utf32_string current_directory()
+{
+	return utf_to_utf32(utf_to_utf8(current_directory<utf16_string>()));
+}
+#endif
+
+/// Gets the initial directory.
+template <class String>
+LEAN_INLINE const String& initial_directory()
+{
+	static const String initialDir = current_directory<String>();
+	return initialDir;
+}
 
 /// Special file system characters.
 template <class Char>
@@ -69,30 +146,6 @@ template <class Char>
 LEAN_INLINE Char& assign_redirection(Char &chr)
 {
 	return (chr = filesystem_chars<Char>::redirection);
-}
-
-/// Inserts a path separator.
-template <class Iterator>
-LEAN_INLINE Iterator insert_path_separator(Iterator iterator)
-{
-	assign_path_separator(*iterator);
-	return ++iterator;
-}
-
-/// Inserts an extension separator.
-template <class Iterator>
-LEAN_INLINE Iterator insert_extension_separator(Iterator iterator)
-{
-	assign_extension_separator(*iterator);
-	return ++iterator;
-}
-
-/// Inserts a redirection character.
-template <class Iterator>
-LEAN_INLINE Iterator insert_redirection(Iterator iterator)
-{
-	assign_redirection(*iterator);
-	return ++iterator;
 }
 
 /// Gets the relative path euqivalent to the given absolute path when starting at the given base.
@@ -552,6 +605,10 @@ LEAN_INLINE const Char* get_extension(const Char *file)
 
 } // namespace
 
+using io::file_exists;
+using io::file_revision;
+using io::file_size;
+
 using io::relative_path;
 using io::absolute_path;
 using io::canonical_path;
@@ -563,5 +620,9 @@ using io::get_stem;
 using io::get_extension;
 
 } // namespace
+
+#ifdef LEAN_INCLUDE_LINKED
+#include "source/filesystem.cpp"
+#endif
 
 #endif

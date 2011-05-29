@@ -99,7 +99,7 @@ public:
 
 	/// Constructs a compatible object from this null-terminated character range.
 	template <class Compatible>
-	operator Compatible() const
+	Compatible to() const
 	{
 		typedef typename assert_nullterminated_compatible<Compatible, value_type, traits_type>::type assert_compatible;
 		return nullterminated_compatible<Compatible, value_type, traits_type>::to(m_begin, m_end);

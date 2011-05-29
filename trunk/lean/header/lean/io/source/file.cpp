@@ -7,32 +7,14 @@
 #include "../../strings/conversions.h"
 #include "../../logging/win_errors.h"
 
+#include "common.cpp"
+
 namespace lean
 {
 namespace io
 {
 namespace impl
 {
-	/// Gets the file time null revision offset.
-	inline uint8 get_null_revision_offset()
-	{
-		SYSTEMTIME refTime;
-		refTime.wYear = 1901;
-		refTime.wMonth = 1;
-		refTime.wDay = 1;
-		refTime.wHour = 0;
-		refTime.wMinute = 0;
-		refTime.wSecond = 0;
-		refTime.wMilliseconds = 0;
-
-		uint8 revision_offset;
-
-		LEAN_ASSERT(sizeof(uint8) == sizeof(::FILETIME));
-		SystemTimeToFileTime(&refTime, reinterpret_cast<FILETIME*>(&revision_offset));
-
-		return revision_offset;
-	}
-
 	/// Converts the given access flags into valid windows access flags.
 	inline DWORD get_windows_access_flags(uint4 access)
 	{

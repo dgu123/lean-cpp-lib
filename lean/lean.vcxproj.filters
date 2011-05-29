@@ -485,5 +485,8 @@
     <ClCompile Include="header\lean\io\source\filesystem.cpp">
       <Filter>Source Files\io</Filter>
     </ClCompile>
+    <ClCompile Include="header\lean\io\source\common.cpp">
+      <Filter>Source Files\io</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

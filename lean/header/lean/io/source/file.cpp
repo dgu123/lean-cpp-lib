@@ -85,7 +85,7 @@ namespace impl
 // Opens the given file according to the given flags. Throws a runtime_exception on error.
 LEAN_MAYBE_INLINE lean::io::file::file(const utf8_ntri &name,
 	uint4 access, open_mode mode, uint4 hints, uint4 share)
-	: m_name(name),
+	: m_name(name.to<utf8_string>()),
 	m_handle(
 		::CreateFileW(utf_to_utf16(name).c_str(),
 			impl::get_windows_access_flags(access),

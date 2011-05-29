@@ -152,6 +152,16 @@ using strings::utf8_nt;
 using strings::utf8_ntri;
 using strings::utf8_ntr;
 
+using strings::utf16_nti;
+using strings::utf16_nt;
+using strings::utf16_ntri;
+using strings::utf16_ntr;
+
+using strings::utf32_nti;
+using strings::utf32_nt;
+using strings::utf32_ntri;
+using strings::utf32_ntr;
+
 using strings::utf8_string;
 using strings::utf16_string;
 using strings::utf32_string;

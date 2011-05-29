@@ -8,6 +8,7 @@
 #include "../lean.h"
 #include "../tags/noncopyable.h"
 #include "../strings/types.h"
+#include "../strings/conversions.h"
 #include "../concurrent/spin_lock.h"
 #include "../concurrent/shareable_spin_lock.h"
 #include "log_target.h"
@@ -133,6 +134,60 @@ using logging::error_log;
 using logging::info_log;
 
 } // namespace
+
+// Drop-in replacements for missing utf8 streaming operators
+template <class Traits, class StringTraits, class StringAlloc>
+inline std::basic_ostream<lean::utf8_t, Traits>& operator <<(
+	std::basic_ostream<lean::utf8_t, Traits>& stream,
+	const std::basic_string<lean::utf16_t, StringTraits, StringAlloc> &string)
+{
+	return (stream << lean::utf_to_utf8(string));
+}
+template <class Traits, class StringTraits, class StringAlloc>
+inline std::basic_ostream<lean::utf8_t, Traits>& operator <<(
+	std::basic_ostream<lean::utf8_t, Traits>& stream,
+	const std::basic_string<lean::utf32_t, StringTraits, StringAlloc> &string)
+{
+	return (stream << lean::utf_to_utf8(string));
+}
+template <class Traits>
+inline std::basic_ostream<lean::utf8_t, Traits>& operator <<(std::basic_ostream<lean::utf8_t, Traits>& stream, const lean::utf16_t *str)
+{
+	return (stream << lean::utf_to_utf8(str));
+}
+template <class Traits>
+inline std::basic_ostream<lean::utf8_t, Traits>& operator <<(std::basic_ostream<lean::utf8_t, Traits>& stream, const lean::utf32_t *str)
+{
+	return (stream << lean::utf_to_utf8(str));
+}
+
+// Drop-in replacements for missing utf16 streaming operators
+template <class Traits, class StringTraits, class StringAlloc>
+inline std::basic_ostream<lean::utf16_t, Traits>& operator <<(
+	std::basic_ostream<lean::utf16_t, Traits>& stream,
+	const std::basic_string<lean::utf32_t, StringTraits, StringAlloc> &string)
+{
+	return (stream << lean::utf_to_utf16(string));
+}
+template <class Traits>
+inline std::basic_ostream<lean::utf16_t, Traits>& operator <<(std::basic_ostream<lean::utf16_t, Traits>& stream, const lean::utf32_t *str)
+{
+	return (stream << lean::utf_to_utf16(str));
+}
+
+// Drop-in replacements for missing utf32 streaming operators
+template <class Traits, class StringTraits, class StringAlloc>
+inline std::basic_ostream<lean::utf32_t, Traits>& operator <<(
+	std::basic_ostream<lean::utf32_t, Traits>& stream,
+	const std::basic_string<lean::utf16_t, StringTraits, StringAlloc> &string)
+{
+	return (stream << lean::utf_to_utf32(string));
+}
+template <class Traits>
+inline std::basic_ostream<lean::utf32_t, Traits>& operator <<(std::basic_ostream<lean::utf32_t, Traits>& stream, const lean::utf16_t *str)
+{
+	return (stream << lean::utf_to_utf32(str));
+}
 
 /// @addtogroup LoggingMacros Logging macros
 /// @see lean::logging

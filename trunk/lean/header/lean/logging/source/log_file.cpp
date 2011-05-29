@@ -17,7 +17,7 @@ LEAN_ALWAYS_LINK lean::logging::log_file::log_file(const utf8_ntri &name)
 			0, NULL) )
 {
 	if (m_handle == INVALID_HANDLE_VALUE)
-		LEAN_LOG_ERROR("Error creating log file: " << get_last_win_error_msg() << " << " << name.c_str() << std::endl);
+		LEAN_LOG_ERROR("Error creating log file: " << get_last_win_error_msg() << " << " << name.c_str());
 }
 
 // Closes the log file.

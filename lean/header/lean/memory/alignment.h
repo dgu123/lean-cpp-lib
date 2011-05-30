@@ -15,8 +15,26 @@
 			#define alignas(alignment) __declspec( align(alignment) )
 		#endif
 		#ifndef alignof
+
+			namespace lean
+			{
+				namespace memory
+				{
+					namespace impl
+					{
+						/// Workaround for Visual Studio bug: Alignment of some template classes not evaluated until size has been queried
+						template <size_t Size, size_t Alignment>
+						struct alignof_fix
+						{
+							LEAN_STATIC_ASSERT(Size != 0U && Alignment != 0U);
+							static const size_t alignment = Alignment;
+						};
+					}
+				}
+			}
+
 			/// Emulated alignof using MSVC-specific alignof operator extension.
-			#define alignof(type) __alignof(type)
+			#define alignof(type) ::lean::memory::impl::alignof_fix<sizeof(type), __alignof(type)>::alignment
 		#endif
 	#else
 		#error Unknown compiler, alignment specifiers unavailable.

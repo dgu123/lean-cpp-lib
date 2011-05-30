@@ -65,3 +65,11 @@ LEAN_MAYBE_LINK lean::uint8 lean::io::file_size(const utf16_nti& file)
 
 	return size;
 }
+
+// Gets the current directory. Will return the buffer size required to store the
+// current directory, if the given buffer is too small, the number of actual
+// characters written, otherwise (excluding the terminating null appended).
+LEAN_MAYBE_LINK size_t lean::io::current_directory(utf16_t *buffer, size_t bufferSize)
+{
+	return ::GetCurrentDirectoryW(bufferSize, buffer);
+}

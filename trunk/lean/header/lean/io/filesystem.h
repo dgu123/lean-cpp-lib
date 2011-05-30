@@ -46,8 +46,8 @@ LEAN_INLINE uint8 file_revision(const utf8_ntri& file)
 }
 
 /// Gets the current directory. Will return the buffer size required to store the
-/// current directory, if the given buffer is too small, the number of characters
-/// written otherwise.
+/// current directory, if the given buffer is too small, the number of actual
+/// characters written, otherwise (excluding the terminating null appended).
 LEAN_MAYBE_EXPORT size_t current_directory(utf16_t *buffer, size_t bufferSize);
 /// Gets the current directory.
 template <class String>

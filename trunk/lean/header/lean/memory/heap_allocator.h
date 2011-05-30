@@ -60,7 +60,7 @@ public:
 	/// Allocates the given number of elements.
 	LEAN_INLINE pointer allocate(size_type count)
 	{
-		return heap_type::allocate<Alignment>(count * sizeof(value_type));
+		return reinterpret_cast<pointer>( heap_type::allocate<Alignment>(count * sizeof(value_type)) );
 	}
 	/// Allocates the given amount of memory.
 	LEAN_INLINE pointer allocate(size_type count, const void *)
@@ -76,25 +76,25 @@ public:
 	/// Constructs a new element from the given value at the given pointer.
 	LEAN_INLINE void construct(pointer ptr, const value_type& value)
 	{
-		new(ptr) Element(value);
+		new(reinterpret_cast<void*>(ptr)) Element(value);
 	}
 	/// Constructs a new element from the given value at the given pointer.
 	template<class Other>
 	LEAN_INLINE void construct(pointer ptr, const Other& value)
 	{
-		new(ptr) Element(value);
+		new(reinterpret_cast<void*>(ptr)) Element(value);
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs a new element from the given value at the given pointer.
 	LEAN_INLINE void construct(pointer ptr, value_type&& value)
 	{
-		new(ptr) Element(std::forward<value_type>(value));
+		new(reinterpret_cast<void*>(ptr)) Element(std::forward<value_type>(value));
 	}
 	/// Constructs a new element from the given value at the given pointer.
 	template<class Other>
 	LEAN_INLINE void construct(pointer ptr, Other&& value)
 	{
-		new(ptr) Element(std::forward<Other>(value));
+		new(reinterpret_cast<void*>(ptr)) Element(std::forward<Other>(value));
 	}
 #endif
 	/// Destructs an element at the given pointer.
@@ -125,7 +125,7 @@ public:
 #ifndef DOXYGEN_SKIP_THIS
 
 /// STL allocator heap adapter.
-template<class Heap, size_t Alignment = 1>
+template<class Heap, size_t Alignment>
 class heap_allocator<void, Heap, Alignment>
 {
 public:
@@ -146,7 +146,7 @@ public:
 	typedef ptrdiff_t difference_type;
 
 	/// Allows for the creation of differently-typed equivalent allocators.
-	template<class Other>
+	template <class Other>
 	struct rebind
 	{
 		/// Equivalent allocator allocating elements of type Other.
@@ -156,25 +156,25 @@ public:
 	/// Default constructor.
 	LEAN_INLINE heap_allocator() { }
 	/// Copy constructor.
-	template<class Other>
+	template <class Other>
 	LEAN_INLINE heap_allocator(const heap_allocator<Other, Heap, Alignment> &right) { }
 	/// Assignment operator.
-	template<class Other>
+	template <class Other>
 	LEAN_INLINE heap_allocator& operator=(const heap_allocator<Other, Heap, Alignment> &right) { return *this; }
 };
 
 #endif
 
 /// Checks the given two allocators for equivalence.
-template<class Element, class Heap, size_t Alignment, class Other>
-LEAN_INLINE bool operator ==(const heap_allocator<Element, Heap, Alignment>&, const allocator<Other, Heap, Alignment>&)
+template <class Element, class Heap, size_t Alignment, class Other>
+LEAN_INLINE bool operator ==(const heap_allocator<Element, Heap, Alignment>&, const heap_allocator<Other, Heap, Alignment>&)
 {
 	return true;
 }
 
 /// Checks the given two allocators for inequivalence.
-template<class Element, class Heap, size_t Alignment, class Other>
-LEAN_INLINE bool operator !=(const heap_allocator<Element, Heap, Alignment>&, const allocator<Other, Heap, Alignment>&)
+template <class Element, class Heap, size_t Alignment, class Other>
+LEAN_INLINE bool operator !=(const heap_allocator<Element, Heap, Alignment>&, const heap_allocator<Other, Heap, Alignment>&)
 {
 	return false;
 }

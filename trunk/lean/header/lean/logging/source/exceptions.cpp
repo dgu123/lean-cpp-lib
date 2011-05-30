@@ -16,7 +16,7 @@ namespace impl
 {
 
 	/// Makes the given source string valid in any case.
-	inline const char* make_source_valid(const char *source)
+	inline const char* make_exception_source_valid(const char *source)
 	{
 		return (source) ? source : "Unknown source";
 	}
@@ -29,7 +29,7 @@ namespace impl
 LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source)
 {
 	// Store valid source, re-used in throw clause!
-	source = impl::make_source_valid(source);
+	source = impl::make_exception_source_valid(source);
 	log_stream(error_log()) << source << ": An error occurred." << std::endl;
 	throw std::runtime_error(source);
 }
@@ -40,7 +40,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source, const char 
 	if (!reason)
 		return throw_error(source);
 
-	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << std::endl;
+	log_stream(error_log()) << impl::make_exception_source_valid(source) << ": An error occurred: " << reason << std::endl;
 	throw std::runtime_error(reason);
 }
 
@@ -52,7 +52,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source, const char 
 	if (!reason)
 		return throw_error(source, context);
 
-	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << " (" << context << ")" << std::endl;
+	log_stream(error_log()) << impl::make_exception_source_valid(source) << ": An error occurred: " << reason << " (" << context << ")" << std::endl;
 	throw std::runtime_error(reason);
 }
 
@@ -60,7 +60,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source, const char 
 LEAN_ALWAYS_LINK void lean::logging::throw_invalid(const char *source)
 {
 	// Store valid source, re-used in throw clause!
-	source = impl::make_source_valid(source);
+	source = impl::make_exception_source_valid(source);
 	log_stream(error_log()) << source << ": Invalid argument." << std::endl;
 	throw std::invalid_argument(source);
 }
@@ -71,7 +71,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_invalid(const char *source, const cha
 	if (!reason)
 		return throw_invalid(source);
 
-	log_stream(error_log()) << impl::make_source_valid(source) << ": Invalid argument: " << reason << std::endl;
+	log_stream(error_log()) << impl::make_exception_source_valid(source) << ": Invalid argument: " << reason << std::endl;
 	throw std::invalid_argument(reason);
 }
 
@@ -82,7 +82,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_bad_alloc(const char *source)
 	size_t msgLen = 0;
 
 	// Log without allocating further memory
-	msgLen += strmcpy(msg + msgLen, impl::make_source_valid(source), sizeof(msg) - msgLen);
+	msgLen += strmcpy(msg + msgLen, impl::make_exception_source_valid(source), sizeof(msg) - msgLen);
 	msgLen += strmcpy(msg + msgLen, ": Out of memory.\n", sizeof(msg) - msgLen);
 	
 	msg[msgLen - 1] = '\n';
@@ -98,7 +98,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_bad_alloc(const char *source, size_t 
 	size_t msgLen = 0;
 
 	// Log without allocating further memory
-	msgLen += strmcpy(msg + msgLen, impl::make_source_valid(source), sizeof(msg) - msgLen);
+	msgLen += strmcpy(msg + msgLen, impl::make_exception_source_valid(source), sizeof(msg) - msgLen);
 	msgLen += strmcpy(msg + msgLen, ": Out of memory while allocating ", sizeof(msg) - msgLen);
 
 	if (sizeof(msg) - msgLen > max_int_string_length<size_t>::value)

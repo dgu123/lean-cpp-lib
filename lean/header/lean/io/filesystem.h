@@ -49,8 +49,16 @@ LEAN_INLINE uint8 file_revision(const utf8_ntri& file)
 /// current directory, if the given buffer is too small, the number of actual
 /// characters written, otherwise (excluding the terminating null appended).
 LEAN_MAYBE_EXPORT size_t current_directory(utf16_t *buffer, size_t bufferSize);
+
 /// Gets the current directory.
-inline utf16_string current_directory()
+template <class String>
+String current_directory();
+
+#ifndef DOXYGEN_SKIP_THIS
+
+/// Gets the current directory.
+template <>
+LEAN_INLINE utf16_string current_directory()
 {
 	utf16_string result;
 	
@@ -66,55 +74,27 @@ inline utf16_string current_directory()
 	result.erase(actualLength);
 	return result;
 }
-
-/// Gets the current directory.
-template <class String>
-String current_directory();
-
-#ifndef DOXYGEN_SKIP_THIS
-
 /// Gets the current directory.
 template <>
 LEAN_INLINE utf8_string current_directory()
 {
-	return utf_to_utf8(current_directory());
-}
-/// Gets the current directory.
-template <>
-LEAN_INLINE utf16_string current_directory()
-{
-	return current_directory(); 
+	return strings::utf16_to_utf8<utf8_string>(current_directory<utf16_string>());
 }
 
 #endif
 
-/// Gets the initial directory.
-LEAN_INLINE const utf16_string& initial_directory()
+/// Gets the current directory.
+LEAN_INLINE utf8_string current_directory()
 {
-	static const utf16_string initialDir = current_directory();
+	return strings::utf16_to_utf8<utf8_string>(current_directory<utf16_string>());
+}
+
+/// Gets the initial directory.
+LEAN_INLINE const utf8_string& initial_directory()
+{
+	static const utf8_string initialDir = current_directory<utf8_string>();
 	return initialDir;
 }
-
-/// Gets the initial directory.
-template <class String>
-String initial_directory();
-
-#ifndef DOXYGEN_SKIP_THIS
-
-/// Gets the initial directory.
-template <>
-LEAN_INLINE utf8_string initial_directory()
-{
-	return utf_to_utf8(initial_directory());
-}
-/// Gets the initial directory.
-template <>
-LEAN_INLINE utf16_string initial_directory()
-{
-	return initial_directory();
-}
-
-#endif
 
 /// Special file system characters.
 template <class Char>

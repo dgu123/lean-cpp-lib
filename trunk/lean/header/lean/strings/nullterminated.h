@@ -80,8 +80,8 @@ class nullterminated_implicit
 protected:
 	const Char *m_begin;
 
-	/// Gets a pointer to this null-terminated range.
-	LEAN_INLINE operator Char*() const { return m_begin; }
+	// /// Gets a pointer to this null-terminated range.
+	// LEAN_INLINE operator Char*() const { return m_begin; }
 	// DESIGN: Only permit implicit conversion to compatible container types, otherwise pointers might accidentally dangle.
 
 public:
@@ -143,7 +143,7 @@ public:
 	LEAN_INLINE const_pointer data() const { return c_str(); }
 
 	/// Returns a constant iterator to the first element contained by this character range. O(1).
-	LEAN_INLINE const_iterator begin(void) const { return m_begin; }
+	LEAN_INLINE const_iterator begin() const { return m_begin; }
 	/// Returns a constant iterator  the last element contained by this character range. O(n).
 	LEAN_INLINE const_iterator end() const { return m_begin + length(); }
 
@@ -168,20 +168,23 @@ public:
 template < class Char, class Traits = char_traits<typename strip_const<Char>::type> >
 class nullterminated : public nullterminated_implicit<Char, Traits>
 {
-private:
-	typedef nullterminated_implicit<Char, Traits> base_type;
-
 public:
+	/// Corresponding implicit type.
+	typedef nullterminated_implicit<Char, Traits> implicit_type;
+
 	/// Constructs a (half) character range from the given C string.
 	explicit LEAN_INLINE nullterminated(const_pointer begin)
-		: base_type(begin)  { }
+		: implicit_type(begin)  { }
 	/// Constructs a (half) character range from the given compatible object.
 	template <class Compatible>
 	explicit LEAN_INLINE nullterminated(const Compatible &from)
-		: base_type(from) { }
+		: implicit_type(from)
+	{
+		typedef typename assert_nullterminated_compatible<Compatible, value_type, traits_type>::type assert_compatible;
+	}
 	/// Constructs a (half) character range from the given implicit half range.
-	LEAN_INLINE nullterminated(const base_type &right)
-		: base_type(right)  { }
+	LEAN_INLINE nullterminated(const implicit_type &right)
+		: implicit_type(right)  { }
 };
 
 /// Makes an explicit nullterminated (half) range from the given implicit range.

@@ -110,23 +110,29 @@ public:
 template < class Char, class Traits = char_traits<typename strip_const<Char>::type> >
 class nullterminated_range : public nullterminated_range_implicit<Char, Traits>
 {
-private:
-	typedef nullterminated_range_implicit<Char, Traits> base_type;
-
 public:
-	/// Constructs a character range from the given half-range.
-	LEAN_INLINE nullterminated_range(const nullterminated_implicit<Char, Traits> &right)
-		: base_type(right) { }
+	/// Corresponding implicit type.
+	typedef nullterminated_range_implicit<Char, Traits> implicit_type;
+
 	/// Constructs a character range from the given C string.
 	explicit LEAN_INLINE nullterminated_range(const_pointer begin)
-		: base_type(begin) { }
+		: implicit_type(begin) { }
 	/// Constructs a character range from the given C string range (*end must be null character).
 	LEAN_INLINE nullterminated_range(const_pointer begin, const_pointer end)
-		: base_type(begin, end) { }
+		: implicit_type(begin, end) { }
 	/// Constructs a character range from the given compatible object.
 	template <class Compatible>
 	explicit LEAN_INLINE nullterminated_range(const Compatible &from)
-		: base_type(from) { }
+		: implicit_type(from)
+	{
+		typedef typename assert_nullterminated_compatible<Compatible, value_type, traits_type>::type assert_compatible;
+	}
+	/// Constructs a character range from the given half-range.
+	LEAN_INLINE nullterminated_range(const nullterminated_implicit<Char, Traits> &right)
+		: implicit_type(right) { }
+	/// Constructs a character range from the given implicit range.
+	LEAN_INLINE nullterminated_range(const implicit_type &right)
+		: implicit_type(right) { }
 };
 
 /// Makes an explicit nullterminated range from the given implicit range.

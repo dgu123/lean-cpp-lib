@@ -134,19 +134,19 @@ LEAN_MAYBE_EXPORT void log_error(const char *source, const char *reason, const c
 
 /// Logs an error.
 template <class String1>
-LEAN_INLINE void log_error(const String1 &source)
+inline void log_error(const String1 &source)
 {
 	log_error(utf_to_utf8(source).c_str());
 }
 /// Logs an error.
 template <class String1, class String2>
-LEAN_INLINE void log_error(const String1 &source, const String2 &reason)
+inline void log_error(const String1 &source, const String2 &reason)
 {
 	log_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str());
 }
 /// Logs an error.
 template <class String1, class String2, class String3>
-LEAN_INLINE void log_error(const String1 &source, const String2 &reason, const String3 &context)
+inline void log_error(const String1 &source, const String2 &reason, const String3 &context)
 {
 	log_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(context).c_str());
 }

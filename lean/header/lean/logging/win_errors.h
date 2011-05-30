@@ -42,38 +42,38 @@ inline std::string get_last_win_error_msg()
 
 /// Logs the last WinAPI error.
 template <class String1>
-LEAN_INLINE void log_last_win_error(const String1 &source)
+inline void log_last_win_error(const String1 &source)
 {
 	log_last_win_error(utf_to_utf8(source).c_str());
 }
 /// Logs the last WinAPI error.
 template <class String1, class String2>
-LEAN_INLINE void log_last_win_error(const String1 &source, const String2 &reason)
+inline void log_last_win_error(const String1 &source, const String2 &reason)
 {
 	log_last_win_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str());
 }
 /// Logs the last WinAPI error.
 template <class String1, class String2, class String3>
-LEAN_INLINE void log_last_win_error(const String1 &source, const String2 &reason, const String3 &context)
+inline void log_last_win_error(const String1 &source, const String2 &reason, const String3 &context)
 {
 	log_last_win_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(context).c_str());
 }
 
 /// Throws a runtime_error exception containing the last WinAPI error.
 template <class String1>
-LEAN_INLINE void throw_last_win_error(const String1 &source)
+inline void throw_last_win_error(const String1 &source)
 {
 	throw_last_win_error(utf_to_utf8(source).c_str());
 }
 /// Throws a runtime_error exception containing the last WinAPI error.
 template <class String1, class String2>
-LEAN_INLINE void throw_last_win_error(const String1 &source, const String2 &reason)
+inline void throw_last_win_error(const String1 &source, const String2 &reason)
 {
 	throw_last_win_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str());
 }
 /// Throws a runtime_error exception containing the last WinAPI error.
 template <class String1, class String2, class String3>
-LEAN_INLINE void throw_last_win_error(const String1 &source, const String2 &reason, const String3 &context)
+inline void throw_last_win_error(const String1 &source, const String2 &reason, const String3 &context)
 {
 	throw_last_win_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(context).c_str());
 }

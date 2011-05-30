@@ -21,7 +21,7 @@ LEAN_ALWAYS_LINK void lean::logging::log_last_win_error(const char *source, cons
 	if (!reason)
 		return log_last_win_error(source);
 
-	std::string msg = get_last_win_error_msg();
+	std::string msg = get_last_win_error_msg<utf8_string>();
 	msg.append(" << ");
 	msg.append(reason);
 
@@ -36,7 +36,7 @@ LEAN_ALWAYS_LINK void lean::logging::log_last_win_error(const char *source, cons
 	if (!reason)
 		return log_last_win_error(source, context);
 
-	std::string msg = get_last_win_error_msg();
+	std::string msg = get_last_win_error_msg<utf8_string>();
 	msg.append(" << ");
 	msg.append(reason);
 
@@ -55,7 +55,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_last_win_error(const char *source, co
 	if (!reason)
 		return throw_last_win_error(source);
 
-	std::string msg = get_last_win_error_msg();
+	std::string msg = get_last_win_error_msg<utf8_string>();
 	msg.append(" << ");
 	msg.append(reason);
 
@@ -70,7 +70,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_last_win_error(const char *source, co
 	if (!reason)
 		return throw_last_win_error(source, context);
 
-	std::string msg = get_last_win_error_msg();
+	std::string msg = get_last_win_error_msg<utf8_string>();
 	msg.append(" << ");
 	msg.append(reason);
 
@@ -78,9 +78,9 @@ LEAN_ALWAYS_LINK void lean::logging::throw_last_win_error(const char *source, co
 }
 
 // Gets an error message describing the last WinAPI error that occurred. Returns the number of characters used.
-LEAN_ALWAYS_LINK size_t lean::logging::get_last_win_error_msg(char *buffer, size_t maxCount)
+LEAN_ALWAYS_LINK size_t lean::logging::get_last_win_error_msg(utf16_t *buffer, size_t maxCount)
 {
-	size_t count = ::FormatMessageA(
+	size_t count = ::FormatMessageW(
 		FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 		nullptr, ::GetLastError(),
 		0,
@@ -88,7 +88,7 @@ LEAN_ALWAYS_LINK size_t lean::logging::get_last_win_error_msg(char *buffer, size
 		nullptr );
 
 	if (count == 0)
-		count = strmcpy(buffer, "Error unknown.", maxCount);
+		count = wcsmcpy(buffer, L"Error unknown.", maxCount);
 	else if (count >= maxCount)
 		buffer[count = maxCount - 1] = 0;
 

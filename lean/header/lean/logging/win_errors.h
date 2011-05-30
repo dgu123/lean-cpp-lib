@@ -6,6 +6,7 @@
 #define LEAN_LOGGING_WIN_ERRORS
 
 #include "../lean.h"
+#include "../strings/types.h"
 #include "../strings/conversions.h"
 #include <string>
 #include <sstream>
@@ -30,15 +31,36 @@ LEAN_MAYBE_EXPORT void throw_last_win_error(const char *source, const char *reas
 LEAN_MAYBE_EXPORT void throw_last_win_error(const char *source, const char *reason, const char *context);
 
 /// Gets an error message describing the last WinAPI error that occurred. Returns the number of characters used.
-LEAN_MAYBE_EXPORT size_t get_last_win_error_msg(char *buffer, size_t maxCount);
+LEAN_MAYBE_EXPORT size_t get_last_win_error_msg(utf16_t *buffer, size_t maxCount);
 /// Gets an error message describing the last WinAPI error that occurred.
-inline std::string get_last_win_error_msg()
+inline utf16_string get_last_win_error_msg()
 {
-	std::string msg;
+	utf16_string msg;
 	msg.resize(1024);
 	msg.erase(get_last_win_error_msg(&msg[0], msg.size()));
 	return msg;
 }
+
+/// Gets an error message describing the last WinAPI error that occurred.
+template <class String>
+String get_last_win_error_msg();
+
+#ifndef DOXYGEN_SKIP_THIS
+
+/// Gets an error message describing the last WinAPI error that occurred.
+template <>
+inline utf8_string get_last_win_error_msg()
+{
+	return utf_to_utf8(get_last_win_error_msg());
+}
+/// Gets an error message describing the last WinAPI error that occurred.
+template <>
+inline utf16_string get_last_win_error_msg()
+{
+	return get_last_win_error_msg();
+}
+
+#endif
 
 /// Logs the last WinAPI error.
 template <class String1>

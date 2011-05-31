@@ -1,3 +1,6 @@
+#ifndef LEAN_IO_COMMON
+#define LEAN_IO_COMMON
+
 #ifdef LEAN_BUILD_LIB
 #include "../../depconfig.h"
 #endif
@@ -80,3 +83,5 @@ namespace impl
 } // namespace
 } // namespace
 } // namespace
+
+#endif

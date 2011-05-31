@@ -6,9 +6,12 @@
 #define LEAN_EXPORT_ALL
 
 // Include everything that might be exported
+#include "containers/simple_hash_map.h"
+
 #include "io/file.h"
 #include "io/raw_file.h"
 #include "io/mapped_file.h"
+#include "io/filesystem.h"
 
 #include "logging/exceptions.h"
 #include "logging/win_errors.h"

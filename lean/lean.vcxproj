@@ -153,6 +153,7 @@
     <ClInclude Include="header\lean\smart\auto_restore.h" />
     <ClInclude Include="header\lean\smart\cloneable_obj.h" />
     <ClInclude Include="header\lean\smart\com_ptr.h" />
+    <ClInclude Include="header\lean\smart\handle_guard.h" />
     <ClInclude Include="header\lean\smart\ref_counter.h" />
     <ClInclude Include="header\lean\smart\resource.h" />
     <ClInclude Include="header\lean\smart\resource_ptr.h" />

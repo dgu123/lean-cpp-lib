@@ -22,7 +22,10 @@ namespace lean
 #include "weak_resource_ptr.h"
 
 #include "com_ptr.h"
+
 #include "scoped_lock.h"
+#include "handle_guard.h"
 #include "scope_guard.h"
+#include "terminate_guard.h"
 
 #endif

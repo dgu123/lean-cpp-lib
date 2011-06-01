@@ -6,6 +6,7 @@
 #include "../filesystem.h"
 #include "../../logging/log.h"
 #include "../../logging/win_errors.h"
+#include "../../smart/handle_guard.h"
 
 #include "common.cpp"
 
@@ -20,7 +21,7 @@ LEAN_MAYBE_LINK lean::uint8 lean::io::file_revision(const utf16_nti& file)
 {
 	uint8 revision = 0;
 
-	impl::handle_guard fileHandle( ::CreateFileW(file.c_str(),
+	handle_guard<HANDLE> hFile( ::CreateFileW(file.c_str(),
 		FILE_READ_ATTRIBUTES,
 		FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
 		nullptr,
@@ -28,13 +29,13 @@ LEAN_MAYBE_LINK lean::uint8 lean::io::file_revision(const utf16_nti& file)
 		FILE_FLAG_BACKUP_SEMANTICS,
 		NULL) );
 
-	if (fileHandle == INVALID_HANDLE_VALUE)
+	if (hFile == INVALID_HANDLE_VALUE)
 		LEAN_LOG_WIN_ERROR_CTX("CreateFile()", file);
 	else
 	{
 		LEAN_ASSERT(sizeof(uint8) == sizeof(::FILETIME));
 
-		if (!::GetFileTime(fileHandle, nullptr, nullptr, reinterpret_cast<FILETIME*>(&revision)))
+		if (!::GetFileTime(hFile, nullptr, nullptr, reinterpret_cast<FILETIME*>(&revision)))
 			LEAN_LOG_WIN_ERROR_CTX("GetFileTime()", file);
 
 		revision = impl::get_revision_from_filetime(revision);
@@ -50,7 +51,7 @@ LEAN_MAYBE_LINK lean::uint8 lean::io::file_size(const utf16_nti& file)
 
 	LEAN_ASSERT(sizeof(uint8) == sizeof(::LARGE_INTEGER));
 
-	impl::handle_guard fileHandle( ::CreateFileW(file.c_str(),
+	handle_guard<HANDLE> hFile( ::CreateFileW(file.c_str(),
 		FILE_READ_ATTRIBUTES,
 		FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
 		nullptr,
@@ -58,9 +59,9 @@ LEAN_MAYBE_LINK lean::uint8 lean::io::file_size(const utf16_nti& file)
 		FILE_FLAG_BACKUP_SEMANTICS,
 		NULL) );
 
-	if (fileHandle == INVALID_HANDLE_VALUE)
+	if (hFile == INVALID_HANDLE_VALUE)
 		LEAN_LOG_WIN_ERROR_CTX("CreateFile()", file);
-	else if (!::GetFileSizeEx(fileHandle, reinterpret_cast<LARGE_INTEGER*>(&size)))
+	else if (!::GetFileSizeEx(hFile, reinterpret_cast<LARGE_INTEGER*>(&size)))
 		LEAN_LOG_WIN_ERROR_CTX("GetFileSizeEx()", file);
 
 	return size;

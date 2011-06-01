@@ -614,6 +614,9 @@ using io::file_exists;
 using io::file_revision;
 using io::file_size;
 
+using io::current_directory;
+using io::initial_directory;
+
 using io::relative_path;
 using io::absolute_path;
 using io::canonical_path;

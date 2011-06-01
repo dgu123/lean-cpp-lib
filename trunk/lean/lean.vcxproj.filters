@@ -438,6 +438,9 @@
     <ClInclude Include="header\lean\strings\range.h">
       <Filter>Header Files\strings</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\smart\handle_guard.h">
+      <Filter>Header Files\smart</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

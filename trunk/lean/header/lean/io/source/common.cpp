@@ -49,37 +49,6 @@ namespace impl
 			: 0U;
 	}
 
-	/// Handle wrapper.
-	class handle_guard : public noncopyable
-	{
-	private:
-		HANDLE m_handle;
-
-	public:
-		/// Closes the given handle on destruction.
-		LEAN_INLINE explicit handle_guard(HANDLE handle)
-			: m_handle(handle) { }
-		/// Closes the stored handle.
-		LEAN_INLINE ~handle_guard()
-		{
-			if (m_handle != INVALID_HANDLE_VALUE)
-				::CloseHandle(m_handle);
-		}
-
-		/// Detatches the stored handle.
-		LEAN_INLINE HANDLE detatch()
-		{
-			HANDLE handle = m_handle;
-			m_handle = INVALID_HANDLE_VALUE;
-			return handle;
-		}
-
-		/// Retrieves the stored handle.
-		LEAN_INLINE HANDLE get() const { return m_handle; }
-		/// Retrieves the stored handle.
-		LEAN_INLINE operator HANDLE() const { return get(); }
-	};
-
 } // namespace
 } // namespace
 } // namespace

@@ -132,7 +132,9 @@ LEAN_MAYBE_EXPORT void log_error(const char *source, const char *reason);
 /// Logs an error.
 LEAN_MAYBE_EXPORT void log_error(const char *source, const char *reason, const char *context);
 /// Logs an error.
-LEAN_MAYBE_EXPORT void log_error(const char *source, const char *reason, const char *origin, const char *context);
+LEAN_MAYBE_EXPORT void log_error_ex(const char *source, const char *reason, const char *origin);
+/// Logs an error.
+LEAN_MAYBE_EXPORT void log_error_ex(const char *source, const char *reason, const char *origin, const char *context);
 
 /// Logs an error.
 template <class String1>
@@ -154,9 +156,15 @@ inline void log_error(const String1 &source, const String2 &reason, const String
 }
 /// Logs an error.
 template <class String1, class String2, class String3>
-inline void log_error(const String1 &source, const String2 &reason, const String3 &origin, const String3 &context)
+inline void log_error_ex(const String1 &source, const String2 &reason, const String3 &origin)
 {
-	log_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(origin).c_str(), utf_to_utf8(context).c_str());
+	log_error_ex(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(origin).c_str());
+}
+/// Logs an error.
+template <class String1, class String2, class String3, class String4>
+inline void log_error_ex(const String1 &source, const String2 &reason, const String3 &origin, const String4 &context)
+{
+	log_error_ex(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(origin).c_str(), utf_to_utf8(context).c_str());
 }
 
 } // namespace
@@ -168,6 +176,7 @@ using logging::error_log;
 using logging::info_log;
 
 using logging::log_error;
+using logging::log_error_ex;
 
 } // namespace
 
@@ -241,7 +250,9 @@ inline std::basic_ostream<lean::utf32_t, Traits>& operator <<(std::basic_ostream
 /// Logs the given error message and context, prepending the caller's file and line.
 #define LEAN_LOG_ERROR_CTX(msg, ctx) ::lean::logging::log_error(LEAN_SOURCE_STRING, msg, ctx)
 /// Logs the given error message and context, prepending the caller's file and line.
-#define LEAN_LOG_ERROR_ORIG(msg, orig, ctx) ::lean::logging::log_error(LEAN_SOURCE_STRING, msg, orig, ctx)
+#define LEAN_LOG_ERROR_XMSG(msg, orig) ::lean::logging::log_error_ex(LEAN_SOURCE_STRING, msg, orig)
+/// Logs the given error message and context, prepending the caller's file and line.
+#define LEAN_LOG_ERROR_XCTX(msg, orig, ctx) ::lean::logging::log_error_ex(LEAN_SOURCE_STRING, msg, orig, ctx)
 
 /// @}
 

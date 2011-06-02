@@ -8,27 +8,14 @@
 #include "../lean.h"
 #include "../strings/types.h"
 #include "../strings/conversions.h"
-#include <string>
+#include "../logging/log.h"
+#include "../logging/exceptions.h"
 #include <sstream>
 
 namespace lean
 {
 namespace logging
 {
-
-/// Logs the last WinAPI error.
-LEAN_MAYBE_EXPORT void log_last_win_error(const char *source);
-/// Logs the last WinAPI error.
-LEAN_MAYBE_EXPORT void log_last_win_error(const char *source, const char *reason);
-/// Logs the last WinAPI error.
-LEAN_MAYBE_EXPORT void log_last_win_error(const char *source, const char *reason, const char *context);
-
-/// Throws a runtime_error exception containing the last WinAPI error.
-LEAN_MAYBE_EXPORT void throw_last_win_error(const char *source);
-/// Throws a runtime_error exception containing the last WinAPI error.
-LEAN_MAYBE_EXPORT void throw_last_win_error(const char *source, const char *reason);
-/// Throws a runtime_error exception containing the last WinAPI error.
-LEAN_MAYBE_EXPORT void throw_last_win_error(const char *source, const char *reason, const char *context);
 
 /// Gets an error message describing the last WinAPI error that occurred. Returns the number of characters used.
 LEAN_MAYBE_EXPORT size_t get_last_win_error_msg(utf16_t *buffer, size_t maxCount);
@@ -57,48 +44,42 @@ inline utf8_string get_last_win_error_msg()
 
 #endif
 
-/// Gets an error message describing the last WinAPI error that occurred.
-inline utf8_string get_last_win_error_msg()
-{
-	return get_last_win_error_msg<utf8_string>();
-}
-
 /// Logs the last WinAPI error.
 template <class String1>
-inline void log_last_win_error(const String1 &source)
+LEAN_NOINLINE void log_last_win_error(const String1 &source)
 {
-	log_last_win_error(utf_to_utf8(source).c_str());
+	log_error(source, get_last_win_error_msg<utf8_string>().c_str());
 }
 /// Logs the last WinAPI error.
 template <class String1, class String2>
-inline void log_last_win_error(const String1 &source, const String2 &reason)
+LEAN_NOINLINE void log_last_win_error(const String1 &source, const String2 &reason)
 {
-	log_last_win_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str());
+	log_error_ex(source, get_last_win_error_msg<utf8_string>().c_str(), reason);
 }
 /// Logs the last WinAPI error.
 template <class String1, class String2, class String3>
-inline void log_last_win_error(const String1 &source, const String2 &reason, const String3 &context)
+LEAN_NOINLINE void log_last_win_error(const String1 &source, const String2 &reason, const String3 &context)
 {
-	log_last_win_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(context).c_str());
+	log_error_ex(source, get_last_win_error_msg<utf8_string>().c_str(), reason, context);
 }
 
 /// Throws a runtime_error exception containing the last WinAPI error.
 template <class String1>
-inline void throw_last_win_error(const String1 &source)
+LEAN_NOINLINE void throw_last_win_error(const String1 &source)
 {
-	throw_last_win_error(utf_to_utf8(source).c_str());
+	throw_error(source, get_last_win_error_msg<utf8_string>().c_str());
 }
 /// Throws a runtime_error exception containing the last WinAPI error.
 template <class String1, class String2>
-inline void throw_last_win_error(const String1 &source, const String2 &reason)
+LEAN_NOINLINE void throw_last_win_error(const String1 &source, const String2 &reason)
 {
-	throw_last_win_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str());
+	throw_error_ex(source, get_last_win_error_msg<utf8_string>().c_str(), reason);
 }
 /// Throws a runtime_error exception containing the last WinAPI error.
 template <class String1, class String2, class String3>
-inline void throw_last_win_error(const String1 &source, const String2 &reason, const String3 &context)
+LEAN_NOINLINE void throw_last_win_error(const String1 &source, const String2 &reason, const String3 &context)
 {
-	throw_last_win_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(context).c_str());
+	throw_error_ex(source, get_last_win_error_msg<utf8_string>().c_str(), reason, context);
 }
 
 } // namespace

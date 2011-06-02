@@ -57,10 +57,22 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source, const char 
 }
 
 // Throws a runtime_error exception.
-LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source, const char *reason, const char *origin, const char *context)
+LEAN_ALWAYS_LINK void lean::logging::throw_error_ex(const char *source, const char *reason, const char *origin)
+{
+	if (!origin)
+		return throw_error(source, reason);
+	if (!reason)
+		return throw_error(source, origin);
+
+	log_stream(error_log()) << impl::make_exception_source_valid(source) << ": An error occurred: " << reason << " << " << origin << std::endl;
+	throw std::runtime_error(reason);
+}
+
+// Throws a runtime_error exception.
+LEAN_ALWAYS_LINK void lean::logging::throw_error_ex(const char *source, const char *reason, const char *origin, const char *context)
 {
 	if (!context)
-		return throw_error(source, reason, origin);
+		return throw_error_ex(source, reason, origin);
 	if (!origin)
 		return throw_error(source, reason, context);
 	if (!reason)

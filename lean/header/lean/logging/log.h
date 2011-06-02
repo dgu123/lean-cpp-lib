@@ -131,6 +131,8 @@ LEAN_MAYBE_EXPORT void log_error(const char *source);
 LEAN_MAYBE_EXPORT void log_error(const char *source, const char *reason);
 /// Logs an error.
 LEAN_MAYBE_EXPORT void log_error(const char *source, const char *reason, const char *context);
+/// Logs an error.
+LEAN_MAYBE_EXPORT void log_error(const char *source, const char *reason, const char *origin, const char *context);
 
 /// Logs an error.
 template <class String1>
@@ -149,6 +151,12 @@ template <class String1, class String2, class String3>
 inline void log_error(const String1 &source, const String2 &reason, const String3 &context)
 {
 	log_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(context).c_str());
+}
+/// Logs an error.
+template <class String1, class String2, class String3>
+inline void log_error(const String1 &source, const String2 &reason, const String3 &origin, const String3 &context)
+{
+	log_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(origin).c_str(), utf_to_utf8(context).c_str());
 }
 
 } // namespace
@@ -222,16 +230,18 @@ inline std::basic_ostream<lean::utf32_t, Traits>& operator <<(std::basic_ostream
 /// @{
 
 /// Logs the given message, prepending the caller's file and line.
-#define LEAN_LOG(msg) ::lean::log_stream(::lean::info_log()) << __FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) "): " << msg << ::std::endl
+#define LEAN_LOG(msg) ::lean::log_stream(::lean::info_log()) << LEAN_SOURCE_STRING << ": " << msg << ::std::endl
 
 /// Logs the given error message, prepending the caller's file and line.
-#define LEAN_LOG_ERROR(msg) ::lean::log_stream(::lean::error_log()) << __FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) "): " << msg << ::std::endl
+#define LEAN_LOG_ERROR(msg) ::lean::log_stream(::lean::error_log()) << LEAN_SOURCE_STRING << ": " << msg << ::std::endl
 /// Logs an error message, prepending the caller's file and line.
-#define LEAN_LOG_ERROR_NIL() ::lean::logging::log_error(__FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) ")")
+#define LEAN_LOG_ERROR_NIL() ::lean::logging::log_error(LEAN_SOURCE_STRING)
 /// Logs the given error message, prepending the caller's file and line.
-#define LEAN_LOG_ERROR_MSG(msg) ::lean::logging::log_error(__FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) ")", msg)
+#define LEAN_LOG_ERROR_MSG(msg) ::lean::logging::log_error(LEAN_SOURCE_STRING, msg)
 /// Logs the given error message and context, prepending the caller's file and line.
-#define LEAN_LOG_ERROR_CTX(msg, ctx) ::lean::logging::log_error(__FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) ")", msg, ctx)
+#define LEAN_LOG_ERROR_CTX(msg, ctx) ::lean::logging::log_error(LEAN_SOURCE_STRING, msg, ctx)
+/// Logs the given error message and context, prepending the caller's file and line.
+#define LEAN_LOG_ERROR_ORIG(msg, orig, ctx) ::lean::logging::log_error(LEAN_SOURCE_STRING, msg, orig, ctx)
 
 /// @}
 

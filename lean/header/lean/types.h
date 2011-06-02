@@ -270,9 +270,9 @@ struct ieee_float : public Desc
 };
 
 /// Std size type.
-typedef std::size_t size_t;
+using std::size_t;
 /// Std pointer difference type.
-typedef std::ptrdiff_t ptrdiff_t;
+using std::ptrdiff_t;
 /// Std pointer address type.
 typedef int_type<sign_class::no_sign, sizeof(void*)>::type uintptr_t;
 

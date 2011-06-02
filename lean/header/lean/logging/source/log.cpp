@@ -154,3 +154,17 @@ LEAN_ALWAYS_LINK void lean::logging::log_error(const char *source, const char *r
 
 	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << " (" << context << ")" << std::endl;
 }
+
+// Logs an error.
+LEAN_ALWAYS_LINK void lean::logging::log_error(const char *source, const char *reason, const char *origin, const char *context)
+{
+	if (!context)
+		return log_error(source, reason, origin);
+	if (!origin)
+		return log_error(source, reason, context);
+	if (!reason)
+		return log_error(source, origin, context);
+
+	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason
+		<< " << " << origin << " (" << context << ")" << std::endl;
+}

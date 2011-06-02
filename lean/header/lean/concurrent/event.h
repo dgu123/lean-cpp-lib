@@ -63,6 +63,12 @@ public:
 		else
 			reset();
 	}
+
+	/// Gets the native handle.
+	LEAN_INLINE HANDLE native_handle() const
+	{
+		return m_event;
+	}
 };
 
 } // namespace

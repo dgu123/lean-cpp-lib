@@ -109,7 +109,7 @@ using logging::get_last_win_error_msg;
 
 } // namespace
 
-/// @addtogroup ExceptionMacros
+/// @addtogroup LoggingMacros
 /// @see lean::logging
 /// @{
 
@@ -121,6 +121,12 @@ using logging::get_last_win_error_msg;
 #define LEAN_LOG_WIN_ERROR_CTX(msg, ctx) ::lean::logging::log_last_win_error(__FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) ")", msg, ctx)
 /// Logs the given error message and context, prepending the caller's file and line.
 #define LEAN_LOG_WIN_ERROR_ANY(msg) LEAN_THROW_WIN_ERROR_MSG(static_cast<::std::ostringstream&>(::std::ostringstream() << msg).str().c_str())
+
+/// @}
+
+/// @addtogroup ExceptionMacros
+/// @see lean::logging
+/// @{
 
 /// Throws a runtime_error exception.
 #define LEAN_THROW_WIN_ERROR() ::lean::logging::throw_last_win_error(__FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) ")")

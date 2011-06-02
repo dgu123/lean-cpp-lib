@@ -20,6 +20,14 @@ struct strip_reference
 	typedef Type type;
 	/// True, if any reference stripped.
 	static const bool stripped = false;
+
+	/// Adds any reference stripped.
+	template <class Other>
+	struct undo
+	{
+		/// Type with reference, if any reference stripped.
+		typedef Other type;
+	};
 };
 
 #ifndef DOXYGEN_SKIP_THIS
@@ -29,6 +37,8 @@ struct strip_reference<Type&>
 {
 	typedef Type type;
 	static const bool stripped = true;
+	template <class Other>
+	struct undo { typedef Other& type; };
 };
 
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
@@ -37,6 +47,8 @@ struct strip_reference<Type&&>
 {
 	typedef Type type;
 	static const bool stripped = true;
+	template <class Other>
+	struct undo { typedef Other&& type; };
 };
 #endif
 
@@ -50,6 +62,14 @@ struct strip_const
 	typedef Type type;
 	/// True, if any modifiers stripped.
 	static const bool stripped = false;
+
+	/// Adds any modifiers stripped.
+	template <class Other>
+	struct undo
+	{
+		/// Type with modifier, if any modifier stripped.
+		typedef Other type;
+	};
 };
 
 #ifndef DOXYGEN_SKIP_THIS
@@ -59,6 +79,8 @@ struct strip_const<const Type>
 {
 	typedef Type type;
 	static const bool stripped = true;
+	template <class Other>
+	struct undo { typedef const Other type; };
 };
 
 #endif
@@ -71,6 +93,14 @@ struct strip_volatile
 	typedef Type type;
 	/// True, if any modifiers stripped.
 	static const bool stripped = false;
+
+	/// Adds any modifiers stripped.
+	template <class Other>
+	struct undo
+	{
+		/// Type with modifier, if any modifier stripped.
+		typedef Other type;
+	};
 };
 
 #ifndef DOXYGEN_SKIP_THIS
@@ -80,6 +110,8 @@ struct strip_volatile<volatile Type>
 {
 	typedef Type type;
 	static const bool stripped = true;
+	template <class Other>
+	struct undo { typedef volatile Other type; };
 };
 
 #endif
@@ -92,6 +124,14 @@ struct strip_modifiers
 	typedef typename strip_volatile<typename strip_const<Type>::type>::type type;
 	/// True, if any modifiers stripped.
 	static const bool stripped = strip_volatile<Type>::stripped || strip_const<Type>::stripped;
+
+	/// Adds any modifiers stripped.
+	template <class Other>
+	struct undo
+	{
+		/// Type with modifiers, if any modifiers stripped.
+		typedef typename strip_const<Type>::template undo<typename strip_volatile<Type>::template undo<Other>::type>::type type;
+	};
 };
 
 namespace impl
@@ -102,6 +142,8 @@ struct do_strip_pointer
 {
 	typedef Type type;
 	static const bool stripped = false;
+	template <class Other>
+	struct undo { typedef Other type; };
 };
 
 template <class Type>
@@ -109,6 +151,8 @@ struct do_strip_pointer<Type*>
 {
 	typedef Type type;
 	static const bool stripped = true;
+	template <class Other>
+	struct undo { typedef Other* type; };
 };
 
 }
@@ -123,6 +167,16 @@ struct strip_pointer
 	typedef typename impl::do_strip_pointer<pointer>::type type;
 	/// True, if any pointer stripped.
 	static const bool stripped = impl::do_strip_pointer<pointer>::stripped;
+
+	/// Adds any pointer stripped.
+	template <class Other>
+	struct undo
+	{
+		/// Pointer type without modifiers.
+		typedef typename impl::do_strip_pointer<pointer>::template undo<Other>::type pointer;
+		/// Type with pointer, if any pointer stripped.
+		typedef typename strip_modifiers<Type>::template undo<pointer>::type type;
+	};
 };
 
 /// Redefines the given type.

@@ -21,7 +21,9 @@ LEAN_MAYBE_EXPORT void throw_error(const char *source, const char *reason);
 /// Throws a runtime_error exception.
 LEAN_MAYBE_EXPORT void throw_error(const char *source, const char *reason, const char *context);
 /// Throws a runtime_error exception.
-LEAN_MAYBE_EXPORT void throw_error(const char *source, const char *reason, const char *origin, const char *context);
+LEAN_MAYBE_EXPORT void throw_error_ex(const char *source, const char *reason, const char *origin);
+/// Throws a runtime_error exception.
+LEAN_MAYBE_EXPORT void throw_error_ex(const char *source, const char *reason, const char *origin, const char *context);
 
 /// Throws an invalid_argument exception.
 LEAN_MAYBE_EXPORT void throw_invalid(const char *source);
@@ -53,9 +55,15 @@ inline void throw_error(const String1 &source, const String2 &reason, const Stri
 }
 /// Throws a runtime_error exception.
 template <class String1, class String2, class String3>
-inline void throw_error(const String1 &source, const String2 &reason, const String2 &origin, const String3 &context)
+inline void throw_error_ex(const String1 &source, const String2 &reason, const String3 &origin)
 {
-	throw_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(origin).c_str(), utf_to_utf8(context).c_str());
+	throw_error_ex(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(origin).c_str());
+}
+/// Throws a runtime_error exception.
+template <class String1, class String2, class String3, class String4>
+inline void throw_error_ex(const String1 &source, const String2 &reason, const String3 &origin, const String4 &context)
+{
+	throw_error_ex(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(origin).c_str(), utf_to_utf8(context).c_str());
 }
 
 /// Throws an invalid_argument exception.
@@ -74,6 +82,7 @@ inline void throw_invalid(const String1 &source, const String2 &reason)
 } // namespace
 
 using logging::throw_error;
+using logging::throw_error_ex;
 using logging::throw_invalid;
 using logging::throw_bad_alloc;
 
@@ -89,6 +98,10 @@ using logging::throw_bad_alloc;
 #define LEAN_THROW_ERROR_MSG(msg) ::lean::logging::throw_error(LEAN_SOURCE_STRING, msg)
 /// Throws a runtime_error exception.
 #define LEAN_THROW_ERROR_CTX(msg, ctx) ::lean::logging::throw_error(LEAN_SOURCE_STRING, msg, ctx)
+/// Throws a runtime_error exception.
+#define LEAN_THROW_ERROR_XMSG(msg, orig) ::lean::logging::throw_error_ex(LEAN_SOURCE_STRING, msg, orig)
+/// Throws a runtime_error exception.
+#define LEAN_THROW_ERROR_XCTX(msg, orig, ctx) ::lean::logging::throw_error_ex(LEAN_SOURCE_STRING, msg, orig, ctx)
 /// Throws a runtime_error exception.
 #define LEAN_THROW_ERROR_ANY(msg) LEAN_THROW_ERROR_MSG(static_cast<::std::ostringstream&>(::std::ostringstream() << msg).str().c_str())
 

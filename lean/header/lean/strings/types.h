@@ -17,6 +17,8 @@ namespace lean
 {
 namespace strings
 {
+namespace types
+{
 
 /// Implicit nullterminated character half-range.
 typedef nullterminated_implicit<char> char_nti;
@@ -106,6 +108,9 @@ typedef std::basic_string<utf16_t> utf16_string;
 /// UTF-32-character string.
 typedef std::basic_string<utf32_t> utf32_string;
 
+} // namespace
+
+using namespace types;
 
 // STL compatibility
 template <class Char, class StringTraits, class StringAllocator, class NullterminatedTraits>

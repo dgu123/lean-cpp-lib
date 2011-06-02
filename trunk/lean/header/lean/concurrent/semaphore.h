@@ -54,6 +54,12 @@ public:
 		BOOL result = ::ReleaseSemaphore(m_semaphore, 1, NULL);
 		LEAN_ASSERT(result != FALSE);
 	}
+
+	/// Gets the native handle.
+	LEAN_INLINE HANDLE native_handle() const
+	{
+		return m_semaphore;
+	}
 };
 
 } // namespace

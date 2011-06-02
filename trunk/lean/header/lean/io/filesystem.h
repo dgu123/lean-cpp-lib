@@ -110,12 +110,19 @@ struct filesystem_chars
 	static const Char redirection = '.';
 };
 
+/// Checks if the given character is an alternative path separator.
+template <class Char>
+LEAN_INLINE bool is_alt_path_separator(Char chr)
+{
+	return (chr == filesystem_chars<Char>::alt_path_separator);
+}
+
 /// Checks if the given character is a path separator.
 template <class Char>
 LEAN_INLINE bool is_path_separator(Char chr)
 {
 	return (chr == filesystem_chars<Char>::path_separator) ||
-		(chr == filesystem_chars<Char>::alt_path_separator);
+		is_alt_path_separator(chr);
 }
 
 /// Checks if the given character is an extension separator.
@@ -151,6 +158,15 @@ template <class Char>
 LEAN_INLINE Char& assign_redirection(Char &chr)
 {
 	return (chr = filesystem_chars<Char>::redirection);
+}
+
+/// Replaces an alternative path separator by a canonical path separator in the given character.
+template <class Char>
+LEAN_INLINE Char& canonize_path_separator(Char &chr)
+{
+	if (is_alt_path_separator(chr))
+		assign_path_separator(chr);
+	return chr;
 }
 
 /// Gets the relative path euqivalent to the given absolute path when starting at the given base.
@@ -338,8 +354,16 @@ inline String canonical_path(const Range &path)
 					++skipCounter;
 				// Actual directory name
 				else if (skipCounter == 0)
+				{
 					// Prepend directory
-					destCursor = std::copy_backward(srcInsertionCursor, srcMarker, destCursor);
+					typename String::iterator newDestCursor = std::copy_backward(srcInsertionCursor, srcMarker, destCursor);
+
+					// Replace trailing & leading alternative path separators
+					canonize_path_separator(*(--destCursor));
+					canonize_path_separator(*newDestCursor);
+
+					destCursor = newDestCursor;
+				}
 				else
 					// Skip directory
 					--skipCounter;

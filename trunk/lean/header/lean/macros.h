@@ -18,6 +18,9 @@
 /// Quotes the given value, evaluating macros first.
 #define LEAN_QUOTE_VALUE(value) LEAN_QUOTE(value)
 
+/// String literal that contains the current source file and line
+#define LEAN_SOURCE_STRING __FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) ")"
+
 /// @}
 
 #endif

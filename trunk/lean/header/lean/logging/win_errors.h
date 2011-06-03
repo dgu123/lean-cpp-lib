@@ -46,38 +46,38 @@ inline utf8_string get_last_win_error_msg()
 
 /// Logs the last WinAPI error.
 template <class String1>
-LEAN_NOINLINE void log_last_win_error(const String1 &source)
+LEAN_NOTINLINE void log_last_win_error(const String1 &source)
 {
 	log_error(source, get_last_win_error_msg<utf8_string>().c_str());
 }
 /// Logs the last WinAPI error.
 template <class String1, class String2>
-LEAN_NOINLINE void log_last_win_error(const String1 &source, const String2 &reason)
+LEAN_NOTINLINE void log_last_win_error(const String1 &source, const String2 &reason)
 {
 	log_error_ex(source, get_last_win_error_msg<utf8_string>().c_str(), reason);
 }
 /// Logs the last WinAPI error.
 template <class String1, class String2, class String3>
-LEAN_NOINLINE void log_last_win_error(const String1 &source, const String2 &reason, const String3 &context)
+LEAN_NOTINLINE void log_last_win_error(const String1 &source, const String2 &reason, const String3 &context)
 {
 	log_error_ex(source, get_last_win_error_msg<utf8_string>().c_str(), reason, context);
 }
 
 /// Throws a runtime_error exception containing the last WinAPI error.
 template <class String1>
-LEAN_NOINLINE void throw_last_win_error(const String1 &source)
+LEAN_NOTINLINE void throw_last_win_error(const String1 &source)
 {
 	throw_error(source, get_last_win_error_msg<utf8_string>().c_str());
 }
 /// Throws a runtime_error exception containing the last WinAPI error.
 template <class String1, class String2>
-LEAN_NOINLINE void throw_last_win_error(const String1 &source, const String2 &reason)
+LEAN_NOTINLINE void throw_last_win_error(const String1 &source, const String2 &reason)
 {
 	throw_error_ex(source, get_last_win_error_msg<utf8_string>().c_str(), reason);
 }
 /// Throws a runtime_error exception containing the last WinAPI error.
 template <class String1, class String2, class String3>
-LEAN_NOINLINE void throw_last_win_error(const String1 &source, const String2 &reason, const String3 &context)
+LEAN_NOTINLINE void throw_last_win_error(const String1 &source, const String2 &reason, const String3 &context)
 {
 	throw_error_ex(source, get_last_win_error_msg<utf8_string>().c_str(), reason, context);
 }

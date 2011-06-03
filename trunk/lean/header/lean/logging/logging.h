@@ -15,7 +15,15 @@ namespace lean
 	namespace logging { }
 }
 
-#include "exceptions.h"
+#include "streamconv.h"
+
+#include "log_target.h"
+#include "log_file.h"
+#include "log_debugger.h"
+#include "log_stream.h"
+
 #include "log.h"
+
+#include "errors.h"
 
 #endif

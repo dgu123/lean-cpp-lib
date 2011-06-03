@@ -4,7 +4,6 @@
 
 #include <windows.h>
 #include "../mapped_file.h"
-#include "../../logging/log.h"
 #include "../../logging/win_errors.h"
 
 namespace lean

@@ -29,7 +29,7 @@ public:
 	critical_section(unsigned long spinCount = 4096)
 	{
 		if (!::InitializeCriticalSectionAndSpinCount(&m_criticalSection, spinCount))
-			LEAN_THROW_WIN_ERROR_MSG("InitializeCriticalSectionAndSpinCount()");
+			LEAN_ASSERT(false);
 	}
 	/// Destructor.
 	~critical_section()

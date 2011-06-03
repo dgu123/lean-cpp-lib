@@ -5,7 +5,6 @@
 #include <windows.h>
 #include "../log_file.h"
 #include "../../strings/conversions.h"
-#include "../../logging/log.h"
 #include "../../logging/win_errors.h"
 
 // Opens the given file for logging.

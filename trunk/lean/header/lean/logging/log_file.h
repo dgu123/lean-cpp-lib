@@ -2,6 +2,14 @@
 /* lean Logging                 (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+// Opaque value requires this to go here
+#ifdef LEAN_INCLUDE_LINKED
+	#ifndef LEAN_LOGGING_LOG_FILE_CPP
+		#define LEAN_LOGGING_LOG_FILE_CPP
+		#include "source/log_file.cpp"
+	#endif
+#endif
+
 #ifndef LEAN_LOGGING_LOG_FILE
 #define LEAN_LOGGING_LOG_FILE
 
@@ -39,9 +47,5 @@ public:
 using logging::log_file;
 
 } // namespace
-
-#ifdef LEAN_INCLUDE_LINKED
-#include "source/log_file.cpp"
-#endif
 
 #endif

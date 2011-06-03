@@ -15,6 +15,7 @@
 #include <vector>
 #include <iosfwd>
 #include <ostream>
+#include "streamconv.h"
 
 namespace lean
 {
@@ -125,48 +126,6 @@ LEAN_MAYBE_EXPORT log& error_log();
 /// Gets the info log.
 LEAN_MAYBE_EXPORT log& info_log();
 
-/// Logs an error.
-LEAN_MAYBE_EXPORT void log_error(const char *source);
-/// Logs an error.
-LEAN_MAYBE_EXPORT void log_error(const char *source, const char *reason);
-/// Logs an error.
-LEAN_MAYBE_EXPORT void log_error(const char *source, const char *reason, const char *context);
-/// Logs an error.
-LEAN_MAYBE_EXPORT void log_error_ex(const char *source, const char *reason, const char *origin);
-/// Logs an error.
-LEAN_MAYBE_EXPORT void log_error_ex(const char *source, const char *reason, const char *origin, const char *context);
-
-/// Logs an error.
-template <class String1>
-inline void log_error(const String1 &source)
-{
-	log_error(utf_to_utf8(source).c_str());
-}
-/// Logs an error.
-template <class String1, class String2>
-inline void log_error(const String1 &source, const String2 &reason)
-{
-	log_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str());
-}
-/// Logs an error.
-template <class String1, class String2, class String3>
-inline void log_error(const String1 &source, const String2 &reason, const String3 &context)
-{
-	log_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(context).c_str());
-}
-/// Logs an error.
-template <class String1, class String2, class String3>
-inline void log_error_ex(const String1 &source, const String2 &reason, const String3 &origin)
-{
-	log_error_ex(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(origin).c_str());
-}
-/// Logs an error.
-template <class String1, class String2, class String3, class String4>
-inline void log_error_ex(const String1 &source, const String2 &reason, const String3 &origin, const String4 &context)
-{
-	log_error_ex(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(origin).c_str(), utf_to_utf8(context).c_str());
-}
-
 } // namespace
 
 using logging::log;
@@ -175,64 +134,7 @@ using logging::log_stream;
 using logging::error_log;
 using logging::info_log;
 
-using logging::log_error;
-using logging::log_error_ex;
-
 } // namespace
-
-// Drop-in replacements for missing utf8 streaming operators
-template <class Traits, class StringTraits, class StringAlloc>
-inline std::basic_ostream<lean::utf8_t, Traits>& operator <<(
-	std::basic_ostream<lean::utf8_t, Traits>& stream,
-	const std::basic_string<lean::utf16_t, StringTraits, StringAlloc> &string)
-{
-	return (stream << lean::utf_to_utf8(string));
-}
-template <class Traits, class StringTraits, class StringAlloc>
-inline std::basic_ostream<lean::utf8_t, Traits>& operator <<(
-	std::basic_ostream<lean::utf8_t, Traits>& stream,
-	const std::basic_string<lean::utf32_t, StringTraits, StringAlloc> &string)
-{
-	return (stream << lean::utf_to_utf8(string));
-}
-template <class Traits>
-inline std::basic_ostream<lean::utf8_t, Traits>& operator <<(std::basic_ostream<lean::utf8_t, Traits>& stream, const lean::utf16_t *str)
-{
-	return (stream << lean::utf_to_utf8(str));
-}
-template <class Traits>
-inline std::basic_ostream<lean::utf8_t, Traits>& operator <<(std::basic_ostream<lean::utf8_t, Traits>& stream, const lean::utf32_t *str)
-{
-	return (stream << lean::utf_to_utf8(str));
-}
-
-// Drop-in replacements for missing utf16 streaming operators
-template <class Traits, class StringTraits, class StringAlloc>
-inline std::basic_ostream<lean::utf16_t, Traits>& operator <<(
-	std::basic_ostream<lean::utf16_t, Traits>& stream,
-	const std::basic_string<lean::utf32_t, StringTraits, StringAlloc> &string)
-{
-	return (stream << lean::utf_to_utf16(string));
-}
-template <class Traits>
-inline std::basic_ostream<lean::utf16_t, Traits>& operator <<(std::basic_ostream<lean::utf16_t, Traits>& stream, const lean::utf32_t *str)
-{
-	return (stream << lean::utf_to_utf16(str));
-}
-
-// Drop-in replacements for missing utf32 streaming operators
-template <class Traits, class StringTraits, class StringAlloc>
-inline std::basic_ostream<lean::utf32_t, Traits>& operator <<(
-	std::basic_ostream<lean::utf32_t, Traits>& stream,
-	const std::basic_string<lean::utf16_t, StringTraits, StringAlloc> &string)
-{
-	return (stream << lean::utf_to_utf32(string));
-}
-template <class Traits>
-inline std::basic_ostream<lean::utf32_t, Traits>& operator <<(std::basic_ostream<lean::utf32_t, Traits>& stream, const lean::utf16_t *str)
-{
-	return (stream << lean::utf_to_utf32(str));
-}
 
 /// @addtogroup LoggingMacros Logging macros
 /// @see lean::logging
@@ -243,16 +145,6 @@ inline std::basic_ostream<lean::utf32_t, Traits>& operator <<(std::basic_ostream
 
 /// Logs the given error message, prepending the caller's file and line.
 #define LEAN_LOG_ERROR(msg) ::lean::log_stream(::lean::error_log()) << LEAN_SOURCE_STRING << ": " << msg << ::std::endl
-/// Logs an error message, prepending the caller's file and line.
-#define LEAN_LOG_ERROR_NIL() ::lean::logging::log_error(LEAN_SOURCE_STRING)
-/// Logs the given error message, prepending the caller's file and line.
-#define LEAN_LOG_ERROR_MSG(msg) ::lean::logging::log_error(LEAN_SOURCE_STRING, msg)
-/// Logs the given error message and context, prepending the caller's file and line.
-#define LEAN_LOG_ERROR_CTX(msg, ctx) ::lean::logging::log_error(LEAN_SOURCE_STRING, msg, ctx)
-/// Logs the given error message and context, prepending the caller's file and line.
-#define LEAN_LOG_ERROR_XMSG(msg, orig) ::lean::logging::log_error_ex(LEAN_SOURCE_STRING, msg, orig)
-/// Logs the given error message and context, prepending the caller's file and line.
-#define LEAN_LOG_ERROR_XCTX(msg, orig, ctx) ::lean::logging::log_error_ex(LEAN_SOURCE_STRING, msg, orig, ctx)
 
 /// @}
 

@@ -8,9 +8,9 @@
 #include "../lean.h"
 #include "../strings/types.h"
 #include "../strings/conversions.h"
-#include "../logging/log.h"
-#include "../logging/exceptions.h"
+#include "../logging/errors.h"
 #include <sstream>
+#include "streamconv.h"
 
 namespace lean
 {

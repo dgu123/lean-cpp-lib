@@ -4,7 +4,6 @@
 
 #include <windows.h>
 #include "../raw_file.h"
-#include "../../logging/log.h"
 #include "../../logging/win_errors.h"
 
 // Opens the given file according to the given flags. Throws a runtime_exception on error.

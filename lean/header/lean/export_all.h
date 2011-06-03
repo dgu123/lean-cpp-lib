@@ -13,7 +13,7 @@
 #include "io/mapped_file.h"
 #include "io/filesystem.h"
 
-#include "logging/exceptions.h"
+#include "logging/errors.h"
 #include "logging/win_errors.h"
 #include "logging/log.h"
 #include "logging/log_debugger.h"

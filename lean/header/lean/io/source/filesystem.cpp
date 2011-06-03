@@ -4,7 +4,6 @@
 
 #include <windows.h>
 #include "../filesystem.h"
-#include "../../logging/log.h"
 #include "../../logging/win_errors.h"
 #include "../../smart/handle_guard.h"
 

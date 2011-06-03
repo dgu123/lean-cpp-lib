@@ -5,7 +5,6 @@
 #include <windows.h>
 #include "../file.h"
 #include "../../strings/conversions.h"
-#include "../../logging/log.h"
 #include "../../logging/win_errors.h"
 
 #include "common.cpp"

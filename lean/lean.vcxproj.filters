@@ -282,9 +282,6 @@
     <ClInclude Include="header\lean\memory\new_handler.h">
       <Filter>Header Files\memory</Filter>
     </ClInclude>
-    <ClInclude Include="header\lean\logging\exceptions.h">
-      <Filter>Header Files\logging</Filter>
-    </ClInclude>
     <ClInclude Include="header\lean\utf8.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -441,6 +438,12 @@
     <ClInclude Include="header\lean\smart\handle_guard.h">
       <Filter>Header Files\smart</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\logging\streamconv.h">
+      <Filter>Header Files\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\logging\errors.h">
+      <Filter>Header Files\logging</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">
@@ -454,9 +457,6 @@
     </ClCompile>
     <ClCompile Include="header\lean\memory\source\new_handler.cpp">
       <Filter>Source Files\memory</Filter>
-    </ClCompile>
-    <ClCompile Include="header\lean\logging\source\exceptions.cpp">
-      <Filter>Source Files\logging</Filter>
     </ClCompile>
     <ClCompile Include="header\lean\strings\source\conversions.cpp">
       <Filter>Source Files\strings</Filter>
@@ -490,6 +490,9 @@
     </ClCompile>
     <ClCompile Include="header\lean\io\source\common.cpp">
       <Filter>Source Files\io</Filter>
+    </ClCompile>
+    <ClCompile Include="header\lean\logging\source\errors.cpp">
+      <Filter>Source Files\logging</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

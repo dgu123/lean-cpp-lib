@@ -13,6 +13,20 @@ namespace lean
 namespace smart
 {
 
+/// Clones the given cloneable object by calling @code cloneable.clone()@endcode  (default policy implementation).
+template <class Cloneable>
+LEAN_INLINE Cloneable* clone_cloneable(const Cloneable &coneable)
+{
+	return static_cast<Cloneable*>( coneable.clone() );
+}
+/// Destroys the given cloneable object by calling @code cloneable->destroy()@endcode  (default policy implementation).
+template <class Cloneable>
+LEAN_INLINE void destroy_cloneable(Cloneable *coneable)
+{
+	if (cloneable)
+		coneable->destroy();
+}
+
 /// Cloneable object class that stores an automatic instance of the given cloneable type.
 template <class Cloneable, bool PointerSemantics = false>
 class cloneable_obj
@@ -23,7 +37,7 @@ private:
 	/// Acquires the given cloneable.
 	static Cloneable* acquire(const Cloneable &cloneable)
 	{
-		return static_cast<Cloneable*>( cloneable.clone() );
+		return static_cast<Cloneable*>( clone_cloneable(cloneable) );
 	}
 
 	/// Acquires the given cloneable.
@@ -37,8 +51,7 @@ private:
 	/// Releases the given cloneable.
 	static void release(const Cloneable *cloneable)
 	{
-		if (cloneable)
-			cloneable->destroy();
+		destroy_cloneable(cloneable);
 	}
 
 protected:

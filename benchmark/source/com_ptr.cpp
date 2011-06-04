@@ -20,6 +20,16 @@ LEAN_NOLTINLINE com_obj* create_com_obj()
 	return new com_obj();
 }
 
+LEAN_NOLTINLINE lean::com_ptr<com_obj> create_com_obj_insec()
+{
+	return lean::bind_com(new com_obj());
+}
+
+LEAN_NOLTINLINE lean::com_ptr<com_obj, true> create_com_obj_sec()
+{
+	return lean::bind_com(new com_obj());
+}
+
 LEAN_NOLTINLINE bool com_create_obj(com_obj **pp)
 {
 	if (pp)
@@ -57,10 +67,20 @@ LEAN_NOLTINLINE void com_obtain()
 	ptr = nullptr;
 }
 
+LEAN_NOLTINLINE void bind_delegate()
+{
+	lean::com_ptr<com_obj> ptr1 = create_com_obj_sec();
+	lean::com_ptr<com_obj> ptr12 = create_com_obj_insec();
+	lean::com_ptr<com_obj> ptr2 = ptr1.transfer();
+	ptr1 = nullptr;
+	ptr2 = nullptr;
+}
+
 LEAN_NOLTINLINE void com_ptr_benchmark()
 {
 	// Nothing benched in here, functions called to allow for code generation analysis
 	correctly_optimized();
 	poorly_optimized();
 	com_obtain();
+	bind_delegate();
 }

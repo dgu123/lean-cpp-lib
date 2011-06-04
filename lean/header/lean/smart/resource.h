@@ -13,7 +13,7 @@ namespace smart
 {
 
 // Prototypes
-template <class Resource>
+template <class Resource, bool Critical>
 class resource_ptr;
 template <class Resource>
 class weak_resource_ptr;
@@ -22,7 +22,7 @@ class weak_resource_ptr;
 template < class Counter = long, class Allocator = std::allocator<Counter> >
 class resource
 {
-	template <class Resource>
+	template <class Resource, bool Critical>
 	friend class resource_ptr;
 	template <class Resource>
 	friend class weak_resource_ptr;
@@ -46,7 +46,7 @@ protected:
 	/// Copy constructor.
 	resource(const resource& right) { }
 	/// Assignment operator.
-	resource& operator =(const resource& right) { }
+	resource& operator =(const resource& right) { return *this; }
 #ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
 	/// Destructor.
 	~resource() throw() { }

@@ -22,11 +22,28 @@ struct close_handle_policy
 	{
 		return INVALID_HANDLE_VALUE;
 	}
-	/// Releases the given handle by calling CloseHandle.
+	/// Releases the given handle by calling @code CloseHandle()@endcode.
 	static LEAN_INLINE void release(Handle handle)
 	{
 		if (handle != NULL && handle != INVALID_HANDLE_VALUE)
 			::CloseHandle(handle);
+	}
+};
+
+/// Dll handle guard policy.
+template <class Handle>
+struct free_library_policy
+{
+	/// Returns an invalid handle value.
+	static LEAN_INLINE Handle invalid()
+	{
+		return NULL;
+	}
+	/// Releases the given handle by calling @code FreeLibrary()@endcode.
+	static LEAN_INLINE void release(Handle handle)
+	{
+		if (handle != NULL)
+			::FreeLibrary(handle);
 	}
 };
 

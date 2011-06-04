@@ -104,11 +104,12 @@
     <ClInclude Include="header\lean\io\wcharcvt.h" />
     <ClInclude Include="header\lean\io\win_types.h" />
     <ClInclude Include="header\lean\limits.h" />
-    <ClInclude Include="header\lean\logging\exceptions.h" />
+    <ClInclude Include="header\lean\logging\errors.h" />
     <ClInclude Include="header\lean\logging\log_debugger.h" />
     <ClInclude Include="header\lean\logging\log_file.h" />
     <ClInclude Include="header\lean\logging\log_stream.h" />
     <ClInclude Include="header\lean\logging\log_target.h" />
+    <ClInclude Include="header\lean\logging\streamconv.h" />
     <ClInclude Include="header\lean\logging\win_errors.h" />
     <ClInclude Include="header\lean\memory\aligned.h" />
     <ClInclude Include="header\lean\memory\crt_heap.h" />
@@ -216,7 +217,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="header\lean\logging\source\exceptions.cpp">
+    <ClCompile Include="header\lean\logging\source\errors.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>

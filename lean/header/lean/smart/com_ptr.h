@@ -6,6 +6,7 @@
 #define LEAN_SMART_COM_PTR
 
 #include "../lean.h"
+#include "../meta/dependent_false.h"
 
 namespace lean
 {
@@ -13,7 +14,7 @@ namespace smart
 {
 
 /// COM pointer class that performs reference counting on COM objects of the given type.
-template <class COMType>
+template <class COMType, bool Critical = false>
 class com_ptr
 {
 private:
@@ -36,13 +37,6 @@ private:
 			object->Release();
 	}
 
-protected:
-	enum bind_reference_t { bind_reference };
-
-	/// Constructs a COM pointer from the given COM object without incrementing its reference count.
-	com_ptr(COMType *object, bind_reference_t)
-		: m_object(object) { };
-
 public:
 	/// Type of the COM object stored by this COM pointer.
 	typedef COMType com_type;
@@ -57,22 +51,28 @@ public:
 	com_ptr(COMType2 *object)
 		: m_object( acquire(object) ) { };
 
+	/// Allows for the binding of existing COM object references on COM pointer construction.
+	enum bind_reference_t
+	{
+		bind_reference ///< Allows for the binding of existing COM object references on COM pointer construction.
+	};
+	/// Constructs a COM pointer from the given COM object without incrementing its reference count.
+	com_ptr(COMType *object, bind_reference_t)
+		: m_object(object) { };
+
 	/// Constructs a COM pointer from the given COM pointer.
 	com_ptr(const com_ptr &right)
 		: m_object( acquire(right.m_object) ) { };
 	/// Constructs a COM pointer from the given COM pointer.
-	template <class COMType2>
-	com_ptr(const com_ptr<COMType2> &right)
-		: m_object( acquire(right.m_object) ) { };
+	template <class COMType2, bool Critical2>
+	com_ptr(const com_ptr<COMType2, Critical2> &right)
+		: m_object( acquire(right.get()) ) { };
 
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs a COM pointer from the given COM pointer.
-	template <class COMType2>
-	com_ptr(com_ptr<COMType2> &&right)
-		: m_object(std::move(right.m_object))
-	{
-		right.m_object = nullptr;
-	}
+	template <class COMType2, bool Critical2>
+	com_ptr(com_ptr<COMType2, Critical2> &&right)
+		: m_object(right.unbind()) { }
 #endif
 	
 	/// Destroys the COM pointer.
@@ -82,9 +82,9 @@ public:
 	}
 
 	/// Binds the given COM object reference to this COM pointer.
-	static LEAN_INLINE com_ptr bind(com_type *object)
+	static LEAN_INLINE com_ptr<com_type, true> bind(com_type *object)
 	{
-		return com_ptr(object, bind_reference);
+		return com_ptr<com_type, true>(object, com_ptr<com_type, true>::bind_reference);
 	}
 	/// Unbinds the COM object reference held by this COM pointer.
 	LEAN_INLINE com_type* unbind()
@@ -94,9 +94,10 @@ public:
 		return preObject;
 	}
 	/// Transfers the COM object reference held by this COM pointer to a new COM pointer.
-	LEAN_INLINE com_ptr transfer()
+	LEAN_INLINE com_ptr<com_type, true> transfer()
 	{
-		return bind(unbind());
+		// Visual C++ won't inline delegating function calls
+		return com_ptr<com_type, true>(unbind(), com_ptr<com_type, true>::bind_reference);
 	}
 
 	/// Replaces the stored COM object with the given object. <b>[ESA]</b>
@@ -118,22 +119,21 @@ public:
 		return (*this = right.m_object);
 	}
 	/// Replaces the stored COM object with one stored by the given COM pointer. <b>[ESA]</b>
-	template <class COMType2>
-	com_ptr& operator =(const com_ptr<COMType2> &right)
+	template <class COMType2, bool Critical2>
+	com_ptr& operator =(const com_ptr<COMType2, Critical2> &right)
 	{
-		return (*this = right.m_object);
+		return (*this = right.get());
 	}
 
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Replaces the stored COM object with the one stored by the given r-value COM pointer. <b>[ESA]</b>
-	template <class COMType2>
-	com_ptr& operator =(com_ptr<COMType2> &&right)
+	template <class COMType2, bool Critical2>
+	com_ptr& operator =(com_ptr<COMType2, Critical2> &&right)
 	{
 		if (addressof(right) != this)
 		{
 			COMType *prevObject = m_object;
-			m_object = right.m_object;
-			right.m_object = nullptr;
+			m_object = right.unbind();
 			release(prevObject);
 		}
 
@@ -148,9 +148,15 @@ public:
 	LEAN_INLINE com_type& operator *() const { return *get(); };
 	/// Gets the COM object stored by this COM pointer.
 	LEAN_INLINE com_type* operator ->() const { return get(); };
-	
+
 	/// Gets the COM object stored by this COM pointer.
-	LEAN_INLINE operator com_type*() const { return get(); };
+	LEAN_INLINE operator com_type*() const
+	{
+		LEAN_STATIC_ASSERT_MSG_ALT(!Critical,
+			"Cannot implicitly cast critical reference, use unbind() for (insecure) storage.",
+			Cannot_implicitly_cast_critical_reference__use_unbind_for_insecure_storage);
+		return get();
+	};
 
 	/// Gets a double-pointer allowing for COM-style object retrieval. The pointer returned may
 	/// only ever be used until the next call to one of this COM pointer's methods.
@@ -163,9 +169,10 @@ public:
 
 /// Binds the given COM reference to a new COM pointer.
 template <class COMType>
-LEAN_INLINE com_ptr<COMType> bind_com(COMType *object)
+LEAN_INLINE com_ptr<COMType, true> bind_com(COMType *object)
 {
-	return com_ptr<COMType>::bind(object);
+	// Visual C++ won't inline delegating function calls
+	return com_ptr<COMType, true>(object, com_ptr<COMType, true>::bind_reference);
 }
 
 } // namespace

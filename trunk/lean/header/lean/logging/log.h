@@ -142,9 +142,13 @@ using logging::info_log;
 
 /// Logs the given message, prepending the caller's file and line.
 #define LEAN_LOG(msg) ::lean::log_stream(::lean::info_log()) << LEAN_SOURCE_STRING << ": " << msg << ::std::endl
+/// Adds a line break.
+#define LEAN_LOG_BREAK() ::lean::log_stream(::lean::info_log()) << ::std::endl
 
 /// Logs the given error message, prepending the caller's file and line.
 #define LEAN_LOG_ERROR(msg) ::lean::log_stream(::lean::error_log()) << LEAN_SOURCE_STRING << ": " << msg << ::std::endl
+/// Adds a line break.
+#define LEAN_LOG_ERROR_BREAK() ::lean::log_stream(::lean::error_log()) << ::std::endl
 
 /// @}
 

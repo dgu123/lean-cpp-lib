@@ -82,10 +82,15 @@
 
 #ifdef LEAN_DEBUG_BUILD
 	#include <cassert>
-	/// Asserts that the given expression is always true.
-	#define LEAN_ASSERT(expr) assert(expr)
+	#ifdef _MSC_VER
+		/// Asserts that the given expression is always true.
+		#define LEAN_ASSERT(expr) assert(expr), __assume(expr)
+	#else
+		/// Asserts that the given expression is always true.
+		#define LEAN_ASSERT(expr) assert(expr)
+	#endif
 	/// Asserts that the given expression is always true, does not assume anything in release builds.
-	#define LEAN_ASSERT_DEBUG(expr) LEAN_ASSERT(expr)
+	#define LEAN_ASSERT_DEBUG(expr) assert(expr)
 #else
 	#ifdef _MSC_VER
 		/// Asserts that the given expression is always true.

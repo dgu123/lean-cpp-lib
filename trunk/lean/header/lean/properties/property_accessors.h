@@ -5,6 +5,11 @@
 #ifndef LEAN_PROPERTIES_PROPERTY_ACCESSORS
 #define LEAN_PROPERTIES_PROPERTY_ACCESSORS
 
+// Use short file names in logging
+#ifndef LEAN_DEFAULT_FILE_MACRO
+	#line __LINE__ "property_accessors.h"
+#endif
+
 #include <typeinfo>
 #include "../lean.h"
 #include "../meta/strip.h"

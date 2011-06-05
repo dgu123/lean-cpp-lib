@@ -18,6 +18,11 @@
 /// Quotes the given value, evaluating macros first.
 #define LEAN_QUOTE_VALUE(value) LEAN_QUOTE(value)
 
+/*
+#define LEAN_32_ZEROS "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+#define LEAN_PAD_TO_32(str) ( (sizeof(str) < sizeof(LEAN_32_ZEROS)) ? (str LEAN_32_ZEROS) : (str) )
+#define LEAN_CROP_32(str) (&LEAN_PAD_TO_32(str)[sizeof(str) - sizeof(LEAN_32_ZEROS)])
+*/
 /// String literal that contains the current source file and line
 #define LEAN_SOURCE_STRING __FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) ")"
 

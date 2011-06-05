@@ -2,6 +2,11 @@
 #include "../../depconfig.h"
 #endif
 
+// Use short file names in logging
+#ifndef LEAN_DEFAULT_FILE_MACRO
+	#line __LINE__ "file.cpp"
+#endif
+
 #include <windows.h>
 #include "../file.h"
 #include "../../strings/conversions.h"

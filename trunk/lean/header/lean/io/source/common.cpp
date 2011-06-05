@@ -5,6 +5,11 @@
 #include "../../depconfig.h"
 #endif
 
+// Use short file names in logging
+#ifndef LEAN_DEFAULT_FILE_MACRO
+	#line __LINE__ "io/source/common.cpp"
+#endif
+
 #include <windows.h>
 #include "../../logging/win_errors.h"
 #include "../../tags/noncopyable.h"

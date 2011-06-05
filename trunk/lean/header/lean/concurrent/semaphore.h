@@ -8,7 +8,6 @@
 #include "../lean.h"
 #include "../tags/noncopyable.h"
 #include <windows.h>
-#include "../logging/win_errors.h"
 
 namespace lean
 {
@@ -26,8 +25,7 @@ public:
 	explicit semaphore(long initialCount = 1)
 		: m_semaphore( ::CreateSemaphoreW(NULL, initialCount, LONG_MAX, NULL) )
 	{
-		if (m_semaphore == NULL)
-			LEAN_THROW_WIN_ERROR_MSG("CreateSemaphore()");
+		LEAN_ASSERT(m_semaphore != NULL);
 	}
 	/// Destructor.
 	~semaphore()

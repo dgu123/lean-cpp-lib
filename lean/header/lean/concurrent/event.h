@@ -8,7 +8,6 @@
 #include "../lean.h"
 #include "../tags/noncopyable.h"
 #include <windows.h>
-#include "../logging/win_errors.h"
 
 namespace lean
 {
@@ -26,8 +25,7 @@ public:
 	event(bool signaled = false)
 		: m_event( ::CreateEventW(NULL, true, signaled, NULL) )
 	{
-		if (m_event == NULL)
-			LEAN_THROW_WIN_ERROR_MSG("CreateEvent()");
+		LEAN_ASSERT(m_event != NULL);
 	}
 	/// Destructor.
 	~event()

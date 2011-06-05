@@ -8,7 +8,6 @@
 #include "../lean.h"
 #include "../tags/noncopyable.h"
 #include <windows.h>
-#include "../logging/win_errors.h"
 
 // Include automatically to encourage use of scoped_lock
 #include "../smart/scoped_lock.h"

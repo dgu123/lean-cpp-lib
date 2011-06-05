@@ -44,8 +44,15 @@ namespace impl
 template <int ParseFlags, class Char>
 LEAN_INLINE void load_xml_file(const utf8_ntri &fileName, rapidxml::xml_document<Char> &document)
 {
-	document.parse<ParseFlags>(
-		impl::load_xml_source(fileName, document) );
+	try
+	{
+		document.parse<ParseFlags>(
+			impl::load_xml_source(fileName, document) );
+	}
+	catch(rapidxml::parse_error &error)
+	{
+		throw std::runtime_error(error.what());
+	}
 }
 
 /// Saves an xml document to the given file.

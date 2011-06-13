@@ -15,6 +15,7 @@
 #include <cmath>
 #include <functional>
 #include <string>
+#include <iterator>
 
 namespace lean 
 {
@@ -707,6 +708,31 @@ private:
 	}
 
 public:
+	/// Construction policy used.
+	typedef Policy construction_policy;
+
+	/// Type of the allocator used by this hash map.
+	typedef allocator_type_ allocator_type;
+	/// Type of the size returned by this hash map.
+	typedef size_type_ size_type;
+	/// Type of the difference between the addresses of two elements in this hash map.
+	typedef typename allocator_type::difference_type difference_type;
+
+	/// Type of pointers to the elements contained by this hash map.
+	typedef typename allocator_type::pointer pointer;
+	/// Type of constant pointers to the elements contained by this hash map.
+	typedef typename allocator_type::const_pointer const_pointer;
+	/// Type of references to the elements contained by this hash map.
+	typedef typename allocator_type::reference reference;
+	/// Type of constant references to the elements contained by this hash map.
+	typedef typename allocator_type::const_reference const_reference;
+	/// Type of the elements contained by this hash map.
+	typedef typename allocator_type::value_type value_type;
+	/// Type of the keys stored by this hash map.
+	typedef Key key_type;
+	/// Type of the elements contained by this hash map.
+	typedef Element mapped_type;
+
 	/// Simple hash map iterator class.
 	template <class Element>
 	class basic_iterator
@@ -735,6 +761,10 @@ public:
 				) { }
 
 	public:
+		/// Iterator category.
+		typedef std::forward_iterator_tag iterator_category;
+		/// Type of the difference between the addresses of two elements in this hash map.
+		typedef typename simple_hash_map::difference_type difference_type;
 		/// Type of the values iterated.
 		typedef Element value_type;
 		/// Type of references to the values iterated.
@@ -783,35 +813,14 @@ public:
 		}
 	};
 
-	/// Construction policy used.
-	typedef Policy construction_policy;
-
-	/// Type of the allocator used by this hash map.
-	typedef allocator_type_ allocator_type;
-	/// Type of the size returned by this hash map.
-	typedef size_type_ size_type;
-	/// Type of the difference between the addresses of two elements in this hash map.
-	typedef typename allocator_type::difference_type difference_type;
-
-	/// Type of pointers to the elements contained by this hash map.
-	typedef typename allocator_type::pointer pointer;
-	/// Type of constant pointers to the elements contained by this hash map.
-	typedef typename allocator_type::const_pointer const_pointer;
-	/// Type of references to the elements contained by this hash map.
-	typedef typename allocator_type::reference reference;
-	/// Type of constant references to the elements contained by this hash map.
-	typedef typename allocator_type::const_reference const_reference;
-	/// Type of the elements contained by this hash map.
-	typedef typename allocator_type::value_type value_type;
-	/// Type of the keys stored by this hash map.
-	typedef Key key_type;
-	/// Type of the elements contained by this hash map.
-	typedef Element mapped_type;
-
 	/// Type of iterators to the elements contained by this hash map.
 	typedef basic_iterator<value_type> iterator;
 	/// Type of constant iterators to the elements contained by this hash map.
 	typedef basic_iterator<const value_type> const_iterator;
+	/// Type of iterators to the elements contained by this hash map.
+	typedef iterator local_iterator;
+	/// Type of constant iterators to the elements contained by this hash map.
+	typedef const_iterator const_local_iterator;
 
 	/// Type of the hash function.
 	typedef hasher_ hasher;
@@ -965,14 +974,14 @@ public:
 	}
 #endif
 	/// Inserts the given key-value-pair into this hash map.
-	LEAN_INLINE std::pair<bool, iterator> insert(const value_type &value)
+	LEAN_INLINE std::pair<iterator, bool> insert(const value_type &value)
 	{
 		LEAN_ASSERT(base_type::key_valid(value.first));
 
 		if (m_count == capacity())
 		{
 			if (contains_element(value))
-				return std::make_pair( false, iterator(const_cast<value_type*>(lean::addressof(value))) );
+				return std::make_pair(iterator(const_cast<value_type*>(lean::addressof(value))), false);
 
 			growHL(1);
 		}
@@ -984,18 +993,18 @@ public:
 			copy_construct(element.second, value);
 			++m_count;
 		}
-		return std::make_pair(element.first, iterator(element.second));
+		return std::make_pair(iterator(element.second), element.first);
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Inserts the given key-value-pair into this hash map.
-	LEAN_INLINE std::pair<bool, iterator> insert(value_type &&value)
+	LEAN_INLINE std::pair<iterator, bool> insert(value_type &&value) // wrong way round
 	{
 		LEAN_ASSERT(base_type::key_valid(value.first));
 
 		if (m_count == capacity())
 		{
 			if (contains_element(value))
-				return std::make_pair( false, iterator(lean::addressof(value)) );
+				return std::make_pair(iterator(lean::addressof(value)), false);
 
 			growHL(1);
 		}
@@ -1007,7 +1016,7 @@ public:
 			move_construct(element.second, value);
 			++m_count;
 		}
-		return std::make_pair(element.first, iterator(element.second));
+		return std::make_pair(iterator(element.second), element.first);
 	}
 #endif
 	/// Removes the element stored under the given key, if any.

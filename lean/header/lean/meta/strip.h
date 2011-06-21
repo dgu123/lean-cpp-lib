@@ -54,6 +54,10 @@ struct strip_reference<Type&&>
 
 #endif
 
+/// Inherits the stripped type.
+template <class Type>
+struct inh_strip_reference : public strip_reference<Type>::type { };
+
 /// Strips a const modifier from the given type.
 template <class Type>
 struct strip_const
@@ -134,6 +138,30 @@ struct strip_modifiers
 	};
 };
 
+/// Strips cv-modifiers and references from the given type.
+template <class Type>
+struct strip_modref
+{
+	/// Value type.
+	typedef typename strip_reference<Type>::type value_type;
+	/// Type without cv-modifiers and references.
+	typedef typename strip_modifiers<value_type>::type type;
+	/// True, if any modifiers or references stripped.
+	static const bool stripped = strip_reference<Type>::stripped || strip_modifiers<value_type>::stripped;
+
+	/// Adds any modifiers and references stripped.
+	template <class Other>
+	struct undo
+	{
+		/// Type with modifiers and references, if any modifiers or references stripped.
+		typedef typename strip_reference<Type>::template undo<typename strip_modifiers<value_type>::template undo<Other>::type>::type type;
+	};
+};
+
+/// Inherits the stripped type.
+template <class Type>
+struct inh_strip_modref : public strip_modref<Type>::type { };
+
 namespace impl
 {
 
@@ -179,6 +207,10 @@ struct strip_pointer
 	};
 };
 
+/// Inherits the stripped type.
+template <class Type>
+struct inh_strip_pointer : public strip_pointer<Type>::type { };
+
 /// Redefines the given type.
 template <class Type>
 struct identity
@@ -194,7 +226,12 @@ using meta::strip_reference;
 using meta::strip_const;
 using meta::strip_volatile;
 using meta::strip_modifiers;
+using meta::strip_modref;
 using meta::identity;
+
+using meta::inh_strip_pointer;
+using meta::inh_strip_reference;
+using meta::inh_strip_modref;
 
 } // namespace
 

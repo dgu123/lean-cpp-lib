@@ -185,6 +185,7 @@
     <ClInclude Include="header\lean\utf8\checked.h" />
     <ClInclude Include="header\lean\utf8\core.h" />
     <ClInclude Include="header\lean\utf8\unchecked.h" />
+    <ClInclude Include="header\lean\xml\utility.h" />
     <ClInclude Include="header\lean\xml\xml.h" />
     <ClInclude Include="header\lean\xml\xml_file.h" />
     <ClInclude Include="header\lean_internal\stdafx.h" />

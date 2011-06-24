@@ -12,5 +12,6 @@ namespace lean
 }
 
 #include "xml_file.h"
+#include "utility.h"
 
 #endif

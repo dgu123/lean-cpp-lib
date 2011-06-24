@@ -75,17 +75,17 @@ namespace impl
 {
 	/// Gets the value of the given XML attribute or empty string if not available.
 	template <class Char, class Traits>
-	LEAN_INLINE std::basic_string<Char> get_attribute(const rapidxml::xml_node<Char> &node, const nullterminated_range_implicit<Char, Traits> &name)
+	LEAN_INLINE nullterminated_range<Char, Traits> get_attribute(const rapidxml::xml_node<Char> &node, const nullterminated_range_implicit<Char, Traits> &name)
 	{
 		rapidxml::xml_attribute<utf8_t> *att = node.first_attribute(name.c_str(), name.size());
 		return (att)
-			? std::basic_string<Char>(att->value(), att->value_size())
-			: std::basic_string<Char>();
+			? nullterminated_range<Char, Traits>(att->value(), att->value() + att->value_size())
+			: nullterminated_range<Char, Traits>("");
 	}
 }
 /// Gets the value of the given XML attribute or empty string if not available.
 template <class Char>
-LEAN_INLINE std::basic_string<Char> get_attribute(const rapidxml::xml_node<Char> &node, const nullterminated_range_implicit< Char, char_traits<Char> > &name)
+LEAN_INLINE nullterminated_range< Char, char_traits<Char> > get_attribute(const rapidxml::xml_node<Char> &node, const nullterminated_range_implicit< Char, char_traits<Char> > &name)
 {
 	return impl::get_attribute(node, name);
 }

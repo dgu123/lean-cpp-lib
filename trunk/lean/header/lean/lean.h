@@ -77,6 +77,8 @@
 	#pragma warning(disable : 4127)
 	// Sometimes, using 'this' in initializier lists is unavoidable
 	#pragma warning(disable : 4355)
+	// We actually want arrays to be default-initialized
+	#pragma warning(disable : 4351)
 
 #endif
 

@@ -18,7 +18,7 @@ namespace containers
 class any
 {
 	template <class Value>
-	Value* any_cast(any*);
+	friend Value* any_cast(any*);
 
 protected:
 	LEAN_INLINE any(const any&) { }

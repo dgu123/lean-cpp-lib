@@ -447,6 +447,9 @@
     <ClInclude Include="header\lean\xml\utility.h">
       <Filter>Header Files\xml</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\containers\any.h">
+      <Filter>Header Files\containers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

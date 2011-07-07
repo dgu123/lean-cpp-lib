@@ -106,19 +106,19 @@ LEAN_INLINE Value* any_cast(any *container)
 template <class Value>
 LEAN_INLINE const Value* any_cast(const any *container)
 {
-	return any_cast<const Value*>(const_cast<any*>(container));
+	return any_cast<const Value>(const_cast<any*>(container));
 }
 /// Gets a pointer to the value of the given type, if the given value type matches the value stored by the given object, nullptr otherwise.
 template <class Value>
 LEAN_INLINE volatile Value* any_cast(volatile any *container)
 {
-	return any_cast<volatile Value*>(const_cast<any*>(container));
+	return any_cast<volatile Value>(const_cast<any*>(container));
 }
 /// Gets a pointer to the value of the given type, if the given value type matches the value stored by the given object, nullptr otherwise.
 template <class Value>
 LEAN_INLINE const volatile Value* any_cast(const volatile any *container)
 {
-	return any_cast<const volatile Value*>(const_cast<any*>(container));
+	return any_cast<const volatile Value>(const_cast<any*>(container));
 }
 
 namespace impl

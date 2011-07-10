@@ -7,6 +7,8 @@
 
 #include "../lean.h"
 #include "../meta/strip.h"
+#include "../smart/cloneable.h"
+#include "../memory/heap_bound.h"
 #include <typeinfo>
 
 namespace lean
@@ -15,7 +17,7 @@ namespace containers
 {
 
 /// Any interface.
-class any
+class any : public cloneable
 {
 	template <class Value>
 	friend Value* any_cast(any*);
@@ -35,8 +37,8 @@ public:
 };
 
 /// Any value.
-template <class Value>
-class any_value : public any
+template <class Value, class Heap = default_heap>
+class any_value : public heap_bound<Heap>, public any
 {
 private:
 	Value m_value;
@@ -94,6 +96,11 @@ public:
 	{
 		return typeid(value_type);
 	}
+
+	/// Clones this value.
+	LEAN_INLINE any_value* clone() const { return new any_value(*this); }
+	/// Destroys a clone.
+	LEAN_INLINE void destroy() const { delete this; }
 };
 
 /// Gets a pointer to the value of the given type, if the given value type matches the value stored by the given object, nullptr otherwise.

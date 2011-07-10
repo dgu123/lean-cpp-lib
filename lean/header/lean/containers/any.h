@@ -98,27 +98,30 @@ public:
 
 /// Gets a pointer to the value of the given type, if the given value type matches the value stored by the given object, nullptr otherwise.
 template <class Value>
-LEAN_INLINE Value* any_cast(any *container)
+LEAN_INLINE Value* any_cast(any *pContainer)
 {
-	return static_cast<Value*>(container->get_any_ptr(typeid(Value)));
+	return static_cast<Value*>(
+		pContainer
+			? pContainer->get_any_ptr(typeid(Value))
+			: nullptr );
 }
 /// Gets a pointer to the value of the given type, if the given value type matches the value stored by the given object, nullptr otherwise.
 template <class Value>
-LEAN_INLINE const Value* any_cast(const any *container)
+LEAN_INLINE const Value* any_cast(const any *pContainer)
 {
-	return any_cast<const Value>(const_cast<any*>(container));
+	return any_cast<const Value>(const_cast<any*>(pContainer));
 }
 /// Gets a pointer to the value of the given type, if the given value type matches the value stored by the given object, nullptr otherwise.
 template <class Value>
-LEAN_INLINE volatile Value* any_cast(volatile any *container)
+LEAN_INLINE volatile Value* any_cast(volatile any *pContainer)
 {
-	return any_cast<volatile Value>(const_cast<any*>(container));
+	return any_cast<volatile Value>(const_cast<any*>(pContainer));
 }
 /// Gets a pointer to the value of the given type, if the given value type matches the value stored by the given object, nullptr otherwise.
 template <class Value>
-LEAN_INLINE const volatile Value* any_cast(const volatile any *container)
+LEAN_INLINE const volatile Value* any_cast(const volatile any *pContainer)
 {
-	return any_cast<const volatile Value>(const_cast<any*>(container));
+	return any_cast<const volatile Value>(const_cast<any*>(pContainer));
 }
 
 namespace impl

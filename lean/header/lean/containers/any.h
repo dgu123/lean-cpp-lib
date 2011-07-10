@@ -134,7 +134,7 @@ LEAN_INLINE const volatile Value* any_cast(const volatile any *pContainer)
 namespace impl
 {
 	/// Throws a bad_cast exception.
-	LEAN_NOLTINLINE void throw_bad_cast()
+	LEAN_NOINLINE void throw_bad_cast()
 	{
 		throw std::bad_cast();
 	}

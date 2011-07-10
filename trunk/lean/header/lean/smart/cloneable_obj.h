@@ -15,16 +15,16 @@ namespace smart
 
 /// Clones the given cloneable object by calling @code cloneable.clone()@endcode  (default policy implementation).
 template <class Cloneable>
-LEAN_INLINE Cloneable* clone_cloneable(const Cloneable &coneable)
+LEAN_INLINE Cloneable* clone_cloneable(const Cloneable &cloneable)
 {
-	return static_cast<Cloneable*>( coneable.clone() );
+	return static_cast<Cloneable*>( cloneable.clone() );
 }
 /// Destroys the given cloneable object by calling @code cloneable->destroy()@endcode  (default policy implementation).
 template <class Cloneable>
-LEAN_INLINE void destroy_cloneable(Cloneable *coneable)
+LEAN_INLINE void destroy_cloneable(Cloneable *cloneable)
 {
 	if (cloneable)
-		coneable->destroy();
+		cloneable->destroy();
 }
 
 /// Cloneable object class that stores an automatic instance of the given cloneable type.
@@ -54,11 +54,6 @@ private:
 		destroy_cloneable(cloneable);
 	}
 
-protected:
-	/// Constructs a cloneable object from the given cloneable pointer.
-	cloneable_obj(Cloneable *cloneable)
-		: m_cloneable(cloneable) { };
-
 public:
 	/// Type of the cloneable value stored by this cloneable object.
 	typedef Cloneable value_type;
@@ -71,6 +66,14 @@ public:
 	/// Constructs a cloneable object by cloning the given cloneable object.
 	cloneable_obj(const cloneable_obj &right)
 		: m_cloneable( acquire(right.m_cloneable) ) { };
+	/// Constructs a cloneable object by cloning the given cloneable object (nullptr allowed).
+	cloneable_obj(const value_type *cloneable)
+		: m_cloneable( acquire(cloneable) )
+	{
+		LEAN_STATIC_ASSERT_MSG_ALT(PointerSemantics,
+			"Construction from pointer only available for pointer semantics.",
+			Construction_from_pointer_only_available_for_pointer_semantics);
+	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs a cloneable object by cloning the given cloneable object.
 	cloneable_obj(cloneable_obj &&right)
@@ -100,6 +103,19 @@ public:
 	/// Replaces the stored cloneable value with a clone of the given cloneable value.
 	cloneable_obj& operator =(const value_type &cloneable)
 	{
+		Cloneable *prevCloneable = m_cloneable;
+		m_cloneable = acquire(cloneable);
+		release(prevCloneable);
+		
+		return *this;
+	}
+	/// Replaces the stored cloneable value with a clone of the given cloneable value (nullptr allowed).
+	cloneable_obj& operator =(const value_type *cloneable)
+	{
+		LEAN_STATIC_ASSERT_MSG_ALT(PointerSemantics,
+			"Pointer assignment only available for pointer semantics.",
+			Pointer_assignment_only_available_for_pointer_semantics);
+
 		Cloneable *prevCloneable = m_cloneable;
 		m_cloneable = acquire(cloneable);
 		release(prevCloneable);

@@ -141,7 +141,7 @@ inline CharIter char_to_int(CharIter begin, CharIter end, Integer &num)
 }
 
 /// Converts the given range of characters into an integer of the given type.
-template <class CharIter, class Integer>
+template <class Integer>
 inline bool string_to_int(const utf8_ntri &string, Integer &num)
 {
 	utf8_ntri::const_iterator end = string.end();
@@ -213,7 +213,7 @@ inline CharIter char_to_float(CharIter begin, CharIter end, Float &num)
 }
 
 /// Converts the given range of characters into a floating-point value of the given type.
-template <class CharIter, class Float>
+template <class Float>
 inline bool string_to_float(const utf8_ntri &string, Float &num)
 {
 	utf8_ntri::const_iterator end = string.end();
@@ -223,12 +223,16 @@ inline bool string_to_float(const utf8_ntri &string, Float &num)
 } // namespace
 
 using io::int_to_char;
+using io::int_to_string;
 using io::max_int_string_length;
 using io::char_to_int;
+using io::string_to_int;
 
 using io::float_to_char;
+using io::float_to_string;
 using io::max_float_string_length;
 using io::char_to_float;
+using io::string_to_float;
 
 } // namespace
 

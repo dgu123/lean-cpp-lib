@@ -74,6 +74,7 @@ namespace memory
 		LEAN_STATIC_ASSERT_MSG_ALT(check_alignment<Alignment>::valid,
 			"Alignment is required to be power of two.", Alignment_is_required_to_be_power_of_two);
 
+		// Widen BEFORE complement, otherwise higher-order bits might be lost
 		return integer & ~static_cast<typename int_type<sign_class::no_sign, sizeof(Integer)>::type>(Alignment - 1);
 	}
 
@@ -93,6 +94,7 @@ namespace memory
 			"Alignment is required to be power of two.", Alignment_is_required_to_be_power_of_two);
 
 		integer += (Alignment - 1);
+		// Widen BEFORE complement, otherwise higher-order bits might be lost
 		return integer & ~static_cast<typename int_type<sign_class::no_sign, sizeof(Integer)>::type>(Alignment - 1);
 	}
 
@@ -112,6 +114,7 @@ namespace memory
 			"Alignment is required to be power of two.", Alignment_is_required_to_be_power_of_two);
 
 		integer += Alignment;
+		// Widen BEFORE complement, otherwise higher-order bits might be lost
 		return integer & ~static_cast<typename int_type<sign_class::no_sign, sizeof(Integer)>::type>(Alignment - 1);
 	}
 

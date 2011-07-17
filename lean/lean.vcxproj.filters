@@ -450,6 +450,12 @@
     <ClInclude Include="header\lean\containers\any.h">
       <Filter>Header Files\containers</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\memory\chunk_heap.h">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\memory\pool_allocator.h">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

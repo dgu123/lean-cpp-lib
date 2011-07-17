@@ -15,7 +15,7 @@ namespace memory
 {
 
 /// Contiguous chunk allocator heap.
-template <class Heap, size_t ChunkSize, size_t StaticChunkSize = ChunkSize>
+template <class Heap, size_t ChunkSize, size_t StaticChunkSize = ChunkSize, size_t DefaultAlignment = sizeof(void*)>
 class chunk_heap : public lean::noncopyable
 {
 public:
@@ -25,6 +25,8 @@ public:
 	typedef typename heap_type::size_type size_type;
 	/// Chunk size.
 	static const size_type chunk_size = ChunkSize;
+	/// Default alignment.
+	static const size_type default_alignment = DefaultAlignment;
 
 private:
 	// Optional first static chunk
@@ -115,9 +117,9 @@ public:
 	}
 
 	/// Allocates the given amount of memory.
-	LEAN_INLINE void* allocate(size_type size) { return allocate<1>(size); }
+	LEAN_INLINE void* allocate(size_type size) { return allocate<default_alignment>(size); }
 	/// Frees the given block of memory.
-	LEAN_INLINE void free(void *memory) { free<1>(memory); }
+	LEAN_INLINE void free(void *memory) { free<default_alignment>(memory); }
 
 	/// Allocates the given amount of memory respecting the given alignment.
 	template <size_t Alignment>

@@ -32,6 +32,8 @@ struct win_heap
 {
 	/// Size type.
 	typedef size_t size_type;
+	/// Default alignment.
+	static const size_type default_alignment = LEAN_ASSUME_WIN_ALIGNMENT;
 
 	/// Allocates the given amount of memory.
 	LEAN_MAYBE_EXPORT static void* allocate(size_type size);
@@ -42,7 +44,7 @@ struct win_heap
 	template <size_t Alignment>
 	static LEAN_INLINE void* allocate(size_type size)
 	{
-		if (Alignment <= LEAN_ASSUME_WIN_ALIGNMENT && check_alignment<Alignment>::valid)
+		if (Alignment <= default_alignment && check_alignment<Alignment>::valid)
 			return allocate(size);
 		else
 			// MONITOR: Apparently, the windows heap handles offset pointers gracefully, no need to store anything

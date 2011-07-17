@@ -31,6 +31,8 @@ struct crt_heap
 {
 	/// Size type.
 	typedef size_t size_type;
+	/// Default alignment.
+	static const size_type default_alignment = LEAN_ASSUME_CRT_ALIGNMENT;
 
 	/// Allocates the given amount of memory.
 	static LEAN_INLINE void* allocate(size_type size) { return ::operator new(size); }
@@ -41,7 +43,7 @@ struct crt_heap
 	template <size_t Alignment>
 	static LEAN_INLINE void* allocate(size_type size)
 	{
-		if (Alignment <= LEAN_ASSUME_CRT_ALIGNMENT && check_alignment<Alignment>::valid)
+		if (Alignment <= default_alignment && check_alignment<Alignment>::valid)
 			return allocate(size);
 		else
 		{
@@ -59,7 +61,7 @@ struct crt_heap
 	template <size_t Alignment>
 	static LEAN_INLINE void free(void *memory)
 	{
-		if (Alignment <= LEAN_ASSUME_CRT_ALIGNMENT && check_alignment<Alignment>::valid)
+		if (Alignment <= default_alignment && check_alignment<Alignment>::valid)
 			free(memory);
 		else
 		{

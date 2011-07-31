@@ -8,6 +8,7 @@
 #include "../lean.h"
 #include "../tags/noncopyable.h"
 #include "chunk_heap.h"
+#include "default_heap.h"
 
 namespace lean
 {
@@ -15,7 +16,7 @@ namespace memory
 {
 
 /// Contiguous chunk allocator heap.
-template <class Element, class Heap, size_t ChunkSize, size_t StaticChunkSize = ChunkSize, size_t Alignment = alignof(Element)>
+template <class Element, class Heap = default_heap, size_t ChunkSize, size_t StaticChunkSize = ChunkSize, size_t Alignment = alignof(Element)>
 class pool_allocator : public lean::noncopyable
 {
 public:
@@ -34,10 +35,12 @@ private:
 	typedef chunk_heap<Heap, ChunkSize * sizeof(Element), StaticChunkSize * sizeof(Element), Alignment> chunk_heap;
 	chunk_heap m_heap;
 
-	bi8s
+	Element **m_pFirstFree;
+
 public:
 	/// Constructor.
-	LEAN_INLINE pool_allocator() { }
+	LEAN_INLINE pool_allocator()
+		: m_pFirstFree(nullptr) { }
 	/// Destructor
 	LEAN_INLINE ~pool_allocator()
 	{
@@ -53,22 +56,12 @@ public:
 	// TODO: clear vs free
 
 	/// Allocates the given amount of memory.
-	LEAN_INLINE void* allocate(size_type size) { return allocate<default_alignment>(size); }
+	LEAN_INLINE void* allocate()
+	{
+		return allocate<default_alignment>(size);
+	}
 	/// Frees the given block of memory.
 	LEAN_INLINE void free(void *memory) { free<default_alignment>(memory); }
-
-	/// Allocates the given amount of memory respecting the given alignment.
-	template <size_t Alignment>
-	LEAN_INLINE void* allocate(size_type size)
-	{
-		return allocate_aligned<Alignment>(size);
-	}
-	/// Frees the given aligned block of memory.
-	template <size_t Alignment>
-	LEAN_INLINE void free(void *memory)
-	{
-		// Freeing of individual memory blocks unsupported
-	}
 };
 
 } // namespace

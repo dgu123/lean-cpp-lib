@@ -23,58 +23,18 @@ namespace containers
 template < class Container, class ReallocationPolicy = default_reallocation_policy<Container> >
 class accumulation_vector
 {
-private:
-	// Container
-	typedef Container container_type_;
-	container_type_ m_container;
-
-	typedef typename container_type_::size_type size_type_;
-	size_type_ m_size;
-	
-	/// Reserves space for the given number of elements.
-	LEAN_INLINE void reserve_internal(size_type_ newCount)
-	{
-		ReallocationPolicy::reserve(m_container, newCount);
-	}
-	/// Grows vector storage to fit the given new count.
-	LEAN_INLINE void growTo(size_type_ newCount)
-	{
-		ReallocationPolicy::pre_resize(m_container, newCount);
-	}
-	/// Grows vector storage to fit the given additional number of elements.
-	LEAN_INLINE void grow(size_type_ count)
-	{
-		growTo(m_size + count);
-	}
-
-	/// Asserts that the given value lies outside this vector's element range.
-	LEAN_INLINE assert_outside(const value& value)
-	{
-		LEAN_ASSERT(lean::addressof(value) < lean::addressof(*m_container.begin()) || lean::addressof(*m_container.end()) <= lean::addressof(value));
-	}
-
-	/// Triggers an out of range error.
-	LEAN_NOINLINE static void out_of_range()
-	{
-		throw std::out_of_range("accumulation_vector<T> out of range");
-	}
-	/// Checks the given position.
-	LEAN_INLINE void check_pos(size_type_ pos) const
-	{
-		if (pos >= m_size)
-			out_of_range();
-	}
-
 public:
 	/// Type of the container wrapped by this vector.
-	typedef container_type_ container_type;
+	typedef Container container_type;
 	/// Type of the policy used by this vector.
 	typedef ReallocationPolicy reallocation_policy; 
 
-	/// Type of the allocator used by this vector.
-	typedef typename container_type::allocator_type allocator_type;
+	/// Type of the values stored by this vector.
+	typedef typename container_type::value_type value_type;
 	/// Type of the size returned by this vector.
 	typedef typename container_type::size_type size_type;
+	/// Type of the allocator used by this vector.
+	typedef typename container_type::allocator_type allocator_type;
 	/// Type of the difference between the addresses of two elements in this vector.
 	typedef typename container_type::difference_type difference_type;
 
@@ -99,6 +59,45 @@ public:
 	/// Type of constant reverse iterators to the elements contained by this vector.
 	typedef typename container_type::const_reverse_iterator const_reverse_iterator;
 
+private:
+	container_type m_container;
+	size_type m_size;
+	
+	/// Reserves space for the given number of elements.
+	LEAN_INLINE void reserve_internal(size_type newCount)
+	{
+		ReallocationPolicy::reserve(m_container, newCount);
+	}
+	/// Grows vector storage to fit the given new count.
+	LEAN_INLINE void growTo(size_type newCount)
+	{
+		ReallocationPolicy::pre_resize(m_container, newCount);
+	}
+	/// Grows vector storage to fit the given additional number of elements.
+	LEAN_INLINE void grow(size_type count)
+	{
+		growTo(m_size + count);
+	}
+
+	/// Asserts that the given value lies outside this vector's element range.
+	LEAN_INLINE void assert_outside(const value_type& value)
+	{
+		LEAN_ASSERT(lean::addressof(value) < lean::addressof(*m_container.begin()) || lean::addressof(*m_container.end()) <= lean::addressof(value));
+	}
+
+	/// Triggers an out of range error.
+	LEAN_NOINLINE static void out_of_range()
+	{
+		throw std::out_of_range("accumulation_vector<T> out of range");
+	}
+	/// Checks the given position.
+	LEAN_INLINE void check_pos(size_type pos) const
+	{
+		if (pos >= m_size)
+			out_of_range();
+	}
+
+public:
 	/// Constructs an empty accumulation vector.
 	accumulation_vector()
 		: m_size(0) { }
@@ -186,7 +185,7 @@ public:
 		if (m_size == m_container.size())
 		{
 			grow(1);
-			m_container.push_back(Element());
+			m_container.push_back(value_type());
 		}
 
 		return m_container[m_size++];
@@ -239,7 +238,7 @@ public:
 		{
 			size_type index = itWhere - m_container.begin();
 			grow(1);
-			itWhere = m_container.insert(m_container.begin() + index, Element());
+			itWhere = m_container.insert(m_container.begin() + index, value_type());
 		}
 		else
 			std::copy_backward(itWhere, end(), ++end());
@@ -369,7 +368,7 @@ public:
 	}
 
 	/// Assigns the given number of elements to this vector. Assumes value outside of vector range, copy manually otherwise.
-	void assign(size_type count, const Element& value)
+	void assign(size_type count, const value_type& value)
 	{
 		assert_outside(value);
 
@@ -414,7 +413,7 @@ public:
 	LEAN_INLINE void clear(void) { m_size = 0; }
 
 	/// Gets a copy of the allocator used by this vector.
-	LEAN_INLINE Allocator get_allocator() const { return m_container.get_allocator(); }
+	LEAN_INLINE allocator_type get_allocator() const { return m_container.get_allocator(); }
 	/// Returns the maximum number of elements this vector could store.
 	LEAN_INLINE size_type max_size(void) const { return m_container.max_size(); }
 
@@ -437,7 +436,7 @@ public:
 		m_size = count;
 	}
 	/// Inserts or erases elements to match the new size specified
-	void resize(size_type count, const Element& value)
+	void resize(size_type count, const value_type& value)
 	{
 		if(count > m_container.size())
 		{

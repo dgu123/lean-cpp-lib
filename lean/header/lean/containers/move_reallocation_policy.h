@@ -58,16 +58,19 @@ public:
 	/// no longer serve the given new element count.
 	static void pre_presize(Container &container, size_type newCount)
 	{
-		if (newCount > container.capacity())
+		size_t capacity = container.capacity(),
+
+		if (newCount > capacity)
 		{
-			size_type capacityDelta = newCount / GrowthDenominator;
+			size_type capacityDelta = capacity / GrowthDenominator;
 			size_type maxSize = container.max_size();
 
-			capacity = (maxSize - capacityDelta < newCount)
+			// Mind overflow
+			capacity = (maxSize - capacityDelta < capacity)
 				? maxSize
-				: newCount + capacityDelta;
+				: capacity + capacityDelta;
 
-			if (maxSize < newCount)
+			if (capacity < newCount)
 				capacity = newCount;
 
 			reserve(container, capacity);

@@ -18,21 +18,25 @@ namespace containers
 namespace simple_vector_policies
 {
 	/// Simple vector element construction policy.
-	template <bool RawMove = false, bool NoDestruct = false>
+	template <bool RawMove = false, bool NoDestruct = false, bool NoConstruct = false>
 	struct policy
 	{
 		/// Specifies whether memory containing constructed elements may be moved as a whole, without invoking the contained elements' copy or move constructors.
 		static const bool raw_move = RawMove;
 		/// Specifies whether memory containing constructed elements may be freed as a whole, without invoking the contained elements' destructors.
 		static const bool no_destruct = NoDestruct;
+		/// Specifies whether memory needs to be initialized by constructing elements.
+		static const bool no_construct = NoConstruct;
 	};
 
 	/// Default element construction policy.
 	typedef policy<> nonpod;
-	/// Semi-POD element construction policy (raw move, yet proper destruction).
+	/// Semi-POD element construction policy (raw move, yet properly destructed).
 	typedef policy<true> semipod;
-	/// POD element construction policy.
-	typedef policy<true, true> pod;
+	/// Initialize-POD element construction policy (raw move, no destruction, yet properly constructed).
+	typedef policy<true, true> inipod;
+	/// POD element (no-)construction policy.
+	typedef policy<true, true, true> pod;
 }
 
 /// Simple and fast vector class, partially implementing the STL vector interface.
@@ -57,22 +61,26 @@ private:
 	/// Default constructs an element at the given location.
 	LEAN_INLINE void default_construct(Element *dest)
 	{
-		m_allocator.construct(dest, Element());
+		if (!Policy::no_construct)
+			m_allocator.construct(dest, Element());
 	}
 	/// Default constructs elements in the given range.
 	void default_construct(Element *dest, Element *destEnd)
 	{
-		Element *destr = dest;
+		if (!Policy::no_construct)
+		{
+			Element *destr = dest;
 
-		try
-		{
-			for (; dest != destEnd; ++dest)
-				default_construct(dest);
-		}
-		catch(...)
-		{
-			destruct(destr, dest);
-			throw;
+			try
+			{
+				for (; dest != destEnd; ++dest)
+					default_construct(dest);
+			}
+			catch(...)
+			{
+				destruct(destr, dest);
+				throw;
+			}
 		}
 	}
 	/// Copies the given source element to the given destination.
@@ -535,14 +543,14 @@ public:
 	/// Computes a new capacity based on the given number of elements to be stored.
 	size_type next_capacity_hint(size_type count) const
 	{
-		size_type oldCapacity = capacity();
-		LEAN_ASSERT(oldCapacity <= s_maxSize);
-		size_type capacityDelta = oldCapacity / 2;
+		size_type capacity = capacity();
+		LEAN_ASSERT(capacity <= s_maxSize);
+		size_type capacityDelta = capacity / 2;
 
 		// Try to increase capacity by 1.5 (mind overflow)
-		size_type capacity = (s_maxSize - capacityDelta < oldCapacity)
-			? 0
-			: oldCapacity + capacityDelta;
+		capacity = (s_maxSize - capacityDelta < capacity)
+			? s_maxSize
+			: capacity + capacityDelta;
 
 		if (capacity < count)
 			capacity = count;

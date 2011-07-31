@@ -8,6 +8,7 @@
 #include "../lean.h"
 #include "../tags/noncopyable.h"
 #include "alignment.h"
+#include "default_heap.h"
 
 namespace lean
 {
@@ -15,7 +16,7 @@ namespace memory
 {
 
 /// Contiguous chunk allocator heap.
-template <class Heap, size_t ChunkSize, size_t StaticChunkSize = ChunkSize, size_t DefaultAlignment = sizeof(void*)>
+template <class Heap = default_heap, size_t ChunkSize, size_t StaticChunkSize = ChunkSize, size_t DefaultAlignment = sizeof(void*)>
 class chunk_heap : public lean::noncopyable
 {
 public:
@@ -57,7 +58,7 @@ private:
 		char *aligned = align<Alignment>(m_chunkOffset);
 
 		// Allocate new chunk, if old chunk too small
-		if (size > static_cast<size_type>(m_chunkEnd - aligned))
+		if (size + static_cast<size_type>(aligned - m_chunkOffset) > static_cast<size_type>(m_chunkEnd - m_chunkOffset))
 		{
 			// Make sure new chunk is large enough for requested amount of memory + alignment
 			size_type alignedSize = size + (Alignment - 1);

@@ -484,14 +484,14 @@ public:
 	void resize(size_type newCount)
 	{
 		// Mind overflow
-		check_length(newCapacity);
+		check_length(newCount);
 
-		if (newCount > count())
+		if (newCount > size())
 		{
 			if (newCount > capacity())
 				growToHL(newCount);
 			
-			Elements *newElementsEnd = m_elements + newCount;
+			Element *newElementsEnd = m_elements + newCount;
 			default_construct(m_elementsEnd, newElementsEnd);
 			m_elementsEnd = newElementsEnd;
 		}
@@ -543,7 +543,7 @@ public:
 	/// Computes a new capacity based on the given number of elements to be stored.
 	size_type next_capacity_hint(size_type count) const
 	{
-		size_type capacity = capacity();
+		size_type capacity = this->capacity();
 		LEAN_ASSERT(capacity <= s_maxSize);
 		size_type capacityDelta = capacity / 2;
 

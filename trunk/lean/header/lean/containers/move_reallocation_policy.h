@@ -56,9 +56,9 @@ public:
 
 	/// Reserves a new block of memory, if the old block of memory can
 	/// no longer serve the given new element count.
-	static void pre_presize(Container &container, size_type newCount)
+	static void pre_resize(Container &container, size_type newCount)
 	{
-		size_t capacity = container.capacity(),
+		size_t capacity = container.capacity();
 
 		if (newCount > capacity)
 		{

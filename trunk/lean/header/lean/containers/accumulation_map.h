@@ -21,26 +21,9 @@ namespace containers
 template <class Container>
 class accumulation_map
 {
-private:
-	// Container
-	typedef Container container_type_;
-	container_type_ m_container;
-
-	// Invalid marker
-	typedef typename container_type::mapped_type mapped_type_;
-	mapped_type_ m_invalidValue;
-
-	/// Assigns an invalid value to the given value object.
-	LEAN_INLINE void invalidate(mapped_type_ &value) const
-	{
-		// Const method modifier makes m_invalidValue const
-		value = m_invalidValue;
-	}
-
 public:
 	/// Type of the container wrapped by this map.
-	typedef container_type_ container_type;
-
+	typedef Container container_type;
 	/// Type of the allocator used by this map.
 	typedef typename container_type::allocator_type allocator_type;
 	/// Type of the size returned by this map.
@@ -78,6 +61,21 @@ public:
 	/// Type of the function object used to compare two elements contained by this map.
 	typedef typename container_type::value_compare value_compare;
 
+private:
+	// Container
+	container_type m_container;
+
+	// Invalid marker
+	mapped_type m_invalidValue;
+
+	/// Assigns an invalid value to the given value object.
+	LEAN_INLINE void invalidate(mapped_type &value) const
+	{
+		// Const method modifier makes m_invalidValue const
+		value = m_invalidValue;
+	}
+
+public:
 	/// Constructs an empty accumulation map.
 	accumulation_map() { }
 	/// Constructs an accumulation map containing the given key comparison predicate.
@@ -154,7 +152,7 @@ public:
 	/// Sets a new invalid element marker value to be used. Leaves previously marked elements untouched, best used when container is empty!
 	LEAN_INLINE void inv_elem(const mapped_type &invalid) { m_invalidValue = invalid; }
 	/// Gets a copy of the invalid element marker value currently in use.
-	LEAN_INLINE invalid inv_elem(void) { return m_invalidValue; }
+	LEAN_INLINE mapped_type inv_elem(void) { return m_invalidValue; }
 
 	/// Gets the number of elements contained by this map.
 	LEAN_INLINE size_type size(void) const { return m_container.size(); };
@@ -224,7 +222,7 @@ public:
 	LEAN_INLINE value_compare value_comp(void) const { return m_container.value_comp(); }
 
 	/// Gets a copy of the allocator used by this map.
-	LEAN_INLINE Allocator get_allocator() const { return m_container.get_allocator(); }
+	LEAN_INLINE allocator_type get_allocator() const { return m_container.get_allocator(); }
 	/// Returns the maximum number of elements this map could hold.
 	LEAN_INLINE size_type max_size(void) const { return m_container.max_size(); }
 
@@ -249,7 +247,7 @@ public:
 	LEAN_INLINE size_type count(const key_type &key) const { return m_container.count(key); }
 
 	/// Gets an element by key, inserting one if none existent so far.
-	LEAN_INLINE reference operator [](const key_type &key) { return m_container[key]; }
+	LEAN_INLINE mapped_type& operator [](const key_type &key) { return m_container[key]; }
 
 	/// Returns an iterator to the first element contained by this map.
 	LEAN_INLINE iterator begin(void) { return m_container.begin(); }

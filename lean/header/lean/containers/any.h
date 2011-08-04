@@ -23,7 +23,6 @@ class any : public cloneable
 	friend Value* any_cast(any*);
 
 protected:
-	LEAN_INLINE any(const any&) { }
 	LEAN_INLINE any& operator =(const any&) { return *this; }
 
 	/// Gets a pointer to the stored value, if the given type matches the value stored by this object, nullptr otherwise.

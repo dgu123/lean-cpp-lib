@@ -6,7 +6,6 @@
 #define LEAN_CONTAINERS_ACCUMULATION_VECTOR
 
 #include "../lean.h"
-#include <vector>
 #include <algorithm>
 #include "default_reallocation_policy.h"
 
@@ -14,6 +13,50 @@ namespace lean
 {
 namespace containers
 {
+
+namespace Impl
+{
+
+/// Checks whether the given type has a reverse iterator type.
+template <class Container>
+class has_reverse_iterator
+{
+private:
+	typedef char yes[1];
+	typedef char no[2];
+
+	template <class T>
+	static yes& check(const T*, const typename T::reverse_iterator* = nullptr);
+	static no& check(...);
+
+public:
+	/// True, if <code>Container</code> defines reverse iterators.
+	static const bool value = (
+		sizeof( check( static_cast<Container*>(nullptr) ) )
+		==
+		sizeof(yes) );
+};
+
+/// Redefines reverse iterator types, if available.
+template <bool HasReverseIterators, class Container>
+struct reverse_iterators_impl
+{
+	typedef void reverse_iterator;
+	typedef void const_reverse_iterator;
+};
+template <class Container>
+struct reverse_iterators_impl<true, Container>
+{
+	typedef typename Container::reverse_iterator reverse_iterator;
+	typedef typename Container::const_reverse_iterator const_reverse_iterator;
+};
+
+/// Redefines reverse iterator types, if available.
+template <class Container>
+struct reverse_iterators
+	: public reverse_iterators_impl<has_reverse_iterator<Container>::value, Container> { };
+
+} // namespace
 	
 /// Vector wrapper class providing improved performance on repeated element accumulation.
 /** This class stores elements of the given type without destructing them on remove
@@ -55,9 +98,9 @@ public:
 	typedef typename container_type::const_iterator const_iterator;
 
 	/// Type of reverse iterators to the elements contained by this vector.
-	typedef typename container_type::reverse_iterator reverse_iterator;
+	typedef typename Impl::reverse_iterators<Container>::reverse_iterator reverse_iterator;
 	/// Type of constant reverse iterators to the elements contained by this vector.
-	typedef typename container_type::const_reverse_iterator const_reverse_iterator;
+	typedef typename Impl::reverse_iterators<Container>::const_reverse_iterator const_reverse_iterator;
 
 private:
 	container_type m_container;

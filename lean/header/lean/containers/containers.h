@@ -12,6 +12,7 @@ namespace lean
 }
 
 #include "simple_vector.h"
+#include "simple_hash_map.h"
 
 #include "default_reallocation_policy.h"
 #include "move_reallocation_policy.h"

@@ -666,7 +666,7 @@ private:
 	{
 		LEAN_ASSERT(empty());
 
-		for (value_type *element = elements; element != elementsEnd; ++element)
+		for (const value_type *element = elements; element != elementsEnd; ++element)
 			if (base_type::key_valid(element->first))
 			{
 				copy_construct(
@@ -1118,9 +1118,7 @@ public:
 
 		// Make sure capacity never goes below the number of elements currently stored
 		// -> Capacity equal count will result in reallocation on next element insertion
-		m_capacity = max(
-			capacity_from_buckets(bucket_count()),
-			count());
+		m_capacity = capacity_from_buckets(bucket_count(), size());
 	}
 
 	/// Gets the current load factor.

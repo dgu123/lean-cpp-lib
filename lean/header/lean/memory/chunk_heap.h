@@ -38,6 +38,9 @@ private:
 	char *m_chunkOffset;
 	char *m_chunkEnd;
 
+	// Next chunk size
+	size_type m_nextChunkSize;
+
 	/// Chunk header
 	struct chunk_header
 	{
@@ -52,7 +55,7 @@ private:
 
 	/// Allocates the given amount of memory.
 	template <size_t Alignment>
-	void allocate_aligned(size_type size)
+	char* allocate_aligned(size_type size)
 	{
 		// Get next free memory location
 		char *aligned = align<Alignment>(m_chunkOffset);
@@ -63,13 +66,13 @@ private:
 			// Make sure new chunk is large enough for requested amount of memory + alignment
 			size_type alignedSize = size + (Alignment - 1);
 
-			size_type nextChunkSize = ChunkSize;
+			size_type nextChunkSize = m_nextChunkSize;
 			if (nextChunkSize < alignedSize)
 				nextChunkSize = alignedSize;
 
 			nextChunkSize += sizeof(chunk_header);
 
-			char *nextChunk = Heap::allocate<chunk_alignment>(nextChunkSize);
+			char *nextChunk = static_cast<char*>( Heap::allocate<chunk_alignment>(nextChunkSize) );
 			new( static_cast<void*>(nextChunk) ) chunk_header(m_chunk);
 
 			m_chunk = nextChunk;
@@ -88,14 +91,32 @@ private:
 
 public:
 	/// Constructor.
-	LEAN_INLINE chunk_heap()
+	LEAN_INLINE chunk_heap(size_type chunkSize = ChunkSize)
 		: m_chunk(m_firstChunk),
 		m_chunkOffset(m_firstChunk),
-		m_chunkEnd(m_firstChunk + StaticChunkSize) { }
+		m_chunkEnd(m_firstChunk + StaticChunkSize),
+		m_nextChunkSize(chunkSize) { }
 	/// Destructor
 	LEAN_INLINE ~chunk_heap()
 	{
 		clear();
+	}
+
+	/// Sets the next chunk size.
+	LEAN_INLINE void nextChunkSize(size_type nextSize) { m_nextChunkSize = nextSize; }
+	/// Gets the next chunk size.
+	LEAN_INLINE size_type nextChunkSize() const { return m_nextChunkSize; }
+
+	/// Gets the remaining capacity of the current chunk.
+	LEAN_INLINE size_type capacity() const { return m_chunkEnd - m_chunkOffset; }
+
+	/// Tweaks the next chunk size to exactly fit the given amount of objects about to be allocated.
+	/// WARNING: Either call @code nextChunkSize()@endcode after you're done allocating or recall
+	/// @code reserve()@endcode for sensible reallocation behavior in subsequent bulk allocations.
+	LEAN_INLINE void reserve(size_type newCapacity)
+	{
+		if (newCapacity > capacity()) 
+			nextChunkSize(newCapacity - capacity());
 	}
 
 	/// Frees all chunks allocated by this allocator.

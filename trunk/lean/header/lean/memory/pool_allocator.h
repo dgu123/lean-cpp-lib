@@ -32,7 +32,7 @@ public:
 	static const size_type alignment = Alignment;
 
 private:
-	typedef chunk_heap<Heap, ChunkSize * sizeof(Element), StaticChunkSize * sizeof(Element), Alignment> chunk_heap;
+	typedef chunk_heap<ChunkSize * sizeof(Element), Heap, StaticChunkSize * sizeof(Element), Alignment> chunk_heap;
 	chunk_heap m_heap;
 
 	Element **m_pFirstFree;

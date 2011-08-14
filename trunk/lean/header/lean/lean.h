@@ -105,6 +105,11 @@
 	#define LEAN_ASSERT_DEBUG(expr)
 #endif
 
+/// Asserts that the given expression is never null, returning the expression.
+#define LEAN_ASSERT_NOT_NULL(expr) (LEAN_ASSERT(expr != nullptr), expr)
+/// Asserts that the given expression is never null, returning the expression.
+#define LEAN_ASSERT_NOT_NULL_DEBUG(expr) (LEAN_ASSERT_DEBUG(expr != nullptr), expr)
+
 #ifdef _MSC_VER
 	/// Instructs the compiler to inline a specific method.
 	#define LEAN_INLINE __forceinline

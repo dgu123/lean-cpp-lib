@@ -30,6 +30,23 @@ struct close_handle_policy
 	}
 };
 
+/// Window handle guard policy.
+template <class Handle>
+struct destroy_window_policy
+{
+	/// Returns an invalid handle value.
+	static LEAN_INLINE Handle invalid()
+	{
+		return NULL;
+	}
+	/// Releases the given handle by calling @code DestroyWindow()@endcode.
+	static LEAN_INLINE void release(Handle handle)
+	{
+		if (handle != NULL)
+			::DestroyWindow(handle);
+	}
+};
+
 /// Dll handle guard policy.
 template <class Handle>
 struct free_library_policy

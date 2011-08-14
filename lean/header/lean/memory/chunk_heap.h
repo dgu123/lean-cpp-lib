@@ -16,7 +16,7 @@ namespace memory
 {
 
 /// Contiguous chunk allocator heap.
-template <class Heap = default_heap, size_t ChunkSize, size_t StaticChunkSize = ChunkSize, size_t DefaultAlignment = sizeof(void*)>
+template <size_t ChunkSize, class Heap = default_heap, size_t StaticChunkSize = ChunkSize, size_t DefaultAlignment = sizeof(void*)>
 class chunk_heap : public lean::noncopyable
 {
 public:

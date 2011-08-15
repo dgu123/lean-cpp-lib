@@ -273,8 +273,14 @@ struct ieee_float : public Desc
 using std::size_t;
 /// Std pointer difference type.
 using std::ptrdiff_t;
-/// Std pointer address type.
-typedef int_type<sign_class::no_sign, sizeof(void*)>::type uintptr_t;
+
+#ifdef LEAN0X_NO_UINTPTR_T
+	/// Std pointer address type.
+	typedef int_type<sign_class::no_sign, sizeof(void*)>::type uintptr_t;
+#else
+	/// Std pointer address type.
+	using ::uintptr_t;
+#endif
 
 /// Number of bits per byte.
 static const size_t bits_per_byte = CHAR_BIT;
@@ -324,6 +330,7 @@ using types::size_t;
 using types::ptrdiff_t;
 using types::uintptr_t;
 
+using types::bits_per_byte;
 using types::size_info;
 
 }

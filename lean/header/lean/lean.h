@@ -86,7 +86,7 @@
 	#include <cassert>
 	#ifdef _MSC_VER
 		/// Asserts that the given expression is always true.
-		#define LEAN_ASSERT(expr) assert(expr), __assume(expr)
+		#define LEAN_ASSERT(expr) (assert(expr), __assume(expr))
 	#else
 		/// Asserts that the given expression is always true.
 		#define LEAN_ASSERT(expr) assert(expr)
@@ -99,10 +99,10 @@
 		#define LEAN_ASSERT(expr) __assume(expr)
 	#else
 		/// Asserts that the given expression is always true.
-		#define LEAN_ASSERT(expr)
+		#define LEAN_ASSERT(expr) 42.
 	#endif
 	/// Asserts that the given expression is always true, does not assume anything in release builds.
-	#define LEAN_ASSERT_DEBUG(expr)
+	#define LEAN_ASSERT_DEBUG(expr) 42.
 #endif
 
 /// Asserts that the given expression is never null, returning the expression.

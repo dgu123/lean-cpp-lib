@@ -15,6 +15,28 @@ namespace lean
 namespace memory
 {
 
+/// Block of memory that may be zero-sized.
+template <size_t Size>
+struct optional_mem_block
+{
+	char memory[Size];
+
+	LEAN_INLINE char* get() { return memory; }
+	LEAN_INLINE const char* get() const { return memory; }
+
+	LEAN_INLINE operator char*() { return memory; }
+	LEAN_INLINE operator const char*() const { return memory; }
+};
+template <>
+struct optional_mem_block<0>
+{
+	LEAN_INLINE char* get() { return nullptr; }
+	LEAN_INLINE const char* get() const { return nullptr; }
+
+	LEAN_INLINE operator char*() { return nullptr; }
+	LEAN_INLINE operator const char*() const { return nullptr; }
+};
+
 /// Contiguous chunk allocator heap.
 template <size_t ChunkSize, class Heap = default_heap, size_t StaticChunkSize = ChunkSize, size_t DefaultAlignment = sizeof(void*)>
 class chunk_heap : public lean::noncopyable
@@ -31,7 +53,7 @@ public:
 
 private:
 	// Optional first static chunk
-	char m_firstChunk[StaticChunkSize];
+	optional_mem_block<StaticChunkSize> m_firstChunk;
 	
 	// Current chunk
 	char *m_chunk;
@@ -79,6 +101,10 @@ private:
 			m_chunkOffset = nextChunk + sizeof(chunk_header);
 			m_chunkEnd = nextChunk + nextChunkSize;
 
+			// Reset chunk size
+			if (chunk_size != 0)
+				m_nextChunkSize = chunk_size;
+
 			// Get next free memory location
 			aligned = align<Alignment>(m_chunkOffset);
 		}
@@ -94,7 +120,7 @@ public:
 	LEAN_INLINE chunk_heap(size_type chunkSize = ChunkSize)
 		: m_chunk(m_firstChunk),
 		m_chunkOffset(m_firstChunk),
-		m_chunkEnd(m_firstChunk + StaticChunkSize),
+		m_chunkEnd(m_firstChunk.get() + StaticChunkSize),
 		m_nextChunkSize(chunkSize) { }
 	/// Destructor
 	LEAN_INLINE ~chunk_heap()
@@ -110,13 +136,17 @@ public:
 	/// Gets the remaining capacity of the current chunk.
 	LEAN_INLINE size_type capacity() const { return m_chunkEnd - m_chunkOffset; }
 
-	/// Tweaks the next chunk size to exactly fit the given amount of objects about to be allocated.
-	/// WARNING: Either call @code nextChunkSize()@endcode after you're done allocating or recall
-	/// @code reserve()@endcode for sensible reallocation behavior in subsequent bulk allocations.
-	LEAN_INLINE void reserve(size_type newCapacity)
+	/// Tweaks the next chunk size to fit at least the given amount of objects about to be allocated.
+	/// Passing 0 for @code minChunkSize@endcode will result in an exact fit of the given amount of objects.
+	/// WARNING: When passing 0 for an exact fit, either call @code nextChunkSize()@endcode after
+	/// you're done allocating or recall @code reserve()@endcode for sensible reallocation behavior
+	/// in subsequent bulk allocations.
+	LEAN_INLINE void reserve(size_type newCapacity, size_type minChunkSize = chunk_size)
 	{
-		if (newCapacity > capacity()) 
-			nextChunkSize(newCapacity - capacity());
+		size_type currentCapacity = capacity();
+
+		if (newCapacity > currentCapacity) 
+			nextChunkSize( max(newCapacity - currentCapacity, minChunkSize) );
 	}
 
 	/// Frees all chunks allocated by this allocator.
@@ -124,7 +154,7 @@ public:
 	{
 		// Re-initialize first (exception-safe)
 		m_chunkOffset = m_firstChunk;
-		m_chunkEnd = m_firstChunk + StaticChunkSize;
+		m_chunkEnd = m_firstChunk.get() + StaticChunkSize;
 
 		// Free as many chunks as possible
 		while (m_chunk != m_firstChunk)
@@ -136,6 +166,16 @@ public:
 
 			Heap::free<chunk_alignment>(freeChunk);
 		}
+	}
+
+	/// Frees all chunks but the first one dynamically allocated by this allocator if it has not been exhausted yet.
+	void clearButFirst()
+	{
+		if (m_chunk != m_firstChunk && reinterpret_cast<chunk_header*>(m_chunk)->prev_chunk == m_firstChunk)
+			// Re-initialize first dynamic chunk
+			m_chunkOffset = m_chunk;
+		else
+			clear();
 	}
 
 	/// Allocates the given amount of memory.

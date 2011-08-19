@@ -506,5 +506,8 @@
     <ClCompile Include="header\lean\logging\source\errors.cpp">
       <Filter>Source Files\logging</Filter>
     </ClCompile>
+    <ClCompile Include="source\inst_containers.cpp">
+      <Filter>Source Files\containers</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

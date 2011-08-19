@@ -130,7 +130,8 @@ public:
 	template <class COMType2, bool Critical2>
 	com_ptr& operator =(com_ptr<COMType2, Critical2> &&right)
 	{
-		if (addressof(right) != this)
+		// Self-assignment would be wrong
+		if (addressof(right) != static_cast<void*>(this))
 		{
 			COMType *prevObject = m_object;
 			m_object = right.unbind();

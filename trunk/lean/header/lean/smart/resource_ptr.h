@@ -158,9 +158,13 @@ public:
 	template <class Resource2, bool Critical2>
 	resource_ptr& operator =(resource_ptr<Resource2, Critical2> &&right)
 	{
-		Resource *prevResource = m_resource;
-		m_resource = right.unbind();
-		release(prevResource);
+		// Self-assignment would be wrong
+		if (addressof(right) != static_cast<void*>(this))
+		{
+			Resource *prevResource = m_resource;
+			m_resource = right.unbind();
+			release(prevResource);
+		}
 
 		return *this;
 	}

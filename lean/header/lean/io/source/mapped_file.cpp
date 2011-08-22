@@ -134,7 +134,8 @@ LEAN_MAYBE_INLINE void* lean::io::mapped_file_base::map(bool readonly, uint8 off
 	// Offset is required to be aligned using system allocation granularity
 	uint8 alignedOffset = impl::align_map_offset(offset);
 	size_t alignmentDelta = static_cast<size_t>(offset - alignedOffset);
-	size_t alignedSize = impl::align_map_size(size + alignmentDelta);
+	// WARNING: DON'T align size, easily out-of-bounds otherwise
+	size_t alignedSize = /*impl::align_map_size(*/ size + alignmentDelta /*)*/;
 
 	// Handles size of 0 equal to end of file
 	void *memory = (m_mappingHandle != NULL)

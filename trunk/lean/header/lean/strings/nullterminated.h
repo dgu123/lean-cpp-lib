@@ -53,8 +53,11 @@ struct is_nullterminated_convertible
 {
 	/// True, if the given type is convertible.
 	static const bool value = is_equal<
-				typename strip_modifiers<typename strip_pointer<typename strip_reference<Compatible>::type>::type>::type*,
-				typename strip_modifiers<Char>::type* >::value
+				typename strip_modifiers<typename strip_pointer<typename strip_reference<Compatible>::type>::type>::type,
+				typename strip_modifiers<Char>::type >::value
+			|| is_equal<
+				typename strip_modifiers<typename strip_array<typename strip_reference<Compatible>::type>::type>::type,
+				typename strip_modifiers<Char>::type >::value
 			|| is_nullterminated_compatible<Compatible, Char, Traits>::value;
 };
 

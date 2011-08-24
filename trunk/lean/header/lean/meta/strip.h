@@ -211,6 +211,64 @@ struct strip_pointer
 template <class Type>
 struct inh_strip_pointer : public strip_pointer<Type>::type { };
 
+namespace impl
+{
+
+template <class Type>
+struct do_strip_array
+{
+	typedef Type type;
+	static const bool stripped = false;
+	template <class Other>
+	struct undo { typedef Other type; };
+};
+
+template <class Type>
+struct do_strip_array<Type[]>
+{
+	typedef Type type;
+	static const bool stripped = true;
+	template <class Other>
+	struct undo { typedef Other type[]; };
+};
+
+template <class Type, size_t Size>
+struct do_strip_array<Type[Size]>
+{
+	typedef Type type;
+	static const bool stripped = true;
+	template <class Other>
+	struct undo { typedef Other type[Size]; };
+};
+
+}
+
+/// Strips a array from the given type.
+template <class Type>
+struct strip_array
+{
+	/// Pointer type without modifiers.
+	typedef typename strip_modifiers<Type>::type array;
+	/// Type without array.
+	typedef typename impl::do_strip_array<array>::type type;
+	/// True, if any array stripped.
+	static const bool stripped = impl::do_strip_array<array>::stripped;
+
+	/// Adds any array stripped.
+	template <class Other>
+	struct undo
+	{
+		/// Pointer type without modifiers.
+		typedef typename impl::do_strip_array<array>::template undo<Other>::type array;
+		/// Type with array, if any array stripped.
+		typedef typename strip_modifiers<Type>::template undo<array>::type type;
+	};
+};
+
+/// Inherits the stripped type.
+template <class Type>
+struct inh_strip_array : public strip_array<Type>::type { };
+
 /// Redefines the given type.
 template <class Type>
 struct identity
@@ -221,6 +279,7 @@ struct identity
 
 } // namespace
 
+using meta::strip_array;
 using meta::strip_pointer;
 using meta::strip_reference;
 using meta::strip_const;
@@ -230,6 +289,7 @@ using meta::strip_modref;
 using meta::identity;
 
 using meta::inh_strip_pointer;
+using meta::inh_strip_array;
 using meta::inh_strip_reference;
 using meta::inh_strip_modref;
 

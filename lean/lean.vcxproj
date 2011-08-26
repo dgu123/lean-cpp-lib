@@ -130,7 +130,7 @@
     <ClInclude Include="header\lean\memory\heap_allocator.h" />
     <ClInclude Include="header\lean\memory\heap_bound.h" />
     <ClInclude Include="header\lean\memory\new_handler.h" />
-    <ClInclude Include="header\lean\memory\pool_allocator.h" />
+    <ClInclude Include="header\lean\memory\object_pool.h" />
     <ClInclude Include="header\lean\memory\win_heap.h" />
     <ClInclude Include="header\lean\meta\conditional.h" />
     <ClInclude Include="header\lean\meta\constexpr.h" />

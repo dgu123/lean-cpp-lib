@@ -75,6 +75,12 @@ private:
 	// Chunk alignment
 	static const size_t chunk_alignment = alignof(chunk_header);
 
+	/// Gets the header of the given dynamically allocated chunk.
+	LEAN_INLINE static chunk_header* to_chunk_header(char *chunk)
+	{
+		return reinterpret_cast<chunk_header*>(chunk) - 1;
+	}
+
 	/// Allocates the given amount of memory.
 	template <size_t Alignment>
 	char* allocate_aligned(size_type size)
@@ -94,12 +100,12 @@ private:
 
 			nextChunkSize += sizeof(chunk_header);
 
-			char *nextChunk = static_cast<char*>( Heap::allocate<chunk_alignment>(nextChunkSize) );
-			new( static_cast<void*>(nextChunk) ) chunk_header(m_chunk);
+			char *nextChunkBase = static_cast<char*>( Heap::allocate<chunk_alignment>(nextChunkSize) );
+			new( static_cast<void*>(nextChunkBase) ) chunk_header(m_chunk);
 
-			m_chunk = nextChunk;
-			m_chunkOffset = nextChunk + sizeof(chunk_header);
-			m_chunkEnd = nextChunk + nextChunkSize;
+			m_chunk = nextChunkBase + sizeof(chunk_header);
+			m_chunkOffset = m_chunk;
+			m_chunkEnd = nextChunkBase + nextChunkSize;
 
 			// Reset chunk size
 			if (chunk_size != 0)
@@ -149,33 +155,69 @@ public:
 			nextChunkSize( max(newCapacity - currentCapacity, minChunkSize) );
 	}
 
-	/// Frees all chunks allocated by this allocator.
+	/// Clears and frees all chunks allocated by this allocator.
 	void clear()
 	{
-		// Re-initialize first (exception-safe)
-		m_chunkOffset = m_firstChunk;
-		m_chunkEnd = m_firstChunk.get() + StaticChunkSize;
-
 		// Free as many chunks as possible
 		while (m_chunk != m_firstChunk)
 		{
-			char *freeChunk = m_chunk;
+			chunk_header *freeChunkBase = to_chunk_header(m_chunk);
 
 			// Immediately store previous chunk in case clear is re-called after exception
-			m_chunk = reinterpret_cast<chunk_header*>(m_chunk)->prev_chunk;
+			m_chunk = freeChunkBase->prev_chunk;
+			m_chunkOffset = m_chunk;
+			m_chunkEnd = m_chunk;
 
-			Heap::free<chunk_alignment>(freeChunk);
+			Heap::free<chunk_alignment>(freeChunkBase);
 		}
+
+		// Re-initialize with first chunk
+		m_chunkEnd = m_chunk + StaticChunkSize;
 	}
 
-	/// Frees all chunks but the first one dynamically allocated by this allocator if it has not been exhausted yet.
+	/// Clears all chunks and frees all chunks but the first one dynamically allocated by this allocator if it has not been exhausted yet.
 	void clearButFirst()
 	{
-		if (m_chunk != m_firstChunk && reinterpret_cast<chunk_header*>(m_chunk)->prev_chunk == m_firstChunk)
+		if (m_chunk != m_firstChunk && to_chunk_header(m_chunk)->prev_chunk == m_firstChunk)
 			// Re-initialize first dynamic chunk
 			m_chunkOffset = m_chunk;
 		else
 			clear();
+	}
+
+	/// Gets whether the current chunk is static.
+	bool currentStatic()
+	{
+		return (m_chunk == m_firstChunk);
+	}
+	/// Gets the current chunk offset.
+	char* currentOffset()
+	{
+		return m_chunkOffset;
+	}
+	/// Clears the current chunk but frees none.
+	char* clearCurrent()
+	{
+		// Re-initialize with current chunk
+		m_chunkOffset = m_chunk;
+		return m_chunk;
+	}
+	/// Clears all chunks and frees the current chunk, returning the next.
+	char* clearFreeNext()
+	{
+		if (m_chunk != m_firstChunk)
+		{
+			chunk_header *freeChunkBase = to_chunk_header(m_chunk);
+
+			// Immediately store previous chunk (exception-safe)
+			m_chunk = freeChunkBase->prev_chunk;
+			m_chunkOffset = m_chunk;
+			m_chunkEnd = (m_chunk == m_firstChunk) ? m_chunk + StaticChunkSize : m_chunk;
+
+			Heap::free<chunk_alignment>(freeChunkBase);
+		}
+
+		return m_chunk;
 	}
 
 	/// Allocates the given amount of memory.

@@ -52,6 +52,27 @@ public:
 using meta::is_equal;
 using meta::is_derived;
 
+/// True if Type defines the given type, false otherwise.
+#define LEAN_DEFINE_HAS_TYPE(TypeName)					\
+	template <class Type>								\
+	class has_type_##TypeName							\
+	{													\
+	private:											\
+		typedef char yes[1];							\
+		typedef char no[2];								\
+														\
+		template <class T>								\
+		static yes& check(const T*,						\
+			const typename T::TypeName* = nullptr);		\
+		static no& check(...);							\
+														\
+	public:												\
+		static const bool value =						\
+			sizeof(check(static_cast<Type*>(nullptr)))	\
+			==											\
+			sizeof (yes);								\
+	};
+
 } // namespace
 
 #endif

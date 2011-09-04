@@ -218,6 +218,9 @@ public:
 		return atomic_decrement(m_counts->references);
 	}
 
+	/// Checks whether this reference counter is in a valid state.
+	LEAN_INLINE bool is_null() { return (m_counts == nullptr); }
+
 	/// Gets the current reference count.
 	LEAN_INLINE counter_type count() const { LEAN_ASSERT(m_counts); return m_counts->references; };
 	/// Gets whether the reference-counted object still exists (<==> reference count > 0).

@@ -456,6 +456,9 @@
     <ClInclude Include="header\lean\memory\object_pool.h">
       <Filter>Header Files\memory</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\pimpl\forward_val.h">
+      <Filter>Header Files\pimpl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

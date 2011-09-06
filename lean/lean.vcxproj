@@ -140,6 +140,7 @@
     <ClInclude Include="header\lean\meta\type_traits.h" />
     <ClInclude Include="header\lean\meta\meta.h" />
     <ClInclude Include="header\lean\meta\strip.h" />
+    <ClInclude Include="header\lean\pimpl\forward_val.h" />
     <ClInclude Include="header\lean\pimpl\pimpl.h" />
     <ClInclude Include="header\lean\pimpl\opaque_val.h" />
     <ClInclude Include="header\lean\pimpl\unsafe_pimpl_base.h" />

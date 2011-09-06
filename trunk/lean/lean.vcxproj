@@ -91,6 +91,7 @@
     <ClInclude Include="header\lean\containers\simple_hash_map.h" />
     <ClInclude Include="header\lean\containers\simple_vector.h" />
     <ClInclude Include="header\lean\export_all.h" />
+    <ClInclude Include="header\lean\functional\algorithm.h" />
     <ClInclude Include="header\lean\functional\callable.h" />
     <ClInclude Include="header\lean\functional\functional.h" />
     <ClInclude Include="header\lean\functional\hashing.h" />

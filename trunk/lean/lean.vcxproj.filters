@@ -459,6 +459,9 @@
     <ClInclude Include="header\lean\pimpl\forward_val.h">
       <Filter>Header Files\pimpl</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\functional\algorithm.h">
+      <Filter>Header Files\functional</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

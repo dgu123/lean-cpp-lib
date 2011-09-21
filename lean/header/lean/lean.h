@@ -187,14 +187,14 @@ namespace lean
 
 /// Returns the smaller of both arguments.
 template <class Type>
-LEAN_INLINE Type min(Type a, Type b)
+LEAN_INLINE const Type& min(const Type &a,const Type &b)
 {
 	return (a < b) ? a : b;
 }
 
 /// Returns the larger of both arguments.
 template <class Type>
-LEAN_INLINE Type max(Type a, Type b)
+LEAN_INLINE const Type& max(const Type &a, const Type &b)
 {
 	return (a < b) ? b : a;
 }

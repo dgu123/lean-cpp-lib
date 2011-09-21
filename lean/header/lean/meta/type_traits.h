@@ -28,6 +28,17 @@ struct is_equal<Type, Type>
 
 #endif
 
+/// Checks if the given integer type is unsigned.
+template <class Integer>
+struct is_unsigned
+{
+	static const Integer min = Integer(0);
+	static const Integer max = Integer(-1);
+
+	/// True, if @code Integer@endcode is unsigned, false otherwise.
+	static const bool value = (max > min);
+};
+
 /// True if Type is derived from Base, false otherwise.
 template <class Type, class Base>
 struct is_derived
@@ -50,6 +61,7 @@ public:
 } // namespace
 
 using meta::is_equal;
+using meta::is_unsigned;
 using meta::is_derived;
 
 /// True if Type defines the given type, false otherwise.

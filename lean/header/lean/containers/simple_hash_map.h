@@ -10,6 +10,7 @@
 #include "../smart/terminate_guard.h"
 #include "../tags/noncopyable.h"
 #include "../functional/hashing.h"
+#include "../meta/type_traits.h"
 #include <memory>
 #include <utility>
 #include <cmath>
@@ -151,7 +152,7 @@ protected:
 
 	static const size_type_ s_maxElementCount = static_cast<size_type_>(-1) / sizeof(value_type_);
 	// Make sure size_type is unsigned
-	LEAN_STATIC_ASSERT(s_maxElementCount > static_cast<size_type_>(0));
+	LEAN_STATIC_ASSERT(is_unsigned<size_type_>::value);
 	// Reserve end element to allow for proper iteration termination
 	static const size_type_ s_maxBucketCount = s_maxElementCount - 1U;
 	// Keep one slot open at all times to simplify wrapped find loop termination

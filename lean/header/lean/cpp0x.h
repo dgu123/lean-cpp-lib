@@ -29,6 +29,8 @@
 	#define LEAN0X_NO_ALIGN
 	/// Indicates that default / delete method specifiers not available.
 	#define LEAN0X_NO_DELETE_METHODS
+	/// Indicates that the standard library enhancements are not available.
+	#define LEAN0X_NO_STL
 #endif
 
 #ifndef LEAN0X_DISABLE
@@ -38,6 +40,7 @@
 		#undef LEAN0X_NO_NULLPTR
 		#undef LEAN0X_NO_RVALUE_REFERENCES
 		#undef LEAN0X_NO_STATIC_ASSERT
+		#undef LEAN0X_NO_STL
 	#endif
 
 #endif
@@ -113,6 +116,43 @@
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	#include <utility>
 #endif
+
+
+#ifdef LEAN0X_NO_STL
+
+namespace lean
+{
+
+/// Returns the next iterator.
+template <class Iterator>
+LEAN_INLINE Iterator next(Iterator iterator)
+{
+	return ++iterator;
+}
+
+/// Returns the previous iterator.
+template <class Iterator>
+LEAN_INLINE Iterator prev(Iterator iterator)
+{
+	return --iterator;
+}
+
+} // namespace
+
+#else
+
+#include <iterator>
+
+namespace lean
+{
+	using std::next;
+	using std::prev;
+
+} // namespace
+
+#endif
+
+
 
 /// @}
 

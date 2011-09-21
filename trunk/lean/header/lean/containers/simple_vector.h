@@ -6,6 +6,7 @@
 #define LEAN_CONTAINERS_SIMPLE_VECTOR
 
 #include "../lean.h"
+#include "../meta/type_traits.h"
 #include <memory>
 #include <stdexcept>
 
@@ -52,11 +53,11 @@ private:
 	Element *m_capacityEnd;
 
 	typedef typename allocator_type_::size_type size_type_;
-	static const size_type_ s_maxSize = static_cast<size_type_>(-1) / sizeof(Element);
+	static const size_type_ s_maxSize = static_cast<size_type_>(-1); // WORKAROUND: premature evaluation / sizeof(Element);
 	static const size_type_ s_minSize = (16 < s_maxSize) ? 16 : s_maxSize;
 
 	// Make sure size_type is unsigned
-	LEAN_STATIC_ASSERT(s_maxSize > static_cast<size_type_>(0));
+	LEAN_STATIC_ASSERT(is_unsigned<size_type_>::value);
 
 	/// Default constructs an element at the given location.
 	LEAN_INLINE void default_construct(Element *dest)

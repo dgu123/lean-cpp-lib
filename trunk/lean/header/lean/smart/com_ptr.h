@@ -143,7 +143,7 @@ public:
 #endif
 
 	/// Gets the COM object stored by this COM pointer.
-	LEAN_INLINE com_type* get(void) const { return m_object; };
+	LEAN_INLINE com_type*const& get(void) const { return m_object; };
 
 	/// Gets the COM object stored by this COM pointer.
 	LEAN_INLINE com_type& operator *() const { return *get(); };

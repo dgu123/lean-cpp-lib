@@ -172,7 +172,7 @@ LEAN_INLINE typename enable_if<is_nullterminated_convertible<Compatible, Char, T
 template <class Char, class Traits>
 LEAN_INLINE bool operator <(const nullterminated_range_implicit<Char, Traits>& left, const nullterminated_range_implicit<Char, Traits>& right)
 {
-	return left.length() < right.length() || nullterminated<Char, Traits>::traits_type::less(left.c_str(), right.c_str());
+	return nullterminated<Char, Traits>::traits_type::less(left.c_str(), right.c_str());
 }
 template <class Char, class Traits, class Compatible>
 LEAN_INLINE typename enable_if<is_nullterminated_convertible<Compatible, Char, Traits>::value, bool>::type

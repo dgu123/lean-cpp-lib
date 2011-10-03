@@ -96,6 +96,15 @@ typedef int_type<sign_class::no_sign, 4>::type uint4;
 /// 8 byte unsigned integer.
 typedef int_type<sign_class::no_sign, 8>::type uint8;
 
+/// Tristate.
+typedef int1 tristate;
+/// Require true.
+static const tristate caretrue = true;
+/// Require false.
+static const tristate carefalse = false;
+/// Don't care.
+static const tristate dontcare = -1;
+
 /// Provides a character type of the given size.
 template <size_t Size>
 struct char_type
@@ -311,6 +320,11 @@ using types::uint1;
 using types::uint2;
 using types::uint4;
 using types::uint8;
+
+using types::tristate;
+using types::caretrue;
+using types::carefalse;
+using types::dontcare;
 
 using types::char1;
 using types::char2;

@@ -16,7 +16,7 @@ namespace functional
 {
 
 /// Inserts the element pointed at by <code>last</code> into the given sorted range <code>[first, last)</code>.
-template <class Iterator, class Predicate>
+template <class Iterator>
 inline Iterator insert_last(Iterator first, Iterator last)
 {
 	for  (Iterator current = first; current != last; ++current)
@@ -46,7 +46,7 @@ inline Iterator insert_last(Iterator first, Iterator last, Predicate predicate)
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 
 /// Pushes the given element into the given sorted vector.
-template <class Vector, class Value, class Predicate>
+template <class Vector, class Value>
 inline typename Vector::iterator push_sorted(Vector &vector, Value &&value)
 {
 	vector.push_back( std::forward<Value>(value) );
@@ -64,7 +64,7 @@ inline typename Vector::iterator push_sorted(Vector &vector, Value &&value, Pred
 #else
 
 /// Pushes the given element into the given sorted vector.
-template <class Vector, class Value, class Predicate>
+template <class Vector, class Value>
 inline typename Vector::iterator push_sorted(Vector &vector, const Value &value)
 {
 	vector.push_back( value );
@@ -81,10 +81,37 @@ inline typename Vector::iterator push_sorted(Vector &vector, const Value &value,
 
 #endif
 
+/// Removes the given element from the given vector.
+template <class Vector, class Value>
+inline void remove(Vector &vector, const Value &value)
+{
+	vector.erase(
+			std::remove(vector.begin(), vector.end(), value),
+			vector.end()
+		);
+}
+
+/// Removes the given element from the given vector.
+template <class Vector, class Value>
+inline void remove_ordered(Vector &vector, const Value &value)
+{
+	typename Vector::const_iterator it = vector.begin();
+
+	while (it != vector.end())
+	{
+		if (*it == value)
+			it = vector.erase(it);
+		else
+			++it;
+	}
+}
+
 } // namespace
 
 using functional::insert_last;
 using functional::push_sorted;
+using functional::remove;
+using functional::remove_ordered;
 
 } // namespace
 

@@ -13,6 +13,20 @@ namespace lean
 namespace smart
 {
 
+/// Acquires a reference to the given COM object.
+template <class COMType>
+LEAN_INLINE void acquire_com(COMType &object)
+{
+	object.AddRef();
+}
+/// Releases a reference to the given COM object.
+template <class COMType>
+LEAN_INLINE void release_com(COMType *object)
+{
+	if (object)
+		object->Release();
+}
+
 /// COM pointer class that performs reference counting on COM objects of the given type.
 template <class COMType, bool Critical = false>
 class com_ptr
@@ -24,7 +38,7 @@ private:
 	static COMType* acquire(COMType *object)
 	{
 		if (object)
-			object->AddRef();
+			acquire_com(*object);
 
 		return object;
 	}
@@ -32,9 +46,7 @@ private:
 	/// Releases the given object.
 	static void release(COMType *object)
 	{
-		// Clean up, if this is the last reference
-		if (object)
-			object->Release();
+		release_com(object);
 	}
 
 public:

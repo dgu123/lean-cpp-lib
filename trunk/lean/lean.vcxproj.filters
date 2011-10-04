@@ -462,6 +462,12 @@
     <ClInclude Include="header\lean\functional\algorithm.h">
       <Filter>Header Files\functional</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\smart\scoped_ptr.h">
+      <Filter>Header Files\smart</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\tags\transitive_ptr.h">
+      <Filter>Header Files\tags</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

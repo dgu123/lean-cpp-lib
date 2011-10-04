@@ -88,12 +88,51 @@ protected:
 #endif
 };
 
+/// Base class that may be used to tag a specific class noncopyable but assignable.
+template <class Base>
+class noncopyable_assignable_chain : public Base
+{
+private:
+#ifndef LEAN0X_NO_DELETE_METHODS
+	noncopyable_assignable_chain(const noncopyable_assignable_chain&) = delete;
+#else
+	noncopyable_assignable_chain(const noncopyable_assignable_chain&);
+#endif
+
+protected:
+	noncopyable_assignable_chain() { }
+	noncopyable_assignable_chain& operator =(const noncopyable_assignable_chain&) { return *this; }
+#ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
+	~noncopyable_assignable_chain() throw() { }
+#endif
+};
+
+/// Base class that may be used to tag a specific class noncopyable but assignable.
+class noncopyable_assignable
+{
+private:
+#ifndef LEAN0X_NO_DELETE_METHODS
+	noncopyable_assignable(const noncopyable_assignable&) = delete;
+#else
+	noncopyable_assignable(const noncopyable_assignable&);
+#endif
+
+protected:
+	noncopyable_assignable() { }
+	noncopyable_assignable& operator =(const noncopyable_assignable&) { return *this; };
+#ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
+	~noncopyable_assignable() throw() { }
+#endif
+};
+
 } // namespace
 
 using tags::noncopyable_chain;
 using tags::noncopyable;
 using tags::nonassignable_chain;
 using tags::nonassignable;
+using tags::noncopyable_assignable_chain;
+using tags::noncopyable_assignable;
 
 } // namespace
 

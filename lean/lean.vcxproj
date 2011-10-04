@@ -164,6 +164,7 @@
     <ClInclude Include="header\lean\smart\resource.h" />
     <ClInclude Include="header\lean\smart\resource_ptr.h" />
     <ClInclude Include="header\lean\smart\scoped_lock.h" />
+    <ClInclude Include="header\lean\smart\scoped_ptr.h" />
     <ClInclude Include="header\lean\smart\scope_guard.h" />
     <ClInclude Include="header\lean\smart\smart.h" />
     <ClInclude Include="header\lean\smart\cloneable.h" />
@@ -182,6 +183,7 @@
     <ClInclude Include="header\lean\tags\nonconstructible.h" />
     <ClInclude Include="header\lean\tags\noncopyable.h" />
     <ClInclude Include="header\lean\tags\tags.h" />
+    <ClInclude Include="header\lean\tags\transitive_ptr.h" />
     <ClInclude Include="header\lean\time\highres_timer.h" />
     <ClInclude Include="header\lean\time\time.h" />
     <ClInclude Include="header\lean\time\timer.h" />

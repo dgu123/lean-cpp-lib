@@ -134,6 +134,14 @@
 /// Instructs the compiler not to inline a specific template function in a header file.
 #define LEAN_NOTINLINE LEAN_NOLTINLINE
 
+#ifdef _MSC_VER
+	/// Reduces overhead for purely virtual classes.
+	#define LEAN_INTERFACE __declspec(novtable)
+#else
+	/// Reduces overhead for purely virtual classes.
+	#define LEAN_INTERFACE
+#endif
+
 #if !defined(LEAN_INTEGRATE_ONCE) && defined(LEAN_HEADER_ONLY) && !defined(LEAN_BUILD_LIB)
 	/// Picks the first argument in a linked library, the second one in a header-only library.
 	#define LEAN_LINK_SELECT(linklib, headeronly) headeronly

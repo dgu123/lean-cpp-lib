@@ -66,8 +66,7 @@ struct crt_heap
 		else
 		{
 			if (memory)
-				free( reinterpret_cast<void*>(
-					reinterpret_cast<unsigned char*>(memory) - reinterpret_cast<unsigned char*>(memory)[-1] ) );
+				free(reinterpret_cast<unsigned char*>(memory) - reinterpret_cast<unsigned char*>(memory)[-1]);
 		}
 	}
 };

@@ -22,12 +22,12 @@ namespace lean
 namespace logging
 {
 
-class log_stream;
+class log_stream_out;
 
 /// Log class.
 class log : public noncopyable
 {
-friend class log_stream;
+friend class log_stream_out;
 
 private:
 	typedef std::basic_ostream<char> output_stream;
@@ -64,7 +64,7 @@ public:
 };
 
 /// Log stream class.
-class log_stream : public noncopyable
+class log_stream_out : public noncopyable
 {
 private:
 	log &m_log;
@@ -79,36 +79,36 @@ public:
 	typedef std::basic_ios<output_stream::char_type, output_stream::traits_type> basic_output_ios;
 
 	/// Constructs a new TEMPORARY log stream from the log.
-	explicit log_stream(log &log)
+	explicit log_stream_out(log &log)
 		: m_log(log),
 		m_stream(log.acquireStream()) { }
 	/// Prints the contents of this log stream and releases it for further re-use.
-	~log_stream()
+	~log_stream_out()
 	{
 		m_log.flushAndReleaseStream(m_stream);
 	}
 
 	/// Outputs the given value to this log stream.
 	template <class Value>
-	log_stream& operator <<(const Value &value)
+	log_stream_out& operator <<(const Value &value)
 	{
 		m_stream << value;
 		return *this;
 	}
 	// Passes the given manipulator to this log stream.
-	log_stream& operator <<(std::ios_base& (*manip)(::std::ios_base&))
+	log_stream_out& operator <<(std::ios_base& (*manip)(::std::ios_base&))
 	{
 		m_stream << manip;
 		return *this;
 	}
 	// Passes the given manipulator to this log stream.
-	log_stream& operator<<(basic_output_stream& (*manip)(basic_output_stream&))
+	log_stream_out& operator<<(basic_output_stream& (*manip)(basic_output_stream&))
 	{
 		m_stream << manip;
 		return *this;
 	}
 	// Passes the given manipulator to this log stream.
-	log_stream& operator<<(basic_output_ios& (*manip)(basic_output_ios&))
+	log_stream_out& operator<<(basic_output_ios& (*manip)(basic_output_ios&))
 	{
 		m_stream << manip;
 		return *this;
@@ -129,7 +129,7 @@ LEAN_MAYBE_EXPORT log& info_log();
 } // namespace
 
 using logging::log;
-using logging::log_stream;
+using logging::log_stream_out;
 
 using logging::error_log;
 using logging::info_log;
@@ -141,14 +141,14 @@ using logging::info_log;
 /// @{
 
 /// Logs the given message, prepending the caller's file and line.
-#define LEAN_LOG(msg) ::lean::log_stream(::lean::info_log()) << LEAN_SOURCE_STRING << ": " << msg << ::std::endl
+#define LEAN_LOG(msg) ::lean::log_stream_out(::lean::info_log()) << LEAN_SOURCE_STRING << ": " << msg << ::std::endl
 /// Adds a line break.
-#define LEAN_LOG_BREAK() ::lean::log_stream(::lean::info_log()) << ::std::endl
+#define LEAN_LOG_BREAK() ::lean::log_stream_out(::lean::info_log()) << ::std::endl
 
 /// Logs the given error message, prepending the caller's file and line.
-#define LEAN_LOG_ERROR(msg) ::lean::log_stream(::lean::error_log()) << LEAN_SOURCE_STRING << ": " << msg << ::std::endl
+#define LEAN_LOG_ERROR(msg) ::lean::log_stream_out(::lean::error_log()) << LEAN_SOURCE_STRING << ": " << msg << ::std::endl
 /// Adds a line break.
-#define LEAN_LOG_ERROR_BREAK() ::lean::log_stream(::lean::error_log()) << ::std::endl
+#define LEAN_LOG_ERROR_BREAK() ::lean::log_stream_out(::lean::error_log()) << ::std::endl
 
 /// @}
 

@@ -69,6 +69,17 @@ struct crt_heap
 				free(reinterpret_cast<unsigned char*>(memory) - reinterpret_cast<unsigned char*>(memory)[-1]);
 		}
 	}
+	/// Frees the given aligned block of memory.
+	static LEAN_INLINE void free(void *memory, size_t alignment)
+	{
+		if (alignment <= default_alignment)
+			free(memory);
+		else
+		{
+			if (memory)
+				free(reinterpret_cast<unsigned char*>(memory) - reinterpret_cast<unsigned char*>(memory)[-1]);
+		}
+	}
 };
 
 } // namespace

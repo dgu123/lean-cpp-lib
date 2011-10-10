@@ -22,16 +22,16 @@ namespace logging
 template <class Char = char, class Traits = std::char_traits<Char> >
 class basic_log_stream : public log_target
 {
-private:
-	typedef basic_ostream<Char, Traits> stream_type_;
-	stream_type &m_stream;
-
-	spin_lock m_printLock;
-
 public:
 	/// Type of the stream wrapped.
-	typedef stream_type_ stream_type;
+	typedef ::std::basic_ostream<Char, Traits> stream_type;
 
+private:
+	stream_type &m_stream;
+
+	spin_lock<> m_printLock;
+
+public:
 	/// Wraps the given stream for logging.
 	explicit basic_log_stream(stream_type *stream)
 		: m_stream(*stream) { };

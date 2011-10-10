@@ -43,6 +43,17 @@ struct delete_ptr_policy
 	}
 };
 
+/// Delete scoped array pointer policy.
+template <class Type>
+struct delete_array_ptr_policy
+{
+	/// Deletes the given object.
+	static LEAN_INLINE void release(Type *object)
+	{
+		delete[] object;
+	}
+};
+
 /// Destroy scoped pointer policy.
 template <class Type>
 struct destroy_ptr_policy

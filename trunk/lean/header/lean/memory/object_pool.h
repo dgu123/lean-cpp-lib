@@ -78,6 +78,11 @@ public:
 	}
 
 	/// Places the given value into this object pool. Copy construction MAY NOT THROW.
+	LEAN_INLINE void* allocate() throw()
+	{
+		return m_heap.allocate<Alignment>( sizeof(Element) );
+	}
+	/// Places the given value into this object pool. Copy construction MAY NOT THROW.
 	LEAN_INLINE Element* place(const Element &value) throw()
 	{
 		return new( m_heap.allocate<Alignment>( sizeof(Element) ) ) Element(value);

@@ -79,6 +79,8 @@
 	#pragma warning(disable : 4355)
 	// We actually want arrays to be default-initialized
 	#pragma warning(disable : 4351)
+	// Assignment operators suppressed intentionally
+	#pragma warning(disable : 4512)
 
 #endif
 

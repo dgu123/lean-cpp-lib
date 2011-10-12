@@ -171,7 +171,7 @@ public:
 #endif
 
 	/// Gets the resource stored by this resource pointer.
-	LEAN_INLINE resource_type* get(void) const { return m_resource; };
+	LEAN_INLINE resource_type *const & get(void) const { return m_resource; };
 
 	/// Gets the resource stored by this resource pointer.
 	LEAN_INLINE resource_type& operator *() const { return *get(); };

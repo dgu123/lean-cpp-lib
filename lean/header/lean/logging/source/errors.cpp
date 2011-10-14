@@ -30,7 +30,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source)
 {
 	// Store valid source, re-used in throw clause!
 	source = impl::make_source_valid(source);
-	log_stream(error_log()) << source << ": An error occurred." << std::endl;
+	log_stream_out(error_log()) << source << ": An error occurred." << std::endl;
 	throw std::runtime_error(source);
 }
 
@@ -40,7 +40,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source, const char 
 	if (!reason)
 		return throw_error(source);
 
-	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << std::endl;
+	log_stream_out(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << std::endl;
 	throw std::runtime_error(reason);
 }
 
@@ -52,7 +52,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source, const char 
 	if (!reason)
 		return throw_error(source, context);
 
-	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << " (" << context << ")" << std::endl;
+	log_stream_out(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << " (" << context << ")" << std::endl;
 	throw std::runtime_error(reason);
 }
 
@@ -64,7 +64,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error_ex(const char *source, const ch
 	if (!reason)
 		return throw_error(source, origin);
 
-	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << " << " << origin << std::endl;
+	log_stream_out(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << " << " << origin << std::endl;
 	throw std::runtime_error(reason);
 }
 
@@ -78,7 +78,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error_ex(const char *source, const ch
 	if (!reason)
 		return throw_error(source, origin, context);
 
-	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason
+	log_stream_out(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason
 		<< " << " << origin << " (" << context << ")" << std::endl;
 	throw std::runtime_error(reason);
 }
@@ -88,7 +88,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_invalid(const char *source)
 {
 	// Store valid source, re-used in throw clause!
 	source = impl::make_source_valid(source);
-	log_stream(error_log()) << source << ": Invalid argument." << std::endl;
+	log_stream_out(error_log()) << source << ": Invalid argument." << std::endl;
 	throw std::invalid_argument(source);
 }
 
@@ -98,7 +98,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_invalid(const char *source, const cha
 	if (!reason)
 		return throw_invalid(source);
 
-	log_stream(error_log()) << impl::make_source_valid(source) << ": Invalid argument: " << reason << std::endl;
+	log_stream_out(error_log()) << impl::make_source_valid(source) << ": Invalid argument: " << reason << std::endl;
 	throw std::invalid_argument(reason);
 }
 
@@ -143,7 +143,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_bad_alloc(const char *source, size_t 
 // Logs an error.
 LEAN_ALWAYS_LINK void lean::logging::log_error(const char *source)
 {
-	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred." << std::endl;
+	log_stream_out(error_log()) << impl::make_source_valid(source) << ": An error occurred." << std::endl;
 }
 
 // Logs an error.
@@ -152,7 +152,7 @@ LEAN_ALWAYS_LINK void lean::logging::log_error(const char *source, const char *r
 	if (!reason)
 		return log_error(source);
 
-	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << std::endl;
+	log_stream_out(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << std::endl;
 }
 
 // Logs an error.
@@ -163,7 +163,7 @@ LEAN_ALWAYS_LINK void lean::logging::log_error(const char *source, const char *r
 	if (!reason)
 		return log_error(source, context);
 
-	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << " (" << context << ")" << std::endl;
+	log_stream_out(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << " (" << context << ")" << std::endl;
 }
 
 // Logs an error.
@@ -174,7 +174,7 @@ LEAN_ALWAYS_LINK void lean::logging::log_error_ex(const char *source, const char
 	if (!reason)
 		return log_error(source, origin);
 
-	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << " << " << origin << std::endl;
+	log_stream_out(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << " << " << origin << std::endl;
 }
 
 // Logs an error.
@@ -187,6 +187,6 @@ LEAN_ALWAYS_LINK void lean::logging::log_error_ex(const char *source, const char
 	if (!reason)
 		return log_error(source, origin, context);
 
-	log_stream(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason
+	log_stream_out(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason
 		<< " << " << origin << " (" << context << ")" << std::endl;
 }

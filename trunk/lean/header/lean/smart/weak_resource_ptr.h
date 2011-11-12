@@ -137,8 +137,10 @@ public:
 	/// Gets the resource stored by this resource pointer.
 	LEAN_INLINE resource_type* operator ->() const { return get_unchecked(); };
 
-	/// Gets the resource stored by this resource pointer or null, if the resource has been destroyed.
-	LEAN_INLINE operator resource_type*() const { return get(); };
+	// WARNING: Meaning unclear, enforce explicit method calls
+//	// Gets the resource stored by this resource pointer.
+//	LEAN_INLINE operator resource_type*() const { return get_unchecked(); };
+
 	/// Gets the resource stored by this resource pointer or null, if the resource has been destroyed.
 	LEAN_INLINE operator resource_ptr<resource_type>() const { return lock(); };
 };

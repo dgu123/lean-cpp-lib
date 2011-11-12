@@ -142,15 +142,44 @@ namespace impl
 
 /// Gets a value of the given type, if the given value type matches the value stored by the given object, throws bad_cast otherwise.
 template <class Value>
-LEAN_INLINE Value any_cast(any &container)
+LEAN_INLINE Value any_cast_checked(any *container)
 {
 	typedef typename lean::strip_reference<Value>::type nonref_value_type;
-	nonref_value_type *pValue = any_cast<nonref_value_type>(&container);
+	nonref_value_type *pValue = any_cast<nonref_value_type>(container);
 	
 	if (!pValue)
 		impl::throw_bad_cast();
 
 	return *pValue;
+}
+/// Gets a value of the given type, if the given value type matches the value stored by the given object, throws bad_cast otherwise.
+template <class Value>
+LEAN_INLINE Value any_cast_checked(const any *container)
+{
+	typedef typename lean::strip_reference<Value>::type nonref_value_type;
+	return any_cast_checked<const nonref_value_type&>(const_cast<any*>(container));
+}
+/// Gets a value of the given type, if the given value type matches the value stored by the given object, throws bad_cast otherwise.
+template <class Value>
+LEAN_INLINE Value any_cast_checked(volatile any *container)
+{
+	typedef typename lean::strip_reference<Value>::type nonref_value_type;
+	return any_cast_checked<volatile nonref_value_type&>(const_cast<any*>(container));
+}
+/// Gets a value of the given type, if the given value type matches the value stored by the given object, throws bad_cast otherwise.
+template <class Value>
+LEAN_INLINE Value any_cast_checked(const volatile any *container)
+{
+	typedef typename lean::strip_reference<Value>::type nonref_value_type;
+	return any_cast_checked<const volatile nonref_value_type&>(const_cast<any*>(container));
+}
+
+/// Gets a value of the given type, if the given value type matches the value stored by the given object, throws bad_cast otherwise.
+template <class Value>
+LEAN_INLINE Value any_cast(any &container)
+{
+	typedef typename lean::strip_reference<Value>::type nonref_value_type;
+	return any_cast_checked<nonref_value_type&>(&container);
 }
 /// Gets a value of the given type, if the given value type matches the value stored by the given object, throws bad_cast otherwise.
 template <class Value>
@@ -179,6 +208,21 @@ LEAN_INLINE Value any_cast(const volatile any &container)
 using containers::any;
 using containers::any_value;
 
+using containers::any_cast;
+using containers::any_cast_checked;
+
 } // namespace
+
+#ifdef DOXYGEN_READ_THIS
+	/// @ingroup GlobalSwitches
+	/// Define this to disable global any_cast and any_cast_checked templates.
+	#define LEAN_NO_ANY_CAST
+	#undef LEAN_NO_ANY_CAST
+#endif
+
+#ifndef LEAN_NO_ANY_CAST
+	using lean::any_cast;
+	using lean::any_cast_checked;
+#endif
 
 #endif

@@ -31,6 +31,13 @@ public:
 	LEAN_INLINE range(iterator begin, iterator end)
 		: m_begin(begin), m_end(end) { }
 
+	/// Assigns the given iterators to this range.
+	LEAN_INLINE void assign(iterator begin, iterator end)
+	{
+		m_begin = begin;
+		m_end = end;
+	}
+
 	/// Gets whether this range is empty.
 	LEAN_INLINE bool empty() const { return (m_begin == m_end); }
 	/// Gets the size of this range (only valid for random access iterators).
@@ -62,6 +69,13 @@ LEAN_INLINE range<Char*> make_char_range(Char *nts)
 		nts + std::char_traits<typename strip_modifiers<Char>::type>::length(nts) );
 }
 
+/// Makes an empty range.
+template <class Char>
+LEAN_INLINE range<Char*> empty_char_range()
+{
+	return range<Char*>(nullptr, nullptr);
+}
+
 /// Constructs an object of the given type from the given range.
 template <class Class, class Range>
 LEAN_INLINE Class from_range(const Range &range)
@@ -74,6 +88,7 @@ LEAN_INLINE Class from_range(const Range &range)
 using strings::range;
 using strings::make_range;
 using strings::make_char_range;
+using strings::empty_char_range;
 using strings::from_range;
 
 } // namespace

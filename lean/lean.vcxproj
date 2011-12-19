@@ -98,11 +98,13 @@
     <ClInclude Include="header\lean\io\endianness.h" />
     <ClInclude Include="header\lean\io\file.h" />
     <ClInclude Include="header\lean\io\filesystem.h" />
+    <ClInclude Include="header\lean\io\generic.h" />
     <ClInclude Include="header\lean\io\io.h" />
     <ClInclude Include="header\lean\io\mapped_file.h" />
     <ClInclude Include="header\lean\io\numeric.h" />
     <ClInclude Include="header\lean\io\raw_file.h" />
     <ClInclude Include="header\lean\io\raw_file_inserter.h" />
+    <ClInclude Include="header\lean\io\serializer.h" />
     <ClInclude Include="header\lean\io\wcharcvt.h" />
     <ClInclude Include="header\lean\io\win_types.h" />
     <ClInclude Include="header\lean\limits.h" />

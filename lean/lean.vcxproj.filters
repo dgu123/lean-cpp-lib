@@ -468,6 +468,12 @@
     <ClInclude Include="header\lean\tags\transitive_ptr.h">
       <Filter>Header Files\tags</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\io\generic.h">
+      <Filter>Header Files\io</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\io\serializer.h">
+      <Filter>Header Files\io</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

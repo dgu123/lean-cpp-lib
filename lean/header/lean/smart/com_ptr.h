@@ -143,7 +143,7 @@ public:
 	com_ptr& operator =(com_ptr<COMType2, Critical2> &&right)
 	{
 		// Self-assignment would be wrong
-		if (addressof(right) != static_cast<void*>(this))
+		if (right.get() != m_object)
 		{
 			COMType *prevObject = m_object;
 			m_object = right.unbind();

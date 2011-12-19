@@ -125,7 +125,7 @@ public:
 		return (check()) ? m_resource : nullptr;
 	}
 	/// Locks the resource stored by this resource pointer or returns null, if the resource has been destroyed.
-	LEAN_INLINE resource_ptr<resource_type> lock()
+	LEAN_INLINE resource_ptr<resource_type> lock() const
 	{
 		return resource_ptr<resource_type>(m_resource, m_refCounter);
 	}
@@ -137,9 +137,10 @@ public:
 	/// Gets the resource stored by this resource pointer.
 	LEAN_INLINE resource_type* operator ->() const { return get_unchecked(); };
 
-	// WARNING: Meaning unclear, enforce explicit method calls
-//	// Gets the resource stored by this resource pointer.
-//	LEAN_INLINE operator resource_type*() const { return get_unchecked(); };
+	/// Gets the resource stored by this resource pointer.
+	LEAN_INLINE operator resource_type*() const { return get_unchecked(); };
+	// WARNING: Meaning unclear, should enforce explicit method calls
+	// However, this would require overloads for pointer comparison, ordering etc.
 
 	/// Gets the resource stored by this resource pointer or null, if the resource has been destroyed.
 	LEAN_INLINE operator resource_ptr<resource_type>() const { return lock(); };

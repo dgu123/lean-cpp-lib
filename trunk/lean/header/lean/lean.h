@@ -195,6 +195,12 @@
 namespace lean
 {
 
+/// Asserts that the given value is always true.
+LEAN_INLINE void check(bool value)
+{
+	LEAN_ASSERT(value);
+}
+
 /// Returns the smaller of both arguments.
 template <class Type>
 LEAN_INLINE const Type& min(const Type &a,const Type &b)
@@ -230,9 +236,17 @@ LEAN_INLINE size_t arraylen(Type (&)[Size])
 
 #ifdef DOXYGEN_READ_THIS
 	/// @ingroup GlobalSwitches
+	/// Define this to disable global check function.
+	#define LEAN_NO_CHECK
+	#undef LEAN_NO_CHECK
+	/// @ingroup GlobalSwitches
 	/// Define this to disable global min/max templates.
 	#define LEAN_NO_MINMAX
 	#undef LEAN_NO_MINMAX
+#endif
+
+#ifndef LEAN_NO_CHECK	
+	using lean::check;
 #endif
 
 #ifndef LEAN_NO_MINMAX	

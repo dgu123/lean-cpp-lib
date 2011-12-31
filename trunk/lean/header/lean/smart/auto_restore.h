@@ -28,11 +28,14 @@ public:
 	/// Constructs an auto-restore object that will restore the given object's current value on destruction.
 	explicit auto_restore(value_type &value)
 		: m_value(value),
-		m_initialValue(value) { };
-	/// Constructs an auto-restore object that will assign the given value to the given object on destruction.
-	auto_restore(value_type &value, const value_type &initialValue)
+		m_initialValue(value) { }
+	/// Constructs an auto-restore object that will assign the given value to the given object and restore the given object's current value on destruction.
+	auto_restore(value_type &value, const value_type &newValue)
 		: m_value(value),
-		m_initialValue(initialValue) { };
+		m_initialValue(value)
+	{
+		m_value = newValue;
+	}
 
 	/// Resets the stored object to its initial value.
 	~auto_restore()

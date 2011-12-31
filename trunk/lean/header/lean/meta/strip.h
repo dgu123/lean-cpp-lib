@@ -183,7 +183,7 @@ struct do_strip_pointer<Type*>
 	struct undo { typedef Other* type; };
 };
 
-}
+} // namespace
 
 /// Strips a pointer from the given type.
 template <class Type>
@@ -241,7 +241,7 @@ struct do_strip_array<Type[Size]>
 	struct undo { typedef Other type[Size]; };
 };
 
-}
+} // namespace
 
 /// Strips a array from the given type.
 template <class Type>
@@ -269,6 +269,46 @@ struct strip_array
 template <class Type>
 struct inh_strip_array : public strip_array<Type>::type { };
 
+namespace impl
+{
+
+template <class Type, bool Continue = true>
+struct do_rec_strip_modifiers
+{
+	typedef Type type;
+	static const bool stripped = false;
+};
+
+template <class Type>
+struct do_rec_strip_modifiers<Type, true>
+{
+	typedef strip_modref<Type> modref_stripper;
+	typedef strip_array<typename modref_stripper::type> array_stripper;
+	typedef strip_pointer<typename array_stripper::type> pointer_stripper;
+	static const bool continue_stripping = array_stripper::stripped || pointer_stripper::stripped;
+
+	static const bool stripped = modref_stripper::stripped
+		|| do_rec_strip_modifiers<typename pointer_stripper::type, continue_stripping>::stripped;
+
+	typedef typename array_stripper::template undo<
+				typename pointer_stripper::template undo<
+					typename do_rec_strip_modifiers<typename pointer_stripper::type, continue_stripping>::type
+				>::type
+			>::type type;
+};
+
+} // namespace
+
+/// Recursively strips all modifiers from the given type.
+template <class Type>
+struct rec_strip_modifiers
+{
+	/// Type without modifieres.
+	typedef typename impl::do_rec_strip_modifiers<Type>::type type;
+	/// True, if any modifiers stripped.
+	static const bool stripped = impl::do_rec_strip_modifiers<Type>::stripped;
+};
+
 /// Redefines the given type.
 template <class Type>
 struct identity
@@ -286,6 +326,7 @@ using meta::strip_const;
 using meta::strip_volatile;
 using meta::strip_modifiers;
 using meta::strip_modref;
+using meta::rec_strip_modifiers;
 using meta::identity;
 
 using meta::inh_strip_pointer;

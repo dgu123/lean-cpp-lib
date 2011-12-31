@@ -14,6 +14,8 @@ namespace lean
 namespace logging
 {
 
+class log;
+
 /// Log target interface.
 class log_target : public noncopyable
 {

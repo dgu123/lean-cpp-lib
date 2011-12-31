@@ -216,7 +216,7 @@ inline String relative_path(const Range1 &base, const Range2 &path)
 	result.reserve( static_cast<size_t>(base.end() - baseMarker)
 		+ static_cast<size_t>(path.end() - pathMarker) );
 
-	// Trailing slashes already skipped, don't lose corresponding directory
+	// Slash already skipped, don't lose corresponding directory
 	int mismatchCount = (baseMarker != base.end()) ? 1 : 0;
 	
 	// Count mismatching base sub-directories

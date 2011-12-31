@@ -6,7 +6,7 @@
 #define LEAN_CONFIG_STDSTD
 
 // Disable warnings
-#define _CRT_SECURE_NO_WARNINGS // Using _standard_ library
-#define _SCL_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS 1 // Using _standard_ library
+#define _SCL_SECURE_NO_WARNINGS 1
 
 #endif

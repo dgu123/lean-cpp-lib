@@ -26,13 +26,13 @@ private:
 	typedef char no[2];
 
 	template <class T>
-	static yes& check(const T*, const typename T::reverse_iterator* = nullptr);
-	static no& check(...);
+	static yes& sfinae_check(T*, typename T::reverse_iterator* = nullptr);
+	static no& sfinae_check(...);
 
 public:
 	/// True, if <code>Container</code> defines reverse iterators.
 	static const bool value = (
-		sizeof( check( static_cast<Container*>(nullptr) ) )
+		sizeof( has_reverse_iterator::sfinae_check( static_cast<Container*>(nullptr) ) )
 		==
 		sizeof(yes) );
 };

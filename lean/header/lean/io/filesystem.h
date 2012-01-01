@@ -8,6 +8,8 @@
 #include "../lean.h"
 #include "../strings/types.h"
 #include "../strings/conversions.h"
+#include "../strings/string_traits.h"
+#include "../meta/strip.h"
 #include <algorithm>
 
 #ifndef LEAN_FILESYSTEM_PATH_LENGTH_HINT
@@ -101,14 +103,23 @@ template <class Char>
 struct filesystem_chars
 {
 	/// Path separator character.
-	static const Char path_separator = '/';
+	static const Char path_separator;
 	/// Alternative path separator character.
-	static const Char alt_path_separator = '\\';
+	static const Char alt_path_separator;
 	/// Extension separator character.
-	static const Char extension_separator = '.';
+	static const Char extension_separator;
 	/// Redirection character.
-	static const Char redirection = '.';
+	static const Char redirection;
 };
+
+template <class Char>
+const Char filesystem_chars<Char>::path_separator = '/';
+template <class Char>
+const Char filesystem_chars<Char>::alt_path_separator = '\\';
+template <class Char>
+const Char filesystem_chars<Char>::extension_separator = '.';
+template <class Char>
+const Char filesystem_chars<Char>::redirection = '.';
 
 /// Checks if the given character is an alternative path separator.
 template <class Char>
@@ -172,8 +183,10 @@ LEAN_INLINE Char& canonize_path_separator(Char &chr)
 /// Gets the relative path euqivalent to the given absolute path when starting at the given base.
 /// Does not resolve redirections, use CanonicalPath prior to calling this function to resolve these.
 template <class String, class Range1, class Range2>
-inline String relative_path(const Range1 &base, const Range2 &path)
+inline typename enable_if_range2<Range1, Range2, String>::type relative_path(const Range1 &base, const Range2 &path)
 {
+	typedef string_traits<String> string_traits;
+
 	typename Range1::const_iterator baseMarker = base.begin(),
 		baseCursor = base.begin();
 	typename Range2::const_iterator pathMarker = path.begin(),
@@ -213,8 +226,11 @@ inline String relative_path(const Range1 &base, const Range2 &path)
 	// ASSERT: paths equal up to their corresponding markers
 
 	String result;
-	result.reserve( static_cast<size_t>(base.end() - baseMarker)
-		+ static_cast<size_t>(path.end() - pathMarker) );
+	string_traits::reserve(
+			result,
+			static_cast<size_t>(base.end() - baseMarker)
+			+ static_cast<size_t>(path.end() - pathMarker)
+		);
 
 	// Slash already skipped, don't lose corresponding directory
 	int mismatchCount = (baseMarker != base.end()) ? 1 : 0;
@@ -226,8 +242,8 @@ inline String relative_path(const Range1 &base, const Range2 &path)
 
 	if (mismatchCount != 0)
 	{
-		result.resize(3U * mismatchCount - 1U);
-		typename String::iterator insertCursor = result.begin();
+		string_traits::resize(result, 3U * mismatchCount - 1U);
+		typename string_traits::iterator insertCursor = string_traits::begin(result);
 
 		// Add redirection for each mismatching sub-directory
 		for (int i = 0; i < mismatchCount; ++i)
@@ -242,11 +258,11 @@ inline String relative_path(const Range1 &base, const Range2 &path)
 	// Append remaining sub-directories
 	if (pathMarker != path.end())
 	{
-		bool needSeparation = !result.empty();
+		bool needSeparation = !string_traits::empty(result);
 		
-		size_t insertPos = result.size();
-		result.resize(insertPos + static_cast<size_t>(path.end() - pathMarker) + needSeparation);
-		typename String::iterator insertCursor = result.begin() + insertPos;
+		size_t insertPos = string_traits::size(result);
+		string_traits::resize(result, insertPos + static_cast<size_t>(path.end() - pathMarker) + needSeparation);
+		typename string_traits::iterator insertCursor = string_traits::begin(result) + insertPos;
 		
 		if (needSeparation)
 			assign_path_separator(*(insertCursor++));
@@ -258,61 +274,31 @@ inline String relative_path(const Range1 &base, const Range2 &path)
 }
 /// Gets the relative path euqivalent to the given absolute path when starting at the given base.
 /// Does not resolve redirections, use CanonicalPath prior to calling this function to resolve these.
-template <class Char, class Range>
-LEAN_INLINE std::basic_string<Char> relative_path(const Char *base, const Range &path)
+template <class String, class Chars1, class Chars2>
+LEAN_INLINE typename enable_if_not_range2<Chars1, Chars2, String>::type relative_path(const Chars1 &base, const Chars2 &path)
 {
-	return relative_path< std::basic_string<Char> >(make_char_range(base), path);
+	return relative_path<String>(make_char_range(base), make_char_range(path));
 }
 /// Gets the relative path euqivalent to the given absolute path when starting at the given base.
 /// Does not resolve redirections, use CanonicalPath prior to calling this function to resolve these.
-template <class Char, class Range>
-LEAN_INLINE std::basic_string<Char> relative_path(const Range &base, const Char *path)
+template <class Chars1, class Chars2>
+LEAN_INLINE std::basic_string<typename range_char_type2<Chars1, Chars2>::type> relative_path(const Chars1 &base, const Chars2 &path)
 {
-	return relative_path< std::basic_string<Char> >(base, make_char_range(path));
-}
-/// Gets the relative path euqivalent to the given absolute path when starting at the given base.
-/// Does not resolve redirections, use CanonicalPath prior to calling this function to resolve these.
-template <class Char>
-LEAN_INLINE std::basic_string<Char> relative_path(const Char *base, const Char *path)
-{
-	return relative_path< std::basic_string<Char> >(make_char_range(base), make_char_range(path));
-}
-
-/// Gets the absolute path euqivalent to the given relative path.
-template <class String, class Range1, class Range2>
-LEAN_INLINE String absolute_path(const Range1 &base, const Range2 &path)
-{
-	return canonical_path<String>( append_path<String>(base, path) );
-}
-/// Gets the absolute path euqivalent to the given relative path.
-template <class Char, class Range>
-LEAN_INLINE std::basic_string<Char> absolute_path(const Char *base, const Range &path)
-{
-	return canonical_path< std::basic_string<Char> >( append_path(base, path) );
-}
-/// Gets the absolute path euqivalent to the given relative path.
-template <class Char, class Range>
-LEAN_INLINE std::basic_string<Char> absolute_path(const Range &base, const Char *path)
-{
-	return canonical_path< std::basic_string<Char> >( append_path(base, path) );
-}
-/// Gets the absolute path euqivalent to the given relative path.
-template <class Char>
-LEAN_INLINE std::basic_string<Char> absolute_path(const Char *base, const Char *path)
-{
-	return canonical_path< std::basic_string<Char> >( append_path(base, path) );
+	return relative_path< std::basic_string<typename range_char_type2<Chars1, Chars2>::type> >(make_char_range(base), make_char_range(path));
 }
 
 /// Gets a canonical relative path euqivalent to the given relative path.
 template <class String, class Range>
-inline String canonical_path(const Range &path)
+inline typename enable_if_range<Range, String>::type canonical_path(const Range &path)
 {
+	typedef string_traits<String> string_traits;
+
 	String result;
-	result.resize(path.size());
+	string_traits::resize(result, path.size());
 
 	typename Range::const_iterator srcCursor = path.end(),
 		srcMarker = path.end();
-	typename String::iterator destCursor = result.end();
+	typename string_traits::iterator destCursor = string_traits::end(result);
 
 	int skipCounter = 0;
 	int redirCounter = 0;
@@ -356,7 +342,7 @@ inline String canonical_path(const Range &path)
 				else if (skipCounter == 0)
 				{
 					// Prepend directory
-					typename String::iterator newDestCursor = std::copy_backward(srcInsertionCursor, srcMarker, destCursor);
+					typename string_traits::iterator newDestCursor = std::copy_backward(srcInsertionCursor, srcMarker, destCursor);
 
 					// Replace trailing & leading alternative path separators
 					canonize_path_separator(*(--destCursor));
@@ -389,32 +375,34 @@ inline String canonical_path(const Range &path)
 	// ASSERT: size of canonical path <= size of source path
 
 	// Move canonical path to front
-	if (destCursor != result.begin())
-		result.assign(destCursor, result.end());
+	if (destCursor != string_traits::begin(result))
+		string_traits::erase(result, string_traits::begin(result), destCursor);
 
 	return result;
 }
 /// Gets a canonical relative path euqivalent to the given relative path.
-template <class String, class Char>
-LEAN_INLINE String canonical_path(const Char *path)
+template <class String, class Chars>
+LEAN_INLINE typename enable_if_not_range<Chars, String>::type canonical_path(const Chars &path)
 {
 	return canonical_path<String>(make_char_range(path));
 }
 /// Gets a canonical relative path euqivalent to the given relative path.
-template <class Char>
-LEAN_INLINE std::basic_string<Char> canonical_path(const Char *path)
+template <class Chars>
+LEAN_INLINE std::basic_string<typename range_char_type<Chars>::type> canonical_path(const Chars &path)
 {
-	return canonical_path< std::basic_string<Char> >(path);
+	return canonical_path< std::basic_string<typename range_char_type<Chars>::type> >(make_char_range(path));
 }
 
 /// Appends the given file or directory to the given path.
 template <class String, class Range1, class Range2>
-inline String append_path(const Range1 &path, const Range2 &file)
+inline typename enable_if_range2<Range1, Range2, String>::type append_path(const Range1 &path, const Range2 &file)
 {
+	typedef string_traits<String> string_traits;
+
 	String result;
 
-	result.resize(path.size() + 1 + file.size());
-	typename String::iterator insertCursor = result.begin();
+	string_traits::resize(result, path.size() + 1 + file.size());
+	typename string_traits::iterator insertCursor = string_traits::begin(result);
 
 	insertCursor = std::copy(path.begin(), path.end(), insertCursor);
 
@@ -424,44 +412,34 @@ inline String append_path(const Range1 &path, const Range2 &file)
 
 	insertCursor = std::copy(file.begin(), file.end(), insertCursor);
 
-	result.erase(insertCursor, result.end());
+	string_traits::erase(result, insertCursor, result.end());
 	return result;
 }
 /// Appends the given file or directory to the given path.
-template <class String, class Char, class Range>
-LEAN_INLINE String append_path(const Char *path, const Range &file)
-{
-	return append_path<String>(make_char_range(path), file);
-}
-/// Appends the given file or directory to the given path.
-template <class String, class Char, class Range>
-LEAN_INLINE String append_path(const Range &path, const Char *file)
-{
-	return append_path<String>(path, make_char_range(file));
-}
-/// Appends the given file or directory to the given path.
-template <class String, class Char>
-LEAN_INLINE String append_path(const Char *path, const Char *file)
+template <class String, class Chars1, class Chars2>
+LEAN_INLINE typename enable_if_not_range2<Chars1, Chars2, String>::type append_path(const Chars1 &path, const Chars2 &file)
 {
 	return append_path<String>(make_char_range(path), make_char_range(file));
 }
 /// Appends the given file or directory to the given path.
-template <class Char, class Range>
-LEAN_INLINE std::basic_string<Char> append_path(const Char *path, const Range &file)
+template <class Chars1, class Chars2>
+LEAN_INLINE std::basic_string<typename range_char_type2<Chars1, Chars2>::type> append_path(const Chars1 &path, const Chars2 &file)
 {
-	return append_path< std::basic_string<Char> >(path, file);
+	return append_path< std::basic_string<typename range_char_type2<Chars1, Chars2>::type> >(make_char_range(path), make_char_range(file));
 }
-/// Appends the given file or directory to the given path.
-template <class Char, class Range>
-LEAN_INLINE std::basic_string<Char> append_path(const Range &path, const Char *file)
+
+/// Gets the absolute path euqivalent to the given relative path.
+template <class String, class Range1, class Range2>
+LEAN_INLINE String absolute_path(const Range1 &base, const Range2 &path)
 {
-	return append_path< std::basic_string<Char> >(path, file);
+	return canonical_path<String>( append_path<String>(make_char_range(base), make_char_range(path)) );
 }
-/// Appends the given file or directory to the given path.
-template <class Char>
-LEAN_INLINE std::basic_string<Char> append_path(const Char *path, const Char *file)
+/// Gets the absolute path euqivalent to the given relative path.
+template <class Chars1, class Chars2>
+LEAN_INLINE std::basic_string<typename range_char_type2<Chars1, Chars2>::type> absolute_path(const Chars1 &base, const Chars2 &path)
 {
-	return append_path< std::basic_string<Char> >(path, file);
+	typedef std::basic_string<typename range_char_type2<Chars1, Chars2>::type> string_type;
+	return canonical_path<string_type>( append_path<string_type>(make_char_range(base), make_char_range(path)) );
 }
 
 /// Gets the end of the parent directory, e.g. '..' from '../test.txt'.
@@ -486,24 +464,28 @@ inline Iterator get_directory(Iterator fileBegin, Iterator fileEnd)
 template <class String, class Range>
 LEAN_INLINE String get_directory(const Range &file)
 {
-	return String(
-		file.begin(),
-		get_directory(file.begin(), file.end()) );
+	return string_traits<String>::construct(
+			file.begin(),
+			get_directory( file.begin(), file.end() )
+		);
 }
 /// Gets the parent directory, e.g. '..' from '../test.txt'.
 template <class String, class Char>
-LEAN_INLINE std::basic_string<Char> get_directory(const Char *file)
+LEAN_INLINE String get_directory(const Char *file)
 {
-	return get_directory<String>(
-		make_range(
+	return string_traits<String>::construct(
 			file,
-			file + std::char_traits<Char>::length(file) ) );
+			get_directory( file, file + std::char_traits<Char>::length(file) )
+		);
 }
 /// Gets the parent directory, e.g. '..' from '../test.txt'.
 template <class Char>
 LEAN_INLINE std::basic_string<Char> get_directory(const Char *file)
 {
-	return get_directory< std::basic_string<Char> >(file);
+	return std::basic_string<Char>(
+			file,
+			get_directory( file, file + std::char_traits<Char>::length(file) )
+		);
 }
 
 /// Gets the beginning of the file name, e.g. 'test.txt' from '../test.txt'.
@@ -532,17 +514,19 @@ inline Iterator get_filename(Iterator fileBegin, Iterator fileEnd)
 template <class String, class Range>
 LEAN_INLINE String get_filename(const Range &file)
 {
-	return String(
-		get_filename(file.begin(), file.end()),
-		file.end() );
+	return string_traits<String>::construct(
+			get_filename( file.begin(), file.end() ),
+			file.end()
+		);
 }
 /// Gets the file name, e.g. 'test.txt' from '../test.txt'.
 template <class Char>
 LEAN_INLINE const Char* get_filename(const Char *file)
 {
 	return get_filename(
-		file,
-		file + std::char_traits<Char>::length(file) );
+			file,
+			file + std::char_traits<Char>::length(file)
+		);
 }
 
 /// Gets the file stem, e.g. 'test' from '../test.txt'.
@@ -574,23 +558,25 @@ inline range<Iterator> get_stem(Iterator fileBegin, Iterator fileEnd)
 template <class String, class Range>
 LEAN_INLINE String get_stem(const Range &file)
 {
-	return from_range<String>(
-		get_stem(file.begin(), file.end()) );
+	return string_from_range<String>(
+			get_stem( file.begin(), file.end() )
+		);
 }
 /// Gets the file stem, e.g. 'test' from '../test.txt'.
 template <class String, class Char>
 LEAN_INLINE String get_stem(const Char *file)
 {
-	return from_range<String>(
-		get_stem(
-			file,
-			file + std::char_traits<Char>::length(file) ) );
+	return string_from_range<String>(
+			get_stem( file, file + std::char_traits<Char>::length(file) )
+		);
 }
 /// Gets the file stem, e.g. 'test' from '../test.txt'.
 template <class Char>
 LEAN_INLINE std::basic_string<Char> get_stem(const Char *file)
 {
-	return get_stem< std::basic_string<Char> >(file);
+	return string_from_range< std::basic_string<Char> >(
+			get_stem( file, file + std::char_traits<Char>::length(file) )
+		);
 }
 
 /// Gets the beginning of the file extension, e.g. '.txt' from 'test.txt'.
@@ -619,17 +605,16 @@ inline Iterator get_extension(Iterator fileBegin, Iterator fileEnd)
 template <class String, class Range>
 LEAN_INLINE String get_extension(const Range &file)
 {
-	return String(
-		get_extension(file.begin(), file.end()),
-		file.end() );
+	return string_traits<String>::construct(
+			get_extension( file.begin(), file.end() ),
+			file.end()
+		);
 }
 /// Gets the file extension, e.g. '.txt' from 'test.txt'.
 template <class Char>
 LEAN_INLINE const Char* get_extension(const Char *file)
 {
-	return get_extension(
-		file,
-		file + std::char_traits<Char>::length(file) );
+	return get_extension( file, file + std::char_traits<Char>::length(file) );
 }
 
 } // namespace

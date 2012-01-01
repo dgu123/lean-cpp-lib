@@ -17,6 +17,7 @@
 	#define LEAN0X_DISABLE
 #endif
 
+
 // Disable all C++0x features by default when working with older C++ standards
 #if (201100L > __cplusplus) || defined(LEAN0X_DISABLE)
 	/// Indicates that built-in nullptr is not available.
@@ -117,7 +118,7 @@
 	#include <utility>
 #endif
 
-
+// Emulate next & prev if unavailable
 #ifdef LEAN0X_NO_STL
 
 namespace lean
@@ -153,12 +154,12 @@ namespace lean
 #endif
 
 
-
 /// @}
 
 #ifdef DOXYGEN_READ_THIS
 	// Re-enable move semantics for documentation
-	#undef LEAN0X_DISABLE LEAN0X_NO_RVALUE_REFERENCES
+	#undef LEAN0X_DISABLE
+	#undef LEAN0X_NO_RVALUE_REFERENCES
 #endif
 
 #endif

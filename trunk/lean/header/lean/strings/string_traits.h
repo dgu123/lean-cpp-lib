@@ -6,22 +6,18 @@
 #define LEAN_STRINGS_STRING_TRAITS
 
 #include "../lean.h"
-#include <string>
 
 namespace lean
 {
 namespace strings
 {
 
-template <class String>
-class string_traits;
-
 /// Provides common string functionality for the given string type.
-template <class Char, class Traits, class Alloc>
-class string_traits< std::basic_string<Char, Traits, Alloc> >
+template <class String>
+struct string_traits
 {
 	/// String type.
-	typedef std::basic_string<Char, Traits, Alloc> string_type;
+	typedef String string_type;
 	/// Character type,
 	typedef typename string_type::value_type value_type;
 	/// Iterator type.
@@ -32,13 +28,13 @@ class string_traits< std::basic_string<Char, Traits, Alloc> >
 	typedef typename string_type::size_type size_type;
 	
 	/// Constructs a string from the given range.
-	template <Iterator>
+	template <class Iterator>
 	static LEAN_INLINE string_type construct(Iterator begin, Iterator end)
 	{
 		return string_type(begin, end);
 	}
 	/// Assigns the given range to the given string.
-	template <Iterator>
+	template <class Iterator>
 	static LEAN_INLINE void assign(string_type &str, Iterator begin, Iterator end)
 	{
 		str.assign(begin, end);
@@ -56,8 +52,7 @@ class string_traits< std::basic_string<Char, Traits, Alloc> >
 	}
 
 	/// Erases the given range of characters.
-	template <Iterator>
-	static LEAN_INLINE void erase(string_type &str, Iterator begin, Iterator end)
+	static LEAN_INLINE void erase(string_type &str, iterator begin, iterator end)
 	{
 		str.erase(begin, end);
 	}
@@ -65,7 +60,7 @@ class string_traits< std::basic_string<Char, Traits, Alloc> >
 	/// Checks if the given string is empty.
 	static LEAN_INLINE bool empty(const string_type &str)
 	{
-		return str.isEmpty();
+		return str.empty();
 	}
 	/// Gets the size of the given string.
 	static LEAN_INLINE size_type size(const string_type &str)

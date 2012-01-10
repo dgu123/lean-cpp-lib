@@ -132,7 +132,7 @@ public:
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Move constructor.
 	ref_counter(ref_counter&& refCounter)
-		: m_counts(::std::move(refCounter.m_counts))
+		: m_counts(std::move(refCounter.m_counts))
 	{
 		// Warning: this effectively "breaks" the other object
 		refCounter.m_counts = nullptr;

@@ -6,6 +6,7 @@
 #define LEAN_SMART_RESOURCE_PTR
 
 #include "../cpp0x.h"
+#include "../functional/variadic.h"
 
 namespace lean
 {
@@ -195,6 +196,25 @@ LEAN_INLINE resource_ptr<Resource, true> bind_resource(Resource *resource)
 	// Visual C++ won't inline delegating function calls
 	return resource_ptr<Resource, true>(resource, resource_ptr<Resource, true>::bind_reference);
 }
+
+/// Binds a new reference of the given resource to a resource pointer.
+template <class Resource>
+LEAN_INLINE resource_ptr<Resource, true> secure_resource(Resource *resource)
+{
+	// Visual C++ won't inline delegating function calls
+	return resource_ptr<Resource, true>(resource);
+}
+
+#ifdef DOXYGEN_READ_THIS
+	/// Creates a new resource using operator new.
+	template <class Resource>
+	resource_ptr<Resource, true> new_resource(...);
+#else
+	#define LEAN_NEW_RESOURCE_FUNCTION_TPARAMS class Resource
+	#define LEAN_NEW_RESOURCE_FUNCTION_DECL inline resource_ptr<Resource, true> new_resource
+	#define LEAN_NEW_RESOURCE_FUNCTION_BODY(call) { return resource_ptr<Resource, true>( new Resource##call, resource_ptr<Resource, true>::bind_reference ); }
+	LEAN_VARIADIC_PERFECT_FORWARDING_T(LEAN_NEW_RESOURCE_FUNCTION_DECL, LEAN_NEW_RESOURCE_FUNCTION_TPARAMS, LEAN_NOTHING, LEAN_NEW_RESOURCE_FUNCTION_BODY)
+#endif
 
 } // namespace
 

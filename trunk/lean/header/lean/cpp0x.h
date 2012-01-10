@@ -113,9 +113,21 @@
 	#define LEAN_STATIC_ASSERT_MSG_ALT(expr, msg, msgtype) static_assert(expr, msg)
 #endif
 
-// Automatically include utility for move semantics
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
+	// Automatically include utility for move semantics
 	#include <utility>
+
+	/// Forwarding reference.
+	#define LEAN_FW_REF &&
+
+	/// Forwards the given value.
+	#define LEAN_FORWARD(type, arg) std::forward<type>(arg)
+#else
+	/// Forwarding reference.
+	#define LEAN_FW_REF const &
+
+	/// Forwards the given value.
+	#define LEAN_FORWARD(type, arg) arg
 #endif
 
 // Emulate next & prev if unavailable

@@ -56,7 +56,8 @@ public:
 	typedef Value value_type;
 
 	/// Constructor.
-	LEAN_INLINE any_value() { }
+	LEAN_INLINE any_value()
+		: m_value() { }
 	/// Constructor.
 	LEAN_INLINE any_value(const value_type &value)
 		: m_value(value) { }

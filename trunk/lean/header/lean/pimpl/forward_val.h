@@ -63,6 +63,11 @@ public:
 		new(static_cast<void*>(m_value)) Value(std::move(right.get()));
 	}
 #endif
+	/// Destructor.
+	~forward_val()
+	{
+		get().~Value();
+	}
 
 	/// Replaces the stored value with the given new value.
 	forward_val& operator =(const value_type &value)

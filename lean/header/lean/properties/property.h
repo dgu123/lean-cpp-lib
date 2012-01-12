@@ -49,28 +49,25 @@ public:
 	}
 };
 
-template <class Class>
 class property_type
 {
 protected:
 	~property_type() throw() { }
 
 public:
-	/// Gets the maximum length of the given number of values when serialized. Zero if unpredictable.
-	virtual size_t max_length(size_t count) const = 0;
-
-	/// Writes the given number of values to the given stream.
-	virtual bool write(std::basic_ostream<utf8_t> &stream, const Class &object, const property_getter<Class> &getter, size_t count) const = 0;
-	/// Writes the given number of values to the given character buffer, returning the first character not written to.
-	virtual utf8_t* write(utf8_t *begin, const Class &object, const property_getter<Class> &getter, size_t count) const = 0;
-
-	/// Reads the given number of values from the given stream.
-	virtual bool read(std::basic_istream<utf8_t> &stream, Class &object, property_setter<Class> &setter, size_t count) const = 0;
-	/// Reads the given number of values from the given range of characters, returning the first character not read.
-	virtual const utf8_t* read(const utf8_t *begin, const utf8_t *end, Class &object, property_setter<Class> &setter, size_t count) const = 0;
-
-	/// Gets the STD lib typeid.
+	/// Gets the size required by the given number of elements.
+	virtual size_t size(size_t count) const = 0;
+	/// Gets the STD lib element typeid.
 	virtual const std::type_info& type_info() const = 0;
+
+	/// Allocates the given number of elements.
+	virtual void* allocate(size_t count) = 0;
+	/// Constructs the given number of elements.
+	virtual void construct(void *elements, size_t count) = 0;
+	/// Destructs the given number of elements.
+	virtual void destruct(void *elements, size_t count) = 0;
+	/// Deallocates the given number of elements.
+	virtual void deallocate(void *elements, size_t count) = 0;
 };
 
 /// Destribes a property.
@@ -78,12 +75,11 @@ template <class Class, class Derived = void>
 struct property_desc
 {
 	/// Type of the most derived structure.
-	typedef typename first_non_void<Derived, property_desc>::type full_type;
+	typedef typename first_non_void<Derived, property_desc>::type actual_type;
 
 	/// Property type
-	typedef property_type<Class> property_type;
-	const property_type *type;			///< Element type.
-	size_t count;								///< Number of elements.
+	const property_type *type;	///< Property type.
+	size_t count;				///< Number of elements.
 
 	/// Setter type.
 	typedef property_setter<Class> setter_type;
@@ -109,22 +105,25 @@ struct property_desc
 		getter(getter_storage_type::null()) { }
 
 	/// Sets the setter.
-	full_type& set_setter(const setter_type &setter) { this->setter = setter; return static_cast<full_type&>(*this); }
+	actual_type& set_setter(const setter_type &setter) { this->setter = setter; return static_cast<actual_type&>(*this); }
 	/// Sets the getter.
-	full_type& set_getter(const getter_type &getter) { this->getter = getter; return static_cast<full_type&>(*this); }
+	actual_type& set_getter(const getter_type &getter) { this->getter = getter; return static_cast<actual_type&>(*this); }
 };
 
 /// Describes a named property.
 template <class Class, class Derived = void>
 struct named_property_desc : public property_desc<Class, typename first_non_void< Derived, named_property_desc<Class, Derived> >::type>
 {
+	/// Type of the most derived structure.
+	typedef typename first_non_void<Derived, named_property_desc>::type actual_type;
+
 	utf8_string name;	///< Property name.
 
 	/// Constructs an empty property destriction.
 	named_property_desc() { }
 	/// Constructs a property destriction from the given parameters.
 	named_property_desc(const utf8_string &name, const property_type &type, size_t count)
-		: property_desc<Class, full_type>(type, count),
+		: property_desc<Class, actual_type>(type, count),
 		name(name) { }
 };
 
@@ -132,9 +131,12 @@ struct named_property_desc : public property_desc<Class, typename first_non_void
 template <class Class, class Widget, class Derived = void>
 struct ui_property_desc : public named_property_desc<Class, typename first_non_void< Derived, ui_property_desc<Class, Widget, Derived> >::type>
 {
+	/// Type of the most derived structure.
+	typedef typename first_non_void<Derived, ui_property_desc>::type actual_type;
+
 	Widget widget;	///< UI widget used to display/edit this property.
 
-	/// Value getter type.
+	/// Value storage type.
 	typedef property_getter<Class> value_type;
 	typedef cloneable_obj<value_type, true> value_storage_type;
 
@@ -152,7 +154,7 @@ struct ui_property_desc : public named_property_desc<Class, typename first_non_v
 		max_value(value_storage_type::null()) { }
 	/// Constructs a property destriction from the given parameters.
 	ui_property_desc(const std::wstring &name, const property_type &type, size_t count, const Widget &widget)
-		: named_property_desc<Class, full_type>(name, type, count),
+		: named_property_desc<Class, actual_type>(name, type, count),
 		widget(widget),
 		default_value(value_storage_type::null()),
 		min_value(value_storage_type::null()),
@@ -160,13 +162,13 @@ struct ui_property_desc : public named_property_desc<Class, typename first_non_v
 		max_value(value_storage_type::null()) { }
 
 	/// Sets the default value getter.
-	full_type& set_default_value(const value_type &getter) { this->default_value = getter; return static_cast<full_type&>(*this); }
+	actual_type& set_default_value(const value_type &getter) { this->default_value = getter; return static_cast<actual_type&>(*this); }
 	/// Sets the min value getter.
-	full_type& set_min_value(const value_type &getter) { this->min_value = getter; return static_cast<full_type&>(*this); }
+	actual_type& set_min_value(const value_type &getter) { this->min_value = getter; return static_cast<actual_type&>(*this); }
 	/// Sets the value step getter.
-	full_type& set_value_step(const value_type &getter) { this->value_step = getter; return static_cast<full_type&>(*this); }
+	actual_type& set_value_step(const value_type &getter) { this->value_step = getter; return static_cast<actual_type&>(*this); }
 	/// Sets the max value getter.
-	full_type& set_max_value(const value_type &getter) { this->max_value = getter; return static_cast<full_type&>(*this); }
+	actual_type& set_max_value(const value_type &getter) { this->max_value = getter; return static_cast<actual_type&>(*this); }
 };
 
 /// Passes the given values to the given object using the given setter.

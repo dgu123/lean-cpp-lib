@@ -59,9 +59,7 @@ public:
 	/// Moves the contents of the given collection to this collection.
 	property_collection(inplace_collection<> &right)
 	{
-		using std::swap;
-
-		swap(m_properties, right.m_collection.m_properties);
+		*this = right;
 	}
 	/// Constructs a new temporary collection that may be filled using operator <<.
 	static LEAN_INLINE inplace_collection<> construct_inplace()
@@ -80,9 +78,12 @@ public:
 	/// Moves the contents of the given collection to this collection.
 	LEAN_INLINE property_collection& operator =(inplace_collection<> &right)
 	{
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+		m_properties = std::move(right.m_properties);
+#else
 		using std::swap;
-
 		swap(m_properties, right.m_collection.m_properties);
+#endif
 		return *this;
 	}
 
@@ -93,11 +94,22 @@ public:
 		m_properties.push_back(propertyDesc);
 		return id;
 	}
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Adds a property created from the given property description.
+	LEAN_INLINE size_t add(property_desc&& propertyDesc)
+	{
+		size_t id = m_properties.size();
+		m_properties.push_back( std::move(propertyDesc) );
+		return id;
+	}
+#endif
+
 	/// Gets the property description for the given ID, access violation on failure.
 	LEAN_INLINE const property_desc& desc(size_t id) const
 	{
 		return m_properties[id];
 	}
+	
 	/// Gets the number of properties stored by this collection.
 	LEAN_INLINE size_t count() const
 	{
@@ -144,7 +156,6 @@ public:
 			? get_property(object, m_properties[id].getter, values, count)
 			: false;
 	}
-
 };
 
 /// Invalid property ID.

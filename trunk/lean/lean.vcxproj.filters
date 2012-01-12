@@ -390,9 +390,6 @@
     <ClInclude Include="header\lean\properties\property_types.h">
       <Filter>Header Files\properties</Filter>
     </ClInclude>
-    <ClInclude Include="header\lean\properties\property_serialization.h">
-      <Filter>Header Files\properties</Filter>
-    </ClInclude>
     <ClInclude Include="header\lean\export_all.h">
       <Filter>Header Files</Filter>
     </ClInclude>

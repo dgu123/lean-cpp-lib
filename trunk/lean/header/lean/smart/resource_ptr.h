@@ -220,6 +220,8 @@ LEAN_INLINE resource_ptr<Resource, true> secure_resource(Resource *resource)
 
 using smart::resource_ptr;
 using smart::bind_resource;
+using smart::secure_resource;
+using smart::new_resource;
 
 } // namespace
 

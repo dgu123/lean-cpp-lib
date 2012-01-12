@@ -8,210 +8,70 @@
 #include "../lean.h"
 #include "property.h"
 #include <typeinfo>
-#include <iostream>
-#include "../strings/charstream.h"
-#include "../io/numeric.h"
+#include "../memory/default_heap.h"
 
 namespace lean
 {
 namespace properties
 {
 
-template <class Class, class Type, size_t MaxCount, utf8_t Delimiter = ';'>
-struct generic_property_type : public property_type<Class>
+/// Generic property type implementation.
+template <class Type, class Heap = default_heap, size_t Alignment = alignof(Type)>
+struct generic_property_type : public property_type
 {
-	/// Gets the maximum length of the given number of values when serialized. Zero if unpredictable.
-	size_t max_length(size_t count) const
+	/// Value type.
+	typedef Type value_type;
+	/// Heap type.
+	typedef default_heap heap_type;
+	/// Alignment
+	static const size_t alignment = Alignment;
+
+	/// Gets the size required by the given number of elements.
+	size_t size(size_t count) const
 	{
-		return 0;
+		return sizeof(value_type) * count;
 	}
-	// Writes the given number of values to the given stream.
-	bool write(std::basic_ostream<utf8_t> &stream, const Class &object, const property_getter<Class> &getter, size_t count) const
+	/// Gets the STD lib element typeid.
+	const std::type_info& type_info() const
 	{
-		Type values[MaxCount];
-		count = min(count, MaxCount);
-		
-		if (!getter(object, values, count))
-			return false;
-		
+		return typeid(value_type);
+	}
+
+	/// Allocates the given number of elements.
+	void* allocate(size_t count)
+	{
+		return Heap::allocate<Alignment>(size(count));
+	}
+	/// Constructs the given number of elements.
+	void construct(void *elements, size_t count)
+	{
+		new (elements) value_type[count];
+	}
+	/// Destructs the given number of elements.
+	void destruct(void *elements, size_t count)
+	{
 		for (size_t i = 0; i < count; ++i)
-		{
-			if (i != 0)
-				stream << Delimiter;
-
-			stream << values[i];
-		}
-
-		return !stream.fail();
+			static_cast<value_type*>(elements)[i].~value_type();
 	}
-	// Writes the given number of values to the given character buffer, returning the first character not written to.
-	utf8_t* write(utf8_t *begin, const Class &object, const property_getter<Class> &getter, size_t count) const
+	/// Deallocates the given number of elements.
+	void deallocate(void *elements, size_t count)
 	{
-		basic_charstream<utf8_t> stream(begin);
-		generic_property_type::write(stream, object, getter, count);
-		return stream.write_end();
-	}
-
-	// Reads the given number of values from the given stream.
-	bool read(std::basic_istream<utf8_t> &stream, Class &object, property_setter<Class> &setter, size_t count) const
-	{
-		Type values[MaxCount] = { Type() };
-		count = min(count, MaxCount);
-		
-		for (size_t i = 0; i < count; ++i)
-		{
-			if (i != 0)
-				stream.ignore(std::numeric_limits<int>::max(), Delimiter); // required to be int
-
-			stream >> values[i];
-		}
-
-		return setter(object, values, count) && !stream.fail();
-	}
-	// Reads the given number of values from the given range of characters, returning the first character not read.
-	const utf8_t* read(const utf8_t *begin, const utf8_t *end, Class &object, property_setter<Class> &setter, size_t count) const
-	{
-		basic_charstream<utf8_t> stream(const_cast<utf8_t*>(begin), const_cast<utf8_t*>(end));
-		generic_property_type::read(stream, object, setter, count);
-		return stream.read_end();
-	}
-
-	/// Gets the STD lib typeid.
-	const std::type_info& type_info() const { return typeid(Type); }
-};
-
-/// Gets the property type info for the given type.
-template <class Class, class Type, size_t MaxCount>
-LEAN_INLINE const property_type<Class>& get_generic_property_type()
-{
-	static generic_property_type<Class, Type, MaxCount> info;
-	return info;
-}
-
-template <class Class, class Type, size_t MaxCount, utf8_t Delimiter = ';'>
-struct int_property_type : public generic_property_type<Class, Type, MaxCount, Delimiter>
-{
-	/// Gets the maximum length of the given number of values when serialized. Zero if unpredictable.
-	size_t max_length(size_t count) const
-	{
-		// N numbers & delimiters
-		return (max_int_string_length<Type>::value + 1) * count;
-	}
-	// Writes the given number of values to the given character buffer, returning the first character not written to.
-	utf8_t* write(utf8_t *begin, const Class &object, const property_getter<Class> &getter, size_t count) const
-	{
-		Type values[MaxCount];
-		count = min(count, MaxCount);
-		
-		if (!getter(object, values, count))
-			return begin;
-		
-		for (size_t i = 0; i < count; ++i)
-		{
-			if (i != 0)
-				*(begin++) = Delimiter;
-
-			begin = int_to_char(begin, values[i]);
-		}
-
-		return begin;
-	}
-
-	// Reads the given number of values from the given range of characters, returning the first character not read.
-	const utf8_t* read(const utf8_t *begin, const utf8_t *end, Class &object, property_setter<Class> &setter, size_t count) const
-	{
-		Type values[MaxCount] = { Type() };
-		count = min(count, MaxCount);
-
-		for (size_t i = 0; i < count; ++i)
-		{
-			if (i != 0)
-				while (begin != end && *(begin++) != Delimiter);
-
-			begin = char_to_int(begin, end, values[i]);
-		}
-
-		setter(object, values, count);
-
-		return begin;
+		Heap::free<Alignment>(elements);
 	}
 };
 
 /// Gets the property type info for the given type.
-template <class Class, class Type, size_t MaxCount>
-LEAN_INLINE const property_type<Class>& get_int_property_type()
+template <class Type>
+LEAN_INLINE const property_type<Type>& get_property_type()
 {
-	static int_property_type<Class, Type, MaxCount> info;
-	return info;
-}
-
-template <class Class, class Type, size_t MaxCount, utf8_t Delimiter = ';'>
-struct float_property_type : public generic_property_type<Class, Type, MaxCount, Delimiter>
-{
-	/// Gets the maximum length of the given number of values when serialized. Zero if unpredictable.
-	size_t max_length(size_t count) const
-	{
-		// N numbers & delimiters
-		return (max_float_string_length<Type>::value + 1) * count;
-	}
-	// Writes the given number of values to the given character buffer, returning the first character not written to.
-	utf8_t* write(utf8_t *begin, const Class &object, const property_getter<Class> &getter, size_t count) const
-	{
-		Type values[MaxCount];
-		count = min(count, MaxCount);
-		
-		if (!getter(object, values, count))
-			return begin;
-		
-		for (size_t i = 0; i < count; ++i)
-		{
-			if (i != 0)
-				*(begin++) = Delimiter;
-
-			begin = float_to_char(begin, values[i]);
-		}
-
-		return begin;
-	}
-
-	// Reads the given number of values from the given range of characters, returning the first character not read.
-	const utf8_t* read(const utf8_t *begin, const utf8_t *end, Class &object, property_setter<Class> &setter, size_t count) const
-	{
-		Type values[MaxCount] = { Type() };
-		count = min(count, MaxCount);
-
-		for (size_t i = 0; i < count; ++i)
-		{
-			if (i != 0)
-				while (begin != end && *(begin++) != Delimiter);
-
-			begin = char_to_float(begin, end, values[i]);
-		}
-
-		setter(object, values, count);
-
-		return begin;
-	}
-};
-
-/// Gets the property type info for the given type.
-template <class Class, class Type, size_t MaxCount>
-LEAN_INLINE const property_type<Class>& get_float_property_type()
-{
-	static float_property_type<Class, Type, MaxCount> info;
-	return info;
+	static generic_property_type<Type> type;
+	return type;
 }
 
 } // namespace
 
 using properties::generic_property_type;
-using properties::get_generic_property_type;
-
-using properties::int_property_type;
-using properties::get_int_property_type;
-
-using properties::float_property_type;
-using properties::get_float_property_type;
+using properties::get_property_type;
 
 } // namespace
 

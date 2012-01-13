@@ -8,6 +8,7 @@
 #include "../lean.h"
 #include "../smart/cloneable.h"
 #include "../smart/cloneable_obj.h"
+#include "../tags/noncopyable.h"
 #include "../meta/conditional.h"
 #include "../strings/types.h"
 #include <typeinfo>
@@ -61,13 +62,68 @@ public:
 	virtual const std::type_info& type_info() const = 0;
 
 	/// Allocates the given number of elements.
-	virtual void* allocate(size_t count) = 0;
+	virtual void* allocate(size_t count) const = 0;
 	/// Constructs the given number of elements.
-	virtual void construct(void *elements, size_t count) = 0;
+	virtual void construct(void *elements, size_t count) const = 0;
 	/// Destructs the given number of elements.
-	virtual void destruct(void *elements, size_t count) = 0;
+	virtual void destruct(void *elements, size_t count) const = 0;
 	/// Deallocates the given number of elements.
-	virtual void deallocate(void *elements, size_t count) = 0;
+	virtual void deallocate(void *elements, size_t count) const = 0;
+};
+
+struct destruct_property_data_policy
+{
+	static void release(const property_type &type, void *data, size_t count)
+	{
+		type.destruct(data, count);
+	}
+};
+struct deallocate_property_data_policy
+{
+	static void release(const property_type &type, void *data, size_t count)
+	{
+		type.deallocate(data, count);
+	}
+};
+struct delete_property_data_policy
+{
+	static void release(const property_type &type, void *data, size_t count)
+	{
+		try
+		{
+			type.destruct(data, count);
+		}
+		catch (...)
+		{
+			type.deallocate(data, count);
+			throw;
+		}
+
+		type.deallocate(data, count);
+	}
+};
+
+template <class Polocy = delete_property_data_policy>
+class scoped_property_data : public noncopyable
+{
+	const property_type *m_type;
+	void *m_data;
+	size_t m_count;
+
+public:
+	LEAN_INLINE scoped_property_data(const property_type *type, void *data, size_t count)
+		: m_type(type),
+		m_data(data),
+		m_count(count) { }
+	LEAN_INLINE ~scoped_property_data()
+	{
+		m_type->destruct(m_data, m_count);
+	}
+
+	LEAN_INLINE void* data() { return m_data; }
+	LEAN_INLINE const void* data() const { return m_data; }
+
+	LEAN_INLINE size_t count() const { return m_count; }
 };
 
 /// Destribes a property.
@@ -205,6 +261,21 @@ LEAN_INLINE bool get_property(const Class &object, const cloneable_obj<property_
 		: (*getter)(object, values, count);
 }
 
+/// Invalid property ID.
+static const size_t invalid_property_id = static_cast<size_t>(-1);
+
+/// Finds a property by name, returning its ID on success, invalid_property_id on failure.
+template <class String, class Collection, class ID>
+inline size_t find_property(const Collection &collection, const String &name, ID invalidID = invalid_property_id)
+{
+	for (typename Collection::const_iterator itProperty = collection.begin();
+		itProperty != collection.end(); ++itProperty)
+		if (itProperty->name == name)
+			return itProperty - collection.begin();
+
+	return invalidID;
+}
+
 } // namespace
 
 using properties::property_setter;
@@ -217,6 +288,14 @@ using properties::ui_property_desc;
 
 using properties::get_property;
 using properties::set_property;
+
+using properties::invalid_property_id;
+using properties::find_property;
+
+using properties::scoped_property_data;
+using properties::delete_property_data_policy;
+using properties::destruct_property_data_policy;
+using properties::deallocate_property_data_policy;
 
 } // namespace
 

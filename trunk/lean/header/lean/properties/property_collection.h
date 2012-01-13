@@ -158,27 +158,9 @@ public:
 	}
 };
 
-/// Invalid property ID.
-static const size_t invalid_property_id = static_cast<size_t>(-1);
-
-/// Finds a property by name, returning its ID on success, invalid_property_id on failure.
-template <class String, class Collection>
-inline size_t find_property(const Collection &collection, const String &name)
-{
-	for (typename Collection::const_iterator itProperty = collection.begin();
-		itProperty != collection.end(); ++itProperty)
-		if (itProperty->name == name)
-			return itProperty - collection.begin();
-
-	return invalid_property_id;
-}
-
 } // namespace
 
 using properties::property_collection;
-
-using properties::invalid_property_id;
-using properties::find_property;
 
 } // namespace
 

@@ -467,16 +467,16 @@ struct property_c_accessor_binder
 {
 	/// Creates a property_c_setter from the given setter.
 	template <typename impl::property_c_helper<Class, UnionValueArg, ArgCount, Return>::setter_type Setter>
-	LEAN_INLINE property_c_setter<Class, UnionValueArg, ArgCount, Return, Setter, ValueArg> bind_setter()
+	LEAN_INLINE property_c_setter<Class, UnionValueArg, ArgCount, Return, Setter, ValueArg, BaseClass> bind_setter()
 	{
-		return property_c_setter<Class, UnionValueArg, ArgCount, Return, Setter, ValueArg>();
+		return property_c_setter<Class, UnionValueArg, ArgCount, Return, Setter, ValueArg, BaseClass>();
 	}
 	
 	/// Creates a property_c_getter from the given getter.
 	template <typename impl::property_c_helper<Class, UnionValueArg, ArgCount, Return>::getter_type Getter>
-	LEAN_INLINE property_c_getter<Class, UnionValueArg, ArgCount, Return, Getter, ValueArg> bind_getter()
+	LEAN_INLINE property_c_getter<Class, UnionValueArg, ArgCount, Return, Getter, ValueArg, BaseClass> bind_getter()
 	{
-		return property_c_getter<Class, UnionValueArg, ArgCount, Return, Getter, ValueArg>();
+		return property_c_getter<Class, UnionValueArg, ArgCount, Return, Getter, ValueArg, BaseClass>();
 	}
 
 	/// Replaces the value type of this factory.
@@ -614,9 +614,9 @@ struct property_r_accessor_binder
 {
 	/// Creates a property_r_getter from the given getter.
 	template <UnionValueReturn (Class::*Getter)() const>
-	LEAN_INLINE property_r_getter<Class, UnionValueReturn, Getter, ValueReturn> bind_getter()
+	LEAN_INLINE property_r_getter<Class, UnionValueReturn, Getter, ValueReturn, BaseClass> bind_getter()
 	{
-		return property_r_getter<Class, UnionValueReturn, Getter, ValueReturn>();
+		return property_r_getter<Class, UnionValueReturn, Getter, ValueReturn, BaseClass>();
 	}
 
 	/// Replaces the value type of this factory.

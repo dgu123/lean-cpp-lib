@@ -62,7 +62,7 @@ struct generic_property_type : public property_type
 
 /// Gets the property type info for the given type.
 template <class Type>
-LEAN_INLINE const property_type<Type>& get_property_type()
+LEAN_INLINE const property_type& get_property_type()
 {
 	static generic_property_type<Type> type;
 	return type;

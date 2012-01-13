@@ -9,6 +9,7 @@
 #include "../meta/strip.h"
 #include "../meta/type_traits.h"
 #include "../meta/enable_if.h"
+#include <iterator>
 
 namespace lean
 {
@@ -56,6 +57,9 @@ public:
 	LEAN_INLINE iterator& end() { return m_end; }
 	/// Gets the beginning of this range.
 	LEAN_INLINE iterator end() const { return m_end; }
+
+	/// Gets the n-th element.
+	LEAN_INLINE typename std::iterator_traits<iterator>::reference operator [](size_t n) const { return *(begin() + n); }
 };
 
 

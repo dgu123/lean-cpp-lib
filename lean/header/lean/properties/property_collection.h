@@ -32,6 +32,14 @@ public:
 
 	/// Constructs an empty property collection.
 	property_collection() { }
+	/// Constructs a property collection inheriting the given set of properties.
+	template <class Iterator>
+	property_collection(Iterator begin, Iterator end)
+		: m_properties(begin, end) { }
+	/// Constructs a property collection inheriting the given set of properties.
+	template <class Range>
+	property_collection(const Range &range)
+		: m_properties(range.begin(), range.end()) { }
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves the contents of the given collection to this collection.
 	property_collection(property_collection &&right)
@@ -40,7 +48,7 @@ public:
 
 	/// Allows for fully inplace construction of whole property collections.
 	template <class Collection = property_collection>
-	class inplace_collection
+	class inplace_builder
 	{
 	friend class property_collection;
 
@@ -49,22 +57,45 @@ public:
 		Collection m_collection;
 
 	public:
+		/// Constructs an empty builder.
+		inplace_builder() { }
+		/// Constructs a builder inheriting the given set of properties.
+		template <class Iterator>
+		inplace_builder(Iterator begin, Iterator end)
+			: m_collection(begin, end) { }
+		/// Constructs a builder inheriting the given set of properties.
+		template <class Range>
+		inplace_builder(const Range &range)
+			: m_collection(range) { }
+
 		/// Adds a property created from the given property description.
-		LEAN_INLINE inplace_collection& operator <<(const property_desc& propertyDesc)
+		LEAN_INLINE inplace_builder& operator <<(const property_desc& propertyDesc)
 		{
 			m_collection.add(propertyDesc);
 			return *this;
 		}
 	};
 	/// Moves the contents of the given collection to this collection.
-	property_collection(inplace_collection<> &right)
+	property_collection(inplace_builder<> &right)
 	{
 		*this = right;
 	}
 	/// Constructs a new temporary collection that may be filled using operator <<.
-	static LEAN_INLINE inplace_collection<> construct_inplace()
+	static LEAN_INLINE inplace_builder<> construct_inplace()
 	{
-		return inplace_collection<>();
+		return inplace_builder<>();
+	}
+	/// Constructs a new temporary collection that may be filled using operator <<.
+	template <class Iterator>
+	static LEAN_INLINE inplace_builder<> construct_inplace(Iterator begin, Iterator end)
+	{
+		return inplace_builder<>(begin, end);
+	}
+	/// Constructs a new temporary collection that may be filled using operator <<.
+	template <class Range>
+	static LEAN_INLINE inplace_builder<> construct_inplace(const Range &range)
+	{
+		return inplace_builder<>(range);
 	}
 
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
@@ -76,7 +107,7 @@ public:
 	}
 #endif
 	/// Moves the contents of the given collection to this collection.
-	LEAN_INLINE property_collection& operator =(inplace_collection<> &right)
+	LEAN_INLINE property_collection& operator =(inplace_builder<> &right)
 	{
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 		m_properties = std::move(right.m_properties);

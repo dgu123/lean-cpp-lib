@@ -178,7 +178,7 @@ struct named_property_desc : public property_desc<Class, typename first_non_void
 	/// Constructs an empty property destriction.
 	named_property_desc() { }
 	/// Constructs a property destriction from the given parameters.
-	named_property_desc(const utf8_string &name, const property_type &type, size_t count)
+	named_property_desc(const utf8_ntri &name, const property_type &type, size_t count)
 		: property_desc<Class, actual_type>(type, count),
 		name(name) { }
 };
@@ -209,7 +209,7 @@ struct ui_property_desc : public named_property_desc<Class, typename first_non_v
 		value_step(value_storage_type::null()),
 		max_value(value_storage_type::null()) { }
 	/// Constructs a property destriction from the given parameters.
-	ui_property_desc(const std::wstring &name, const property_type &type, size_t count, const Widget &widget)
+	ui_property_desc(const utf8_ntri &name, const property_type &type, size_t count, const Widget &widget)
 		: named_property_desc<Class, actual_type>(name, type, count),
 		widget(widget),
 		default_value(value_storage_type::null()),

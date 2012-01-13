@@ -38,23 +38,23 @@ struct generic_property_type : public property_type
 	}
 
 	/// Allocates the given number of elements.
-	void* allocate(size_t count)
+	void* allocate(size_t count) const
 	{
 		return Heap::allocate<Alignment>(size(count));
 	}
 	/// Constructs the given number of elements.
-	void construct(void *elements, size_t count)
+	void construct(void *elements, size_t count) const
 	{
 		new (elements) value_type[count];
 	}
 	/// Destructs the given number of elements.
-	void destruct(void *elements, size_t count)
+	void destruct(void *elements, size_t count) const
 	{
 		for (size_t i = 0; i < count; ++i)
 			static_cast<value_type*>(elements)[i].~value_type();
 	}
 	/// Deallocates the given number of elements.
-	void deallocate(void *elements, size_t count)
+	void deallocate(void *elements, size_t count) const
 	{
 		Heap::free<Alignment>(elements);
 	}

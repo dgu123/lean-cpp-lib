@@ -125,17 +125,19 @@ struct union_helper
 /// Provides write access to arbitrary object data of the given type using a given setter method.
 template <class Class, class UnionValue, class Count, class Return,
 	Return (Class::*Setter)(const UnionValue*, Count),
-	class Value = UnionValue>
-class property_n_setter : public property_setter<Class>
+	class Value = UnionValue, class BaseClass = Class>
+class property_n_setter : public property_setter<BaseClass>
 {
 public:
 	typedef typename strip_modifiers<Value>::type value_type;
 	typedef typename strip_modifiers<UnionValue>::type union_type;
 
 	/// Passes the given number of values of the given type to the given object using the stored setter method, if the value types are matching.
-	bool operator ()(Class &object, const type_info &type, const void *values, size_t count)
+	bool operator ()(BaseClass &baseObject, const type_info &type, const void *values, size_t count)
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
+
+		Class &object = static_cast<Class&>(baseObject);
 
 		if (type == typeid(value_type))
 		{
@@ -167,17 +169,19 @@ public:
 /// Provides read access to arbitrary object data of the given type using a given getter method.
 template <class Class, class UnionValue, class Count, class Return,
 	Return (Class::*Getter)(UnionValue*, Count) const,
-	class Value = UnionValue>
-class property_n_getter : public property_getter<Class>
+	class Value = UnionValue, class BaseClass = Class>
+class property_n_getter : public property_getter<BaseClass>
 {
 public:
 	typedef typename strip_modifiers<Value>::type value_type;
 	typedef typename strip_modifiers<UnionValue>::type union_type;
 	
 	/// Retrieves the given number of values of the given type from the given object using the stored getter method, if available.
-	bool operator ()(const Class &object, const type_info &type, void *values, size_t count) const
+	bool operator ()(const BaseClass &baseObject, const type_info &type, void *values, size_t count) const
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
+
+		const Class &object = static_cast<const Class&>(baseObject);
 
 		if (type == typeid(value_type))
 		{
@@ -206,26 +210,41 @@ public:
 	void destroy() const { delete this; }
 };
 
-namespace impl
-{
-
+/// property_n_* factory class.
 template <class Class, class UnionValue, class Count, class Return,
-	class Value = UnionValue>
+	class Value = UnionValue, class BaseClass = Class>
 struct property_n_accessor_binder
 {
+	/// Creates a property_n_setter from the given setter.
 	template <Return (Class::*Setter)(const UnionValue*, Count)>
-	LEAN_INLINE property_n_setter<Class, UnionValue, Count, Return, Setter, Value> bind_setter()
+	LEAN_INLINE property_n_setter<Class, UnionValue, Count, Return, Setter, Value, BaseClass> bind_setter()
 	{
-		return property_n_setter<Class, UnionValue, Count, Return, Setter, Value>();
-	};
+		return property_n_setter<Class, UnionValue, Count, Return, Setter, Value, BaseClass>();
+	}
 
+	/// Creates a property_n_getter from the given getter.
 	template <Return (Class::*Getter)(UnionValue*, Count) const>
-	LEAN_INLINE property_n_getter<Class, UnionValue, Count, Return, Getter, Value> bind_getter()
+	LEAN_INLINE property_n_getter<Class, UnionValue, Count, Return, Getter, Value, BaseClass> bind_getter()
 	{
-		return property_n_getter<Class, UnionValue, Count, Return, Getter, Value>();
-	};
+		return property_n_getter<Class, UnionValue, Count, Return, Getter, Value, BaseClass>();
+	}
+
+	/// Replaces the value type of this factory.
+	template <class NewValue>
+	LEAN_INLINE property_n_accessor_binder<Class, UnionValue, Count, Return, NewValue, BaseClass> set_value()
+	{
+		return property_n_accessor_binder<Class, UnionValue, Count, Return, NewValue, BaseClass>();
+	}
+
+	/// Replaces the base type of this factory.
+	template <class NewBase>
+	LEAN_INLINE property_n_accessor_binder<Class, UnionValue, Count, Return, Value, NewBase> set_base()
+	{
+		return property_n_accessor_binder<Class, UnionValue, Count, Return, Value, NewBase>();
+	}
 };
 
+/// Deduces the property_n_* factory class for the given setter.
 template <class Class, class UnionValue, class Count, class Return>
 LEAN_INLINE property_n_accessor_binder<Class, UnionValue, Count, Return>
 	deduce_accessor_binder(Return (Class::*)(const UnionValue*, Count))
@@ -233,28 +252,13 @@ LEAN_INLINE property_n_accessor_binder<Class, UnionValue, Count, Return>
 	return property_n_accessor_binder<Class, UnionValue, Count, Return>();
 }
 
+/// Deduces the property_n_* factory class for the given getter.
 template <class Class, class UnionValue, class Count, class Return>
 LEAN_INLINE property_n_accessor_binder<Class, UnionValue, Count, Return>
 	deduce_accessor_binder(Return (Class::*)(UnionValue*, Count) const)
 {
 	return property_n_accessor_binder<Class, UnionValue, Count, Return>();
 }
-
-template <class Value, class Class, class UnionValue, class Count, class Return>
-LEAN_INLINE property_n_accessor_binder<Class, UnionValue, Count, Return, Value>
-	deduce_accessor_binder(Return (Class::*)(const UnionValue*, Count))
-{
-	return property_n_accessor_binder<Class, UnionValue, Count, Return, Value>();
-}
-
-template <class Value, class Class, class UnionValue, class Count, class Return>
-LEAN_INLINE property_n_accessor_binder<Class, UnionValue, Count, Return, Value>
-	deduce_accessor_binder(Return (Class::*)(UnionValue*, Count) const)
-{
-	return property_n_accessor_binder<Class, UnionValue, Count, Return, Value>();
-}
-
-} // namespace
 
 #pragma endregion
 
@@ -347,8 +351,8 @@ struct property_c_helper<Class, ValueArg, 4, Return>
 /// Provides write access to arbitrary object data of the given type using a given multi-parameter setter method.
 template <class Class, class UnionValueArg, int ArgCount, class Return,
 	typename impl::property_c_helper<Class, UnionValueArg, ArgCount, Return>::setter_type Setter,
-	class ValueArg = UnionValueArg>
-class property_c_setter : public property_setter<Class>
+	class ValueArg = UnionValueArg, class BaseClass = Class>
+class property_c_setter : public property_setter<BaseClass>
 {
 private:
 	typedef impl::property_c_helper<Class, UnionValueArg, ArgCount, Return> setter_helper;
@@ -358,10 +362,12 @@ public:
 	typedef typename strip_modifiers<typename strip_reference<UnionValueArg>::type>::type union_type;
 
 	/// Passes the given number of values of the given type to the given object using the stored setter method, if the value types are matching.
-	bool operator ()(Class &object, const type_info &type, const void *values, size_t count)
+	bool operator ()(BaseClass &baseObject, const type_info &type, const void *values, size_t count)
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
 		
+		Class &object = static_cast<Class&>(baseObject);
+
 		if (type == typeid(value_type))
 		{
 			size_t unionCount = union_helper::union_count(count);
@@ -401,8 +407,8 @@ public:
 /// Provides read access to arbitrary object data of the given type using a given multi-parameter getter method.
 template <class Class, class UnionValueArg, int ArgCount, class Return,
 	typename impl::property_c_helper<Class, UnionValueArg, ArgCount, Return>::getter_type Getter,
-	class ValueArg = UnionValueArg>
-class property_c_getter : public property_getter<Class>
+	class ValueArg = UnionValueArg, class BaseClass = Class>
+class property_c_getter : public property_getter<BaseClass>
 {
 private:
 	typedef impl::property_c_helper<Class, UnionValueArg, ArgCount, Return> getter_helper;
@@ -412,9 +418,11 @@ public:
 	typedef typename strip_modifiers<typename strip_reference<UnionValueArg>::type>::type union_type;
 
 	/// Retrieves the given number of values of the given type from the given object using the stored getter method, if available.
-	bool operator ()(const Class &object, const type_info &type, void *values, size_t count) const
+	bool operator ()(const BaseClass &object, const type_info &type, void *values, size_t count) const
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
+
+		const Class &object = static_cast<const Class&>(baseObject);
 
 		if (type == typeid(value_type))
 		{
@@ -452,127 +460,99 @@ public:
 	void destroy() const { delete this; }
 };
 
-namespace impl
-{
-
+/// property_c_* factory class.
 template <class Class, class UnionValueArg, int ArgCount, class Return,
-	class ValueArg = UnionValueArg>
+	class ValueArg = UnionValueArg, class BaseClass = Class>
 struct property_c_accessor_binder
 {
+	/// Creates a property_c_setter from the given setter.
 	template <typename impl::property_c_helper<Class, UnionValueArg, ArgCount, Return>::setter_type Setter>
 	LEAN_INLINE property_c_setter<Class, UnionValueArg, ArgCount, Return, Setter, ValueArg> bind_setter()
 	{
 		return property_c_setter<Class, UnionValueArg, ArgCount, Return, Setter, ValueArg>();
-	};
+	}
 	
+	/// Creates a property_c_getter from the given getter.
 	template <typename impl::property_c_helper<Class, UnionValueArg, ArgCount, Return>::getter_type Getter>
 	LEAN_INLINE property_c_getter<Class, UnionValueArg, ArgCount, Return, Getter, ValueArg> bind_getter()
 	{
 		return property_c_getter<Class, UnionValueArg, ArgCount, Return, Getter, ValueArg>();
-	};
+	}
+
+	/// Replaces the value type of this factory.
+	template <class NewValue>
+	LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, ArgCount, Return, NewValue, BaseClass> set_value()
+	{
+		return property_c_accessor_binder<Class, UnionValueArg, ArgCount, Return, NewValue, BaseClass>();
+	}
+
+	/// Replaces the base type of this factory.
+	template <class NewBase>
+	LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, ArgCount, Return, ValueArg, NewBase> set_base()
+	{
+		return property_c_accessor_binder<Class, UnionValueArg, ArgCount, Return, ValueArg, NewBase>();
+	}
 };
 
+/// Deduces the property_c_* factory class for the given setter.
 template <class Class, class UnionValueArg, class Return>
 LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 1, Return>
 	deduce_accessor_binder(Return (Class::*)(UnionValueArg))
 {
 	return property_c_accessor_binder<Class, UnionValueArg, 1, Return>();
 }
+/// Deduces the property_c_* factory class for the given getter.
 template <class Class, class UnionValueArg, class Return>
 LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 1, Return>
 	deduce_accessor_binder(Return (Class::*)(UnionValueArg) const)
 {
 	return property_c_accessor_binder<Class, UnionValueArg, 1, Return>();
 }
-template <class ValueArg, class Class, class UnionValueArg, class Return>
-LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 1, Return, ValueArg>
-	deduce_accessor_binder(Return (Class::*)(UnionValueArg))
-{
-	return property_c_accessor_binder<Class, UnionValueArg, 1, Return, ValueArg>();
-}
-template <class ValueArg, class Class, class UnionValueArg, class Return>
-LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 1, Return, ValueArg>
-	deduce_accessor_binder(Return (Class::*)(UnionValueArg) const)
-{
-	return property_c_accessor_binder<Class, UnionValueArg, 1, Return, ValueArg>();
-}
 
+/// Deduces the property_c_* factory class for the given setter.
 template <class Class, class UnionValueArg, class Return>
 LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 2, Return>
 	deduce_accessor_binder(Return (Class::*)(UnionValueArg, UnionValueArg))
 {
 	return property_c_accessor_binder<Class, UnionValueArg, 2, Return>();
 }
+/// Deduces the property_c_* factory class for the given getter.
 template <class Class, class UnionValueArg, class Return>
 LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 2, Return>
 	deduce_accessor_binder(Return (Class::*)(UnionValueArg, UnionValueArg) const)
 {
 	return property_c_accessor_binder<Class, UnionValueArg, 2, Return>();
 }
-template <class ValueArg, class Class, class UnionValueArg, class Return>
-LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 2, Return, ValueArg>
-	deduce_accessor_binder(Return (Class::*)(UnionValueArg, UnionValueArg))
-{
-	return property_c_accessor_binder<Class, UnionValueArg, 2, Return, ValueArg>();
-}
-template <class ValueArg, class Class, class UnionValueArg, class Return>
-LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 2, Return, ValueArg>
-	deduce_accessor_binder(Return (Class::*)(UnionValueArg, UnionValueArg) const)
-{
-	return property_c_accessor_binder<Class, UnionValueArg, 2, Return, ValueArg>();
-}
 
+/// Deduces the property_c_* factory class for the given setter.
 template <class Class, class UnionValueArg, class Return>
 LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 3, Return>
 	deduce_accessor_binder(Return (Class::*)(UnionValueArg, UnionValueArg, UnionValueArg))
 {
 	return property_c_accessor_binder<Class, UnionValueArg, 3, Return>();
 }
+/// Deduces the property_c_* factory class for the given getter.
 template <class Class, class UnionValueArg, class Return>
 LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 3, Return>
 	deduce_accessor_binder(Return (Class::*)(UnionValueArg, UnionValueArg, UnionValueArg) const)
 {
 	return property_c_accessor_binder<Class, UnionValueArg, 3, Return>();
 }
-template <class ValueArg, class Class, class UnionValueArg, class Return>
-LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 3, Return, ValueArg>
-	deduce_accessor_binder(Return (Class::*)(UnionValueArg, UnionValueArg, UnionValueArg))
-{
-	return property_c_accessor_binder<Class, UnionValueArg, 3, Return, ValueArg>();
-}
-template <class ValueArg, class Class, class UnionValueArg, class Return>
-LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 3, Return, ValueArg>
-	deduce_accessor_binder(Return (Class::*)(UnionValueArg, UnionValueArg, UnionValueArg) const)
-{
-	return property_c_accessor_binder<Class, UnionValueArg, 3, Return, ValueArg>();
-}
 
+/// Deduces the property_c_* factory class for the given setter.
 template <class Class, class UnionValueArg, class Return>
 LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 4, Return>
 	deduce_accessor_binder(Return (Class::*)(UnionValueArg, UnionValueArg, UnionValueArg, UnionValueArg))
 {
 	return property_c_accessor_binder<Class, UnionValueArg, 4, Return>();
 }
+/// Deduces the property_c_* factory class for the given getter.
 template <class Class, class UnionValueArg, class Return>
 LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 4, Return>
 	deduce_accessor_binder(Return (Class::*)(UnionValueArg, UnionValueArg, UnionValueArg, UnionValueArg) const)
 {
 	return property_c_accessor_binder<Class, UnionValueArg, 4, Return>();
 }
-template <class ValueArg, class Class, class UnionValueArg, class Return>
-LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 4, Return, ValueArg>
-	deduce_accessor_binder(Return (Class::*)(UnionValueArg, UnionValueArg, UnionValueArg, UnionValueArg))
-{
-	return property_c_accessor_binder<Class, UnionValueArg, 4, Return, ValueArg>();
-}
-template <class ValueArg, class Class, class UnionValueArg, class Return>
-LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 4, Return, ValueArg>
-	deduce_accessor_binder(Return (Class::*)(UnionValueArg, UnionValueArg, UnionValueArg, UnionValueArg) const)
-{
-	return property_c_accessor_binder<Class, UnionValueArg, 4, Return, ValueArg>();
-}
-
-} // namespace
 
 #pragma endregion
 
@@ -581,17 +561,19 @@ LEAN_INLINE property_c_accessor_binder<Class, UnionValueArg, 4, Return, ValueArg
 /// Provides read access to arbitrary object data of the given type using a given return-value getter method.
 template <class Class, class UnionValueReturn,
 	UnionValueReturn (Class::*Getter)() const,
-	class ValueReturn = UnionValueReturn>
-class property_r_getter : public property_getter<Class>
+	class ValueReturn = UnionValueReturn, class BaseClass = Class>
+class property_r_getter : public property_getter<BaseClass>
 {
 public:
 	typedef typename strip_modifiers<typename strip_reference<ValueReturn>::type>::type value_type;
 	typedef typename strip_modifiers<typename strip_reference<UnionValueReturn>::type>::type union_type;
 
 	/// Retrieves the given number of values of the given type from the given object using the stored getter method, if available.
-	bool operator ()(const Class &object, const type_info &type, void *values, size_t count) const
+	bool operator ()(const BaseClass &baseObject, const type_info &type, void *values, size_t count) const
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
+
+		const Class &object = static_cast<const Class&>(baseObject);
 
 		if (type == typeid(value_type))
 		{
@@ -625,35 +607,40 @@ public:
 	void destroy() const { delete this; }
 };
 
-namespace impl
-{
-
+/// property_r_* factory class.
 template <class Class, class UnionValueReturn,
-	class ValueReturn = UnionValueReturn>
+	class ValueReturn = UnionValueReturn, class BaseClass = Class>
 struct property_r_accessor_binder
 {
+	/// Creates a property_r_getter from the given getter.
 	template <UnionValueReturn (Class::*Getter)() const>
 	LEAN_INLINE property_r_getter<Class, UnionValueReturn, Getter, ValueReturn> bind_getter()
 	{
 		return property_r_getter<Class, UnionValueReturn, Getter, ValueReturn>();
-	};
+	}
+
+	/// Replaces the value type of this factory.
+	template <class NewValue>
+	LEAN_INLINE property_r_accessor_binder<Class, UnionValueReturn, NewValue, BaseClass> set_value()
+	{
+		return property_r_accessor_binder<Class, UnionValueReturn, NewValue, BaseClass>();
+	}
+
+	/// Replaces the base type of this factory.
+	template <class NewBase>
+	LEAN_INLINE property_r_accessor_binder<Class, UnionValueReturn, ValueReturn, NewBase> set_base()
+	{
+		return property_r_accessor_binder<Class, UnionValueReturn, ValueReturn, NewBase>();
+	}
 };
 
+/// Deduces the property_r_* factory class for the given getter.
 template <class Class, class UnionValueReturn>
 LEAN_INLINE property_r_accessor_binder<Class, UnionValueReturn>
 	deduce_accessor_binder(UnionValueReturn (Class::*Getter)() const)
 {
 	return property_r_accessor_binder<Class, UnionValueReturn>();
 }
-
-template <class Class, class UnionValueReturn, class ValueReturn>
-LEAN_INLINE property_r_accessor_binder<Class, UnionValueReturn, ValueReturn>
-	deduce_accessor_binder(UnionValueReturn (Class::*Getter)() const)
-{
-	return property_r_accessor_binder<Class, UnionValueReturn, ValueReturn>();
-}
-
-} // namespace
 
 #pragma endregion
 
@@ -668,17 +655,17 @@ using properties::make_property_constant;
 /// @{
 
 /// Constructs a property getter that provides access to the given number of the given values.
-#define LEAN_MAKE_PROPERTY_CONSTANT(constants, count) ::lean::properties::make_property_constant(constants, count)
+#define LEAN_MAKE_PROPERTY_CONSTANT(clazz, constants, count) ::lean::properties::make_property_constant<clazz>(constants, count)
 
 /// Constructs a property setter that provides access to object values using the given setter method.
-#define LEAN_MAKE_PROPERTY_SETTER(setter) ::lean::properties::impl::deduce_accessor_binder(setter).bind_setter<setter>()
+#define LEAN_MAKE_PROPERTY_SETTER(setter) ::lean::properties::deduce_accessor_binder(setter).bind_setter<setter>()
 /// Constructs a property setter that provides access to object values using the given getter method.
-#define LEAN_MAKE_PROPERTY_GETTER(getter) ::lean::properties::impl::deduce_accessor_binder(getter).bind_getter<getter>()
+#define LEAN_MAKE_PROPERTY_GETTER(getter) ::lean::properties::deduce_accessor_binder(getter).bind_getter<getter>()
 
 /// Constructs a property setter that provides access to object values using the given setter method, splitting or merging values of the given type to values of the setter parameter type.
-#define LEAN_MAKE_PROPERTY_SETTER_UNION(setter, value_type) ::lean::properties::impl::deduce_accessor_binder<value_type>(setter).bind_setter<setter>()
+#define LEAN_MAKE_PROPERTY_SETTER_UNION(setter, value_type) ::lean::properties::deduce_accessor_binder(setter).set_value<value_type>().bind_setter<setter>()
 /// Constructs a property getter that provides access to object values using the given getter method, splitting or merging values of the given type to values of the getter parameter (return) type.
-#define LEAN_MAKE_PROPERTY_GETTER_UNION(getter, value_type) ::lean::properties::impl::deduce_accessor_binder<value_type>(getter).bind_getter<getter>()
+#define LEAN_MAKE_PROPERTY_GETTER_UNION(getter, value_type) ::lean::properties::deduce_accessor_binder(getter).set_value<value_type>().bind_getter<getter>()
 
 /// @}
 

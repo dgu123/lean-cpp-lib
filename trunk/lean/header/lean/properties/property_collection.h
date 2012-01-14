@@ -110,7 +110,7 @@ public:
 	LEAN_INLINE property_collection& operator =(inplace_builder<> &right)
 	{
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
-		m_properties = std::move(right.m_properties);
+		m_properties = std::move(right.m_collection.m_properties);
 #else
 		using std::swap;
 		swap(m_properties, right.m_collection.m_properties);
@@ -145,6 +145,17 @@ public:
 	LEAN_INLINE size_t count() const
 	{
 		return m_properties.size();
+	}
+
+	/// Gets a data pointer to the first property description.
+	LEAN_INLINE const property_desc* data() const
+	{
+		return &m_properties.front();
+	}
+	/// Gets a data pointer one past the last property description.
+	LEAN_INLINE const property_desc* data_end() const
+	{
+		return &m_properties.back() + 1;
 	}
 
 	/// Gets a const iterator to the first property description.

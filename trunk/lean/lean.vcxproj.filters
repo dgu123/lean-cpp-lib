@@ -477,6 +477,9 @@
     <ClInclude Include="header\lean\functional\variadic.h">
       <Filter>Header Files\functional</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\type_info.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

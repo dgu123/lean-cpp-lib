@@ -7,7 +7,7 @@
 
 #include "../lean.h"
 #include "property.h"
-#include <typeinfo>
+#include "../type_info.h"
 #include "../memory/default_heap.h"
 
 namespace lean
@@ -32,9 +32,9 @@ struct generic_property_type : public property_type
 		return sizeof(value_type) * count;
 	}
 	/// Gets the STD lib element typeid.
-	const std::type_info& type_info() const
+	const struct type_info& type_info() const
 	{
-		return typeid(value_type);
+		return get_type_info<value_type>();
 	}
 
 	/// Allocates the given number of elements.

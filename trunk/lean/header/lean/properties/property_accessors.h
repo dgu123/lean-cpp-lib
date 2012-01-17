@@ -27,7 +27,7 @@ namespace impl
 struct property_logging_policy
 {
 	template <class Property>
-	static LEAN_NOINLINE void type_mismatch(const type_info &value)
+	static LEAN_NOINLINE void type_mismatch(const std::type_info &value)
 	{
 		LEAN_LOG_ERROR("Property / value type mismatch: "
 			<< typeid(Property).name() << " vs. " << value.name());
@@ -62,7 +62,7 @@ public:
 		m_count(count) { };
 
 	/// Copies the given number of values of the given type from the constant value array held, if available.
-	bool operator ()(const Class &object, const type_info &type, void *values, size_t count) const
+	bool operator ()(const Class &object, const std::type_info &type, void *values, size_t count) const
 	{
 		if (type == typeid(value_type))
 		{
@@ -133,7 +133,7 @@ public:
 	typedef typename strip_modifiers<UnionValue>::type union_type;
 
 	/// Passes the given number of values of the given type to the given object using the stored setter method, if the value types are matching.
-	bool operator ()(BaseClass &baseObject, const type_info &type, const void *values, size_t count)
+	bool operator ()(BaseClass &baseObject, const std::type_info &type, const void *values, size_t count)
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
 
@@ -177,7 +177,7 @@ public:
 	typedef typename strip_modifiers<UnionValue>::type union_type;
 	
 	/// Retrieves the given number of values of the given type from the given object using the stored getter method, if available.
-	bool operator ()(const BaseClass &baseObject, const type_info &type, void *values, size_t count) const
+	bool operator ()(const BaseClass &baseObject, const std::type_info &type, void *values, size_t count) const
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
 
@@ -362,7 +362,7 @@ public:
 	typedef typename strip_modifiers<typename strip_reference<UnionValueArg>::type>::type union_type;
 
 	/// Passes the given number of values of the given type to the given object using the stored setter method, if the value types are matching.
-	bool operator ()(BaseClass &baseObject, const type_info &type, const void *values, size_t count)
+	bool operator ()(BaseClass &baseObject, const std::type_info &type, const void *values, size_t count)
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
 		
@@ -418,7 +418,7 @@ public:
 	typedef typename strip_modifiers<typename strip_reference<UnionValueArg>::type>::type union_type;
 
 	/// Retrieves the given number of values of the given type from the given object using the stored getter method, if available.
-	bool operator ()(const BaseClass &object, const type_info &type, void *values, size_t count) const
+	bool operator ()(const BaseClass &object, const std::type_info &type, void *values, size_t count) const
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
 
@@ -569,7 +569,7 @@ public:
 	typedef typename strip_modifiers<typename strip_reference<UnionValueReturn>::type>::type union_type;
 
 	/// Retrieves the given number of values of the given type from the given object using the stored getter method, if available.
-	bool operator ()(const BaseClass &baseObject, const type_info &type, void *values, size_t count) const
+	bool operator ()(const BaseClass &baseObject, const std::type_info &type, void *values, size_t count) const
 	{
 		typedef impl::union_helper<union_type, value_type> union_helper;
 

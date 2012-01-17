@@ -191,6 +191,7 @@
     <ClInclude Include="header\lean\time\time.h" />
     <ClInclude Include="header\lean\time\timer.h" />
     <ClInclude Include="header\lean\types.h" />
+    <ClInclude Include="header\lean\type_info.h" />
     <ClInclude Include="header\lean\utf8.h" />
     <ClInclude Include="header\lean\utf8\checked.h" />
     <ClInclude Include="header\lean\utf8\core.h" />

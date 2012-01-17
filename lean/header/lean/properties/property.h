@@ -11,7 +11,7 @@
 #include "../tags/noncopyable.h"
 #include "../meta/conditional.h"
 #include "../strings/types.h"
-#include <typeinfo>
+#include "../type_info.h"
 
 namespace lean
 {
@@ -58,8 +58,8 @@ protected:
 public:
 	/// Gets the size required by the given number of elements.
 	virtual size_t size(size_t count) const = 0;
-	/// Gets the STD lib element typeid.
-	virtual const std::type_info& type_info() const = 0;
+	/// Gets the element type info.
+	virtual const type_info& type_info() const = 0;
 
 	/// Allocates the given number of elements.
 	virtual void* allocate(size_t count) const = 0;

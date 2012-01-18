@@ -198,7 +198,7 @@ namespace lean
 /// Asserts that the given value is always true.
 LEAN_INLINE void check(bool value)
 {
-	LEAN_ASSERT(value);
+	LEAN_ASSERT_DEBUG(value);
 }
 
 /// Returns the smaller of both arguments.

@@ -88,6 +88,31 @@ LEAN_INLINE const volatile Value* to_type(const std::type_info &type, const vola
 }
 
 
+/// Gets a pointer to the offset-th element in the given array.
+LEAN_INLINE void* get_element(size_t stride, void *value, size_t offset)
+{
+	return reinterpret_cast<char*>(value) + offset * stride;
+}
+
+/// Gets a pointer to the offset-th element in the given array.
+LEAN_INLINE const void* get_element(size_t stride, const void *value, size_t offset)
+{
+	return get_element(stride, const_cast<void*>(value), offset);
+}
+
+/// Gets a pointer to the offset-th element in the given array.
+LEAN_INLINE volatile void* get_element(size_t stride, volatile void *value, size_t offset)
+{
+	return get_element(stride, const_cast<void*>(value), offset);
+}
+
+/// Gets a pointer to the offset-th element in the given array.
+LEAN_INLINE const volatile void* get_element(size_t stride, const volatile void *value, size_t offset)
+{
+	return get_element(stride, const_cast<void*>(value), offset);
+}
+
+
 } // namespace
 
 using types::type_info;
@@ -95,6 +120,7 @@ using types::get_type_info;
 
 using types::is_type;
 using types::to_type;
+using types::get_element;
 
 } // namespace
 

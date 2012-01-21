@@ -8,6 +8,7 @@
 #include "../lean.h"
 #include "../tags/noncopyable.h"
 #include "../meta/dependent_false.h"
+#include "../meta/strip.h"
 
 namespace lean
 {
@@ -21,6 +22,13 @@ LEAN_INLINE void release_ptr(Type *object)
 	delete object;
 }
 
+/// Deletes the given array (default policy implementation).
+template <class Type>
+LEAN_INLINE void release_array_ptr(Type *object)
+{
+	delete[] object;
+}
+
 /// Generic scoped pointer policy.
 template <class Type>
 struct generic_ptr_policy
@@ -29,6 +37,14 @@ struct generic_ptr_policy
 	static LEAN_INLINE void release(Type *object)
 	{
 		release_ptr(object);
+	}
+};
+template <class Type>
+struct generic_ptr_policy<Type[]>
+{
+	static LEAN_INLINE void release(Type *object)
+	{
+		release_array_ptr(object);
 	}
 };
 
@@ -42,12 +58,9 @@ struct delete_ptr_policy
 		delete object;
 	}
 };
-
-/// Delete scoped array pointer policy.
 template <class Type>
-struct delete_array_ptr_policy
+struct delete_ptr_policy<Type[]>
 {
-	/// Deletes the given object.
 	static LEAN_INLINE void release(Type *object)
 	{
 		delete[] object;
@@ -65,6 +78,8 @@ struct destroy_ptr_policy
 			object->destroy();
 	}
 };
+template <class Type>
+struct destroy_ptr_policy<Type[]>;
 
 /// Release scoped pointer policy.
 template <class Type>
@@ -77,20 +92,23 @@ struct release_ptr_policy
 			object->release();
 	}
 };
+template <class Type>
+struct release_ptr_policy<Type[]>;
 
 /// Scoped pointer class that releases the object pointed to on destruction.
 template < class Type, class ReleasePolicy = generic_ptr_policy<Type> >
 class scoped_ptr : public noncopyable
 {
-private:
-	Type *m_object;
-
 public:
 	/// Type of the object pointed to.
-	typedef Type object_type;
+	typedef typename lean::strip_array<Type>::type object_type;
 	/// Type of the pointer stored by this scoped pointer.
-	typedef Type* value_type;
+	typedef object_type* value_type;
 
+private:
+	value_type m_object;
+
+public:
 	/// Constructs a scoped pointer from the given object pointer.
 	explicit scoped_ptr(object_type *object = nullptr)
 		: m_object( object ) { };
@@ -115,7 +133,7 @@ public:
 	/// Detatches the object pointed to.
 	LEAN_INLINE object_type* detatch()
 	{
-		Type *prevObject = m_object;
+		value_type prevObject = m_object;
 		m_object = nullptr;
 		return prevObject;
 	}
@@ -126,7 +144,7 @@ public:
 		// Self-assignment would be wrong
 		if(object != m_object)
 		{
-			Type *prevObject = m_object;
+			value_type prevObject = m_object;
 			m_object = object;
 			ReleasePolicy::release(prevObject);
 		}
@@ -141,7 +159,7 @@ public:
 		// Self-assignment would be wrong
 		if (addressof(right) != static_cast<void*>(this))
 		{
-			Type *prevObject = m_object;
+			value_type prevObject = m_object;
 			m_object = right.detatch();
 			ReleasePolicy::release(prevObject);
 		}

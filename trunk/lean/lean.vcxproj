@@ -88,6 +88,7 @@
     <ClInclude Include="header\lean\config\windows.h" />
     <ClInclude Include="header\lean\containers\accumulation_map.h" />
     <ClInclude Include="header\lean\containers\any.h" />
+    <ClInclude Include="header\lean\containers\dynamic_array.h" />
     <ClInclude Include="header\lean\containers\simple_hash_map.h" />
     <ClInclude Include="header\lean\containers\simple_vector.h" />
     <ClInclude Include="header\lean\export_all.h" />

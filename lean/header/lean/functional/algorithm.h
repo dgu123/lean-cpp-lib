@@ -179,28 +179,39 @@ inline Iterator find_sorted(Iterator begin, Iterator end, const Value &value, Or
 
 /// Removes the given element from the given vector.
 template <class Vector, class Value>
-inline void remove(Vector &vector, const Value &value)
+inline bool remove(Vector &vector, const Value &value)
 {
-	vector.erase(
-			std::remove(vector.begin(), vector.end(), value),
-			vector.end()
-		);
+	bool bRemoved = false;
+
+	typename Vector::iterator newEnd = std::remove(vector.begin(), vector.end(), value);
+	bRemoved = (newEnd != vector.end());
+
+	vector.erase(newEnd, vector.end());
+
+	return bRemoved;
 }
 
 /// Removes the given element from the given vector.
 template <class Vector, class Value>
-inline void remove_ordered(Vector &vector, const Value &value)
+inline bool remove_ordered(Vector &vector, const Value &value)
 {
+	bool bRemoved = false;
+
 	typename Vector::const_iterator it = vector.begin();
 
 	while (it != vector.end())
 	{
 		if (*it == value)
+		{
 			// Not quite optimal, assuming that elements mostly occur only once
 			it = vector.erase(it);
+			bRemoved = true;
+		}
 		else
 			++it;
 	}
+
+	return bRemoved;
 }
 
 } // namespace

@@ -113,6 +113,13 @@ LEAN_INLINE void get_attribute(const rapidxml::xml_node<Char> &node, const nullt
 }
 using impl::get_attribute;
 
+/// Allocates an XML node from the given document.
+template <class Char>
+LEAN_INLINE rapidxml::xml_node<Char>* allocate_node(rapidxml::xml_document<Char> &document)
+{
+	return document.allocate_node(rapidxml::node_element);
+}
+
 namespace impl
 {
 	/// Allocates an XML node from the given document.

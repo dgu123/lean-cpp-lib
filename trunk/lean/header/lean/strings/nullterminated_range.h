@@ -21,9 +21,35 @@ namespace strings
 template < class Char, class Traits = char_traits<typename strip_const<Char>::type> >
 class nullterminated_range_implicit : public nullterminated_implicit<Char, Traits>
 {
-private:
 	typedef nullterminated_implicit<Char, Traits> base_type;
+
+public:
+	/// Type of the characters referenced by this range.
+	typedef typename base_type::value_type value_type;
 	
+	/// Type of the size returned by this range.
+	typedef typename base_type::size_type size_type;
+	/// Type of the difference between the addresses of two elements in this range.
+	typedef typename base_type::difference_type difference_type;
+
+	/// Type of pointers to the elements contained by this range.
+	typedef typename base_type::pointer pointer;
+	/// Type of constant pointers to the elements contained by this range.
+	typedef typename base_type::const_pointer const_pointer;
+	/// Type of references to the elements contained by this range.
+	typedef typename base_type::reference reference;
+	/// Type of constant references to the elements contained by this range.
+	typedef typename base_type::const_reference const_reference;
+
+	/// Type of iterators to the elements contained by this range.
+	typedef typename base_type::pointer iterator;
+	/// Type of constant iterators to the elements contained by this range.
+	typedef typename base_type::const_iterator const_iterator;
+
+	/// Character traits used by this range.
+	typedef typename base_type::traits_type traits_type;
+
+private:
 	/// Asserts null-termination.
 	static LEAN_INLINE void assert_null_terminated(const_pointer end)
 	{
@@ -38,7 +64,7 @@ private:
 	}
 
 protected:
-	const Char *m_end;
+	const_pointer m_end;
 
 public:
 	/// Constructs a character range from the given half-range.
@@ -65,7 +91,7 @@ public:
 	/// Constructs a character range from the given compatible object.
 	template <class Compatible>
 	LEAN_INLINE nullterminated_range_implicit(const Compatible &from,
-		typename enable_if<is_nullterminated_compatible<Compatible, value_type, traits_type>::value, const void*>::type = nullptr)
+			typename enable_if<is_nullterminated_compatible<Compatible, value_type, traits_type>::value, const void*>::type = nullptr)
 		: base_type(from),
 		m_end(
 			first_non_null(
@@ -101,7 +127,10 @@ public:
 	template <class Compatible>
 	Compatible to() const
 	{
-		typedef typename assert_nullterminated_compatible<Compatible, value_type, traits_type>::type assert_compatible;
+		typedef typename assert_nullterminated_compatible<
+				Compatible,
+				value_type, traits_type
+			>::type assert_compatible;
 		return nullterminated_compatible<Compatible, value_type, traits_type>::to(m_begin, m_end);
 	}
 };
@@ -115,24 +144,37 @@ public:
 	typedef nullterminated_range_implicit<Char, Traits> implicit_type;
 
 	/// Constructs a character range from the given C string.
-	explicit LEAN_INLINE nullterminated_range(const_pointer begin)
+	explicit LEAN_INLINE nullterminated_range(typename implicit_type::const_pointer begin)
 		: implicit_type(begin) { }
 	/// Constructs a character range from the given C string range (*end must be null character).
-	LEAN_INLINE nullterminated_range(const_pointer begin, const_pointer end)
+	LEAN_INLINE nullterminated_range(typename implicit_type::const_pointer begin, typename implicit_type::const_pointer end)
 		: implicit_type(begin, end) { }
 	/// Constructs a character range from the given compatible object.
 	template <class Compatible>
 	explicit LEAN_INLINE nullterminated_range(const Compatible &from)
 		: implicit_type(from)
 	{
-		typedef typename assert_nullterminated_compatible<Compatible, value_type, traits_type>::type assert_compatible;
+		typedef typename assert_nullterminated_compatible<
+				Compatible,
+				typename implicit_type::value_type, typename implicit_type::traits_type
+			>::type assert_compatible;
 	}
-	/// Constructs a character range from the given half-range.
-	LEAN_INLINE nullterminated_range(const nullterminated_implicit<Char, Traits> &right)
-		: implicit_type(right) { }
 	/// Constructs a character range from the given implicit range.
-	LEAN_INLINE nullterminated_range(const implicit_type &right)
+	explicit LEAN_INLINE nullterminated_range(const implicit_type &right)
 		: implicit_type(right) { }
+
+	/// Constructs a character range from the given half-range.
+	explicit LEAN_INLINE nullterminated_range(const nullterminated_implicit<Char, Traits> &right)
+		: implicit_type(right) { }
+	/// Constructs a character range from the given half-range.
+	LEAN_INLINE nullterminated_range(const nullterminated<Char, Traits> &right)
+		: implicit_type(right) { }
+
+	/// Constructs a half-range from this character range.
+	LEAN_INLINE operator nullterminated<Char, Traits>() const
+	{
+		return nullterminated<Char, Traits>(*this);
+	}
 };
 
 /// Makes an explicit nullterminated range from the given implicit range.
@@ -140,6 +182,21 @@ template <class Char, class Traits>
 LEAN_INLINE nullterminated_range<Char, Traits> make_ntr(const nullterminated_range_implicit<Char, Traits> &range)
 {
 	return nullterminated_range<Char, Traits>(range);
+}
+/// Makes an explicit nullterminated range from the given implicit range.
+template <class Char>
+LEAN_INLINE nullterminated_range<Char> make_ntr(const Char *range)
+{
+	return nullterminated_range<Char>(range);
+}
+/// Makes an explicit nullterminated range from the given implicit range.
+template <class Char, class Compatible>
+LEAN_INLINE typename enable_if<
+		is_nullterminated_compatible<Compatible, Char, typename nullterminated_range<Char>::traits_type>::value,
+		nullterminated_range<Char>
+	>::type	make_ntr(const Compatible &compatible)
+{
+	return nullterminated_range<Char>(compatible);
 }
 
 /// Comparison operator.

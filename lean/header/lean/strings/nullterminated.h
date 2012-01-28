@@ -80,13 +80,6 @@ struct assert_nullterminated_compatible
 template < class Char, class Traits = char_traits<typename strip_const<Char>::type> >
 class nullterminated_implicit
 {
-protected:
-	const Char *m_begin;
-
-	// /// Gets a pointer to this null-terminated range.
-	// LEAN_INLINE operator Char*() const { return m_begin; }
-	// DESIGN: Only permit implicit conversion to compatible container types, otherwise pointers might accidentally dangle.
-
 public:
 	/// Type of the characters referenced by this range.
 	typedef typename strip_const<Char>::type value_type;
@@ -112,7 +105,15 @@ public:
 
 	/// Character traits used by this range.
 	typedef Traits traits_type;
-	
+
+protected:
+	const_pointer m_begin;
+
+	// /// Gets a pointer to this null-terminated range.
+	// LEAN_INLINE operator Char*() const { return m_begin; }
+	// DESIGN: Only permit implicit conversion to compatible container types, otherwise pointers might accidentally dangle.
+
+public:
 	/// Constructs a (half) character range from the given C string.
 	LEAN_INLINE nullterminated_implicit(const_pointer begin)
 		: m_begin(begin)
@@ -122,7 +123,7 @@ public:
 	/// Constructs a (half) character range from the given compatible object.
 	template <class Compatible>
 	LEAN_INLINE nullterminated_implicit(const Compatible &from,
-		typename enable_if<is_nullterminated_compatible<Compatible, value_type, traits_type>::value, const void*>::type = nullptr)
+			typename enable_if<is_nullterminated_compatible<Compatible, value_type, traits_type>::value, const void*>::type = nullptr)
 		: m_begin(nullterminated_compatible<Compatible, value_type, traits_type>::from(from))
 	{
 		LEAN_ASSERT(m_begin);
@@ -162,7 +163,10 @@ public:
 	template <class Compatible>
 	Compatible to() const
 	{
-		typedef typename assert_nullterminated_compatible<Compatible, value_type, traits_type>::type assert_compatible;
+		typedef typename assert_nullterminated_compatible<
+				Compatible,
+				value_type, traits_type
+			>::type assert_compatible;
 		return nullterminated_compatible<Compatible, value_type, traits_type>::to(m_begin);
 	}
 };
@@ -176,17 +180,20 @@ public:
 	typedef nullterminated_implicit<Char, Traits> implicit_type;
 
 	/// Constructs a (half) character range from the given C string.
-	explicit LEAN_INLINE nullterminated(const_pointer begin)
+	explicit LEAN_INLINE nullterminated(typename implicit_type::const_pointer begin)
 		: implicit_type(begin)  { }
 	/// Constructs a (half) character range from the given compatible object.
 	template <class Compatible>
 	explicit LEAN_INLINE nullterminated(const Compatible &from)
 		: implicit_type(from)
 	{
-		typedef typename assert_nullterminated_compatible<Compatible, value_type, traits_type>::type assert_compatible;
+		typedef typename assert_nullterminated_compatible<
+				Compatible,
+				typename implicit_type::value_type, typename implicit_type::traits_type
+			>::type assert_compatible;
 	}
 	/// Constructs a (half) character range from the given implicit half range.
-	LEAN_INLINE nullterminated(const implicit_type &right)
+	explicit LEAN_INLINE nullterminated(const implicit_type &right)
 		: implicit_type(right)  { }
 };
 
@@ -196,6 +203,21 @@ LEAN_INLINE nullterminated<Char, Traits> make_nt(const nullterminated_implicit<C
 {
 	return nullterminated<Char, Traits>(range);
 }
+/// Makes an explicit nullterminated (half) range from the given implicit range.
+template <class Char>
+LEAN_INLINE nullterminated<Char> make_nt(const Char *range)
+{
+	return nullterminated<Char>(range);
+}
+/// Makes an explicit nullterminated (half) range from the given implicit range.
+template <class Char, class Compatible>
+LEAN_INLINE typename enable_if<
+		is_nullterminated_compatible<Compatible, Char, typename nullterminated<Char>::traits_type>::value,
+		nullterminated<Char>
+	>::type	make_nt(const Compatible &compatible)
+{
+	return nullterminated<Char>(compatible);
+}
 
 /// Comparison operator.
 template <class Char, class Traits>
@@ -203,6 +225,7 @@ LEAN_INLINE bool operator ==(const nullterminated_implicit<Char, Traits>& left, 
 {
 	return nullterminated_implicit<Char, Traits>::traits_type::equal(left.c_str(), right.c_str());
 }
+
 template <class Char, class Traits, class Compatible>
 LEAN_INLINE typename enable_if<is_nullterminated_convertible<Compatible, Char, Traits>::value, bool>::type
 	operator ==(const nullterminated_implicit<Char, Traits>& left, const Compatible& right) { return left == make_nt<Char, Traits>(right); }

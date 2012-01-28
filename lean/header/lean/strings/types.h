@@ -89,7 +89,7 @@ typedef nullterminated_range< utf8_t, utf8_traits > utf8_ntr;
 typedef char_traits<utf16_t> utf16_traits;
 
 /// Implicit nullterminated utf8-character half-range.
-typedef nullterminated_implicit< utf16_t, utf16_traits > utf16_nti; // MONITOR: Currently using fixed-width endcoding
+typedef nullterminated_implicit< utf16_t, utf16_traits > utf16_nti; // MONITOR: Currently using fixed-width encoding
 /// Nullterminated utf16-character half-range.
 typedef nullterminated< utf16_t, utf16_traits > utf16_nt;
 /// Implicit nullterminated utf16-character range.
@@ -101,7 +101,7 @@ typedef nullterminated_range< utf16_t, utf16_traits > utf16_ntr;
 typedef char_traits<utf32_t> utf32_traits;
 
 /// Implicit nullterminated utf32-character half-range.
-typedef nullterminated_implicit< utf32_t, utf32_traits > utf32_nti; // MONITOR: Currently using fixed-width endcoding
+typedef nullterminated_implicit< utf32_t, utf32_traits > utf32_nti; // MONITOR: Currently using fixed-width encoding
 /// Nullterminated utf32-character half-range.
 typedef nullterminated< utf32_t, utf32_traits > utf32_nt;
 /// Implicit nullterminated utf32-character range.

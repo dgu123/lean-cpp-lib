@@ -8,7 +8,6 @@
 #include "../lean.h"
 #include "../strings/types.h"
 #include "../rapidxml/rapidxml.hpp"
-#include "../meta/strip.h"
 
 namespace lean
 {

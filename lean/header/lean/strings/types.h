@@ -7,7 +7,6 @@
 
 #include "../lean.h"
 #include "char_traits.h"
-#include "utf_traits.h"
 #include "nullterminated.h"
 #include "nullterminated_range.h"
 #include "range.h"
@@ -73,41 +72,32 @@ typedef std::basic_string<char2> char2_string;
 /// 4-byte-character string.
 typedef std::basic_string<char4> char4_string;
 
-/// Utf8 traits.
-typedef utf_traits<utf8_t> utf8_traits;
-
 /// Implicit nullterminated utf8-character half-range.
-typedef nullterminated_implicit< utf8_t, utf8_traits > utf8_nti;
+typedef nullterminated_implicit<utf8_t> utf8_nti;
 /// Nullterminated utf8-character half-range.
-typedef nullterminated< utf8_t, utf8_traits > utf8_nt;
+typedef nullterminated<utf8_t> utf8_nt;
 /// Implicit nullterminated utf8-character range.
-typedef nullterminated_range_implicit< utf8_t, utf8_traits > utf8_ntri;
+typedef nullterminated_range_implicit<utf8_t> utf8_ntri;
 /// Nullterminated utf8-character range.
-typedef nullterminated_range< utf8_t, utf8_traits > utf8_ntr;
-
-/// Utf16 traits.
-typedef char_traits<utf16_t> utf16_traits;
+typedef nullterminated_range<utf8_t> utf8_ntr;
 
 /// Implicit nullterminated utf8-character half-range.
-typedef nullterminated_implicit< utf16_t, utf16_traits > utf16_nti; // MONITOR: Currently using fixed-width encoding
+typedef nullterminated_implicit<utf16_t> utf16_nti;
 /// Nullterminated utf16-character half-range.
-typedef nullterminated< utf16_t, utf16_traits > utf16_nt;
+typedef nullterminated<utf16_t> utf16_nt;
 /// Implicit nullterminated utf16-character range.
-typedef nullterminated_range_implicit< utf16_t, utf16_traits > utf16_ntri;
+typedef nullterminated_range_implicit<utf16_t> utf16_ntri;
 /// Nullterminated utf16-character range.
-typedef nullterminated_range< utf16_t, utf16_traits > utf16_ntr;
-
-/// Utf32 traits.
-typedef char_traits<utf32_t> utf32_traits;
+typedef nullterminated_range<utf16_t> utf16_ntr;
 
 /// Implicit nullterminated utf32-character half-range.
-typedef nullterminated_implicit< utf32_t, utf32_traits > utf32_nti; // MONITOR: Currently using fixed-width encoding
+typedef nullterminated_implicit<utf32_t> utf32_nti;
 /// Nullterminated utf32-character half-range.
-typedef nullterminated< utf32_t, utf32_traits > utf32_nt;
+typedef nullterminated<utf32_t> utf32_nt;
 /// Implicit nullterminated utf32-character range.
-typedef nullterminated_range_implicit< utf32_t, utf32_traits > utf32_ntri;
+typedef nullterminated_range_implicit<utf32_t> utf32_ntri;
 /// Nullterminated utf32-character range.
-typedef nullterminated_range< utf32_t, utf32_traits > utf32_ntr;
+typedef nullterminated_range<utf32_t> utf32_ntr;
 
 /// UTF-8-character string.
 typedef std::basic_string<utf8_t> utf8_string;
@@ -168,10 +158,6 @@ using strings::char4_ntr;
 using strings::char1_string;
 using strings::char2_string;
 using strings::char4_string;
-
-using strings::utf8_traits;
-using strings::utf16_traits;
-using strings::utf32_traits;
 
 using strings::utf8_nti;
 using strings::utf8_nt;

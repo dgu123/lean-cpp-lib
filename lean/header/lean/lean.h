@@ -69,6 +69,8 @@
 #ifdef _MSC_VER
 
 	#pragma warning(push)
+	// Decorated name length exceeded all the time by various STL containers
+	#pragma warning(disable : 4503)
 	// Can't do anything about methods not being inlined
 	#pragma warning(disable : 4714)
 	// Formal parameters named for documentation purposes

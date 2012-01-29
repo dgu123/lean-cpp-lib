@@ -14,7 +14,6 @@ namespace lean
 }
 
 #include "char_traits.h"
-#include "utf_traits.h"
 #include "nullterminated.h"
 #include "nullterminated_range.h"
 #include "types.h"

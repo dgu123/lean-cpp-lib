@@ -42,7 +42,7 @@ struct char_traits
 	{
 		size_t length = 0;
 
-		while (!null(*(begin++)))
+		while (!null(*begin++))
 			++length;
 
 		return length;
@@ -61,9 +61,14 @@ struct char_traits
 	/// Compares the characters in the given null-terminated ranges, returning true if equal.
 	static bool equal(const char_type *begin1, const char_type *begin2)
 	{
-		while (*begin1 == *(begin2++))
-			if (null(*(begin1++)))
+		while (*begin1 == *begin2)
+		{
+			if (null(*begin1))
 				return true;
+
+			++begin1;
+			++begin2;
+		}
 
 		return false;
 	}
@@ -72,9 +77,10 @@ struct char_traits
 	{
 		while (*begin1 == *begin2)
 		{
-			if (null(*(begin1++)))
+			if (null(*begin1))
 				return false;
 
+			++begin1;
 			++begin2;
 		}
 
@@ -101,7 +107,8 @@ struct char_traits<char>
 	}
 	static LEAN_INLINE size_type length(const char_type *begin)
 	{
-		return ::strlen(begin);
+		using std::strlen;
+		return strlen(begin);
 	}
 	static LEAN_INLINE size_type count(const char_type *begin)
 	{
@@ -114,11 +121,13 @@ struct char_traits<char>
 
 	static bool equal(const char_type *begin1, const char_type *begin2)
 	{
-		return (::strcmp(begin1, begin2) == 0);
+		using std::strcmp;
+		return (strcmp(begin1, begin2) == 0);
 	}
 	static bool less(const char_type *begin1, const char_type *begin2)
 	{
-		return (::strcmp(begin1, begin2) < 0);
+		using std::strcmp;
+		return (strcmp(begin1, begin2) < 0);
 	}
 };
 
@@ -140,7 +149,8 @@ struct char_traits<wchar_t>
 	}
 	static LEAN_INLINE size_type length(const char_type *begin)
 	{
-		return ::wcslen(begin);
+		using std::wcslen;
+		return wcslen(begin);
 	}
 	static LEAN_INLINE size_type count(const char_type *begin)
 	{
@@ -153,11 +163,13 @@ struct char_traits<wchar_t>
 
 	static bool equal(const char_type *begin1, const char_type *begin2)
 	{
-		return (::wcscmp(begin1, begin2) == 0);
+		using std::wcscmp;
+		return (wcscmp(begin1, begin2) == 0);
 	}
 	static bool less(const char_type *begin1, const char_type *begin2)
 	{
-		return (::wcscmp(begin1, begin2) < 0);
+		using std::wcscmp;
+		return (wcscmp(begin1, begin2) < 0);
 	}
 };
 

@@ -184,14 +184,9 @@ public:
 		: implicit_type(begin)  { }
 	/// Constructs a (half) character range from the given compatible object.
 	template <class Compatible>
-	explicit LEAN_INLINE nullterminated(const Compatible &from)
-		: implicit_type(from)
-	{
-		typedef typename assert_nullterminated_compatible<
-				Compatible,
-				typename implicit_type::value_type, typename implicit_type::traits_type
-			>::type assert_compatible;
-	}
+	explicit LEAN_INLINE nullterminated(const Compatible &from,
+			typename enable_if<is_nullterminated_compatible<Compatible, value_type, traits_type>::value, const void*>::type = nullptr)
+		: implicit_type(from) { }
 	/// Constructs a (half) character range from the given implicit half range.
 	explicit LEAN_INLINE nullterminated(const implicit_type &right)
 		: implicit_type(right)  { }

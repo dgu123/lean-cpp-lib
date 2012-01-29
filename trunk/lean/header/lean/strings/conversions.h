@@ -182,6 +182,41 @@ LEAN_INLINE utf32_ntri utf_to_utf32(const utf32_ntri &wide)
 }
 
 
+namespace impl
+{
+
+template <class String, class DestChar>
+struct utf_to_utf_helper;
+
+template <class String>
+struct utf_to_utf_helper<String, utf8_t>
+{
+	template <class Range>
+	LEAN_INLINE String operator ()(const Range &str) const { return utf_to_utf8<String>(str); }
+};
+template <class String>
+struct utf_to_utf_helper<String, utf16_t>
+{
+	template <class Range>
+	LEAN_INLINE String operator ()(const Range &str) const { return utf_to_utf16<String>(str); }
+};
+template <class String>
+struct utf_to_utf_helper<String, utf32_t>
+{
+	template <class Range>
+	LEAN_INLINE String operator ()(const Range &str) const { return utf_to_utf32<String>(str); }
+};
+
+} // namespace
+
+/// Converts the given string from UTF to UTF.
+template <class String, class Range>
+LEAN_INLINE String utf_to_utf(const Range &str)
+{
+	return impl::utf_to_utf_helper<String, typename String::value_type>()(str);
+}
+
+
 //// Codepage / UTF-XX ////
 
 /// Widens the given string using either the given locale or the current global locale.

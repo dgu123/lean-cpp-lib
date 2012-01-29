@@ -58,9 +58,8 @@ String current_directory();
 
 #ifndef DOXYGEN_SKIP_THIS
 
-/// Gets the current directory.
 template <>
-LEAN_INLINE utf16_string current_directory()
+inline utf16_string current_directory()
 {
 	utf16_string result;
 	
@@ -76,11 +75,17 @@ LEAN_INLINE utf16_string current_directory()
 	result.erase(actualLength);
 	return result;
 }
-/// Gets the current directory.
+
 template <>
 LEAN_INLINE utf8_string current_directory()
 {
 	return strings::utf16_to_utf8<utf8_string>(current_directory<utf16_string>());
+}
+
+template <class String>
+LEAN_INLINE String current_directory()
+{
+	return strings::utf_to_utf<String>(current_directory<utf16_string>());
 }
 
 #endif
@@ -102,6 +107,8 @@ LEAN_INLINE const utf8_string& initial_directory()
 template <class Char>
 struct filesystem_chars
 {
+	/// Root separator character.
+	static const Char root_separator;
 	/// Path separator character.
 	static const Char path_separator;
 	/// Alternative path separator character.
@@ -113,6 +120,8 @@ struct filesystem_chars
 };
 
 template <class Char>
+const Char filesystem_chars<Char>::root_separator = ':';
+template <class Char>
 const Char filesystem_chars<Char>::path_separator = '/';
 template <class Char>
 const Char filesystem_chars<Char>::alt_path_separator = '\\';
@@ -120,6 +129,13 @@ template <class Char>
 const Char filesystem_chars<Char>::extension_separator = '.';
 template <class Char>
 const Char filesystem_chars<Char>::redirection = '.';
+
+/// Checks if the given character is a root separator.
+template <class Char>
+LEAN_INLINE bool is_root_separator(Char chr)
+{
+	return (chr == filesystem_chars<Char>::root_separator);
+}
 
 /// Checks if the given character is an alternative path separator.
 template <class Char>
@@ -440,6 +456,62 @@ LEAN_INLINE std::basic_string<typename range_char_type2<Chars1, Chars2>::type> a
 {
 	typedef std::basic_string<typename range_char_type2<Chars1, Chars2>::type> string_type;
 	return canonical_path<string_type>( append_path<string_type>(make_char_range(base), make_char_range(path)) );
+}
+
+/// Checks if the given path is rooted.
+template <class Range>
+inline typename enable_if_range<Range, bool>::type is_rooted(const Range &path)
+{
+	typename Range::const_iterator it = path.begin();
+
+	if (it != path.end())
+	{
+		// Path separator at the beginning indicates root
+		if (is_path_separator(*it))
+			return true;
+		
+		// Root separator before first path separator indicates root
+		while (++it != path.end())
+			if (is_root_separator(*it))
+				return true;
+			else if (is_path_separator(*it))
+				return false;
+	}
+
+	return false;
+}
+/// Checks if the given path is rooted.
+template <class Chars>
+LEAN_INLINE typename enable_if_not_range<Chars, bool>::type is_rooted(const Chars &path)
+{
+	return is_rooted( make_char_range(path) );
+}
+
+/// Gets the absolute path euqivalent to the given relative path.
+template <class String, class Range>
+inline typename enable_if_range<Range, String>::type absolute_path(const Range &path)
+{
+	String result;
+
+	if (!is_rooted(path))
+		result = append_path<String>(current_directory<String>(), make_char_range(path));
+	else
+		string_traits<String>::assign(result, path.begin(), path.end());
+
+	return canonical_path<String>(result);
+}
+/// Gets the absolute path euqivalent to the given relative path.
+template <class String, class Chars>
+LEAN_INLINE typename enable_if_not_range<Chars, String>::type absolute_path(const Chars &path)
+{
+	return absolute_path<String>( make_char_range(path) );
+}
+/// Gets the absolute path euqivalent to the given relative path.
+template <class Chars>
+LEAN_INLINE std::basic_string<typename range_char_type<Chars>::type> absolute_path(const Chars &path)
+{
+	typedef std::basic_string<typename range_char_type<Chars>::type> string_type;
+	return absolute_path<string_type>( make_char_range(path) );
 }
 
 /// Gets the end of the parent directory, e.g. '..' from '../test.txt'.

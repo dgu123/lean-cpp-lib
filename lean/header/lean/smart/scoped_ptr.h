@@ -19,14 +19,16 @@ namespace smart
 template <class Type>
 LEAN_INLINE void release_ptr(Type *object)
 {
-	delete object;
+	if (sizeof(Type) > 0)
+		delete object;
 }
 
 /// Deletes the given array (default policy implementation).
 template <class Type>
 LEAN_INLINE void release_array_ptr(Type *object)
 {
-	delete[] object;
+	if (sizeof(Type) > 0)
+		delete[] object;
 }
 
 /// Generic scoped pointer policy.
@@ -55,7 +57,8 @@ struct delete_ptr_policy
 	/// Deletes the given object.
 	static LEAN_INLINE void release(Type *object)
 	{
-		delete object;
+		if (sizeof(Type) > 0)
+			delete object;
 	}
 };
 template <class Type>
@@ -63,7 +66,8 @@ struct delete_ptr_policy<Type[]>
 {
 	static LEAN_INLINE void release(Type *object)
 	{
-		delete[] object;
+		if (sizeof(Type) > 0)
+			delete[] object;
 	}
 };
 

@@ -83,6 +83,8 @@
 	#pragma warning(disable : 4351)
 	// Assignment operators suppressed intentionally
 	#pragma warning(disable : 4512)
+	// Extern template now standard
+	#pragma warning(disable : 4231)
 
 #endif
 

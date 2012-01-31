@@ -51,6 +51,22 @@ private:
 	{
 		new (static_cast<void*>(dest)) value_type();
 	}
+	/// Default constructs elements in the given range.
+	static void default_construct(Element *dest, Element *destEnd)
+	{
+		Element *destr = dest;
+
+		try
+		{
+			for (; dest != destEnd; ++dest)
+				default_construct(dest);
+		}
+		catch(...)
+		{
+			destruct(destr, dest);
+			throw;
+		}
+	}
 
 	/// Copies the given source element to the given destination.
 	static LEAN_INLINE void copy_construct(Element *dest, const Element &source)
@@ -231,6 +247,14 @@ public:
 	{
 		default_construct(m_elementsEnd);
 		return *(m_elementsEnd++);
+	}
+	/// Appends a default-constructed element to this vector.
+	LEAN_INLINE pointer push_back(size_type count)
+	{
+		Element *firstElement = m_elementsEnd;
+		default_construct(firstElement, firstElement + count);
+		m_elementsEnd += count;
+		return firstElement;
 	}
 	/// Appends the given element to this vector.
 	LEAN_INLINE void push_back(const value_type &value)

@@ -79,8 +79,9 @@
 	#pragma warning(disable : 4127)
 	// Sometimes, using 'this' in initializier lists is unavoidable
 	#pragma warning(disable : 4355)
-	// We actually want arrays to be default-initialized
+	// We actually want arrays & PODs to be default-initialized
 	#pragma warning(disable : 4351)
+	#pragma warning(disable : 4345)
 	// Assignment operators suppressed intentionally
 	#pragma warning(disable : 4512)
 	// Extern template now standard

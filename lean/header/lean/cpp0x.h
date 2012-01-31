@@ -122,12 +122,18 @@
 
 	/// Forwards the given value.
 	#define LEAN_FORWARD(type, arg) std::forward<type>(arg)
+
+	/// Moves the given value.
+	#define LEAN_MOVE(arg) std::move(arg)
 #else
 	/// Forwarding reference.
 	#define LEAN_FW_REF const &
 
 	/// Forwards the given value.
 	#define LEAN_FORWARD(type, arg) arg
+
+	/// Moves the given value.
+	#define LEAN_MOVE(arg) arg
 #endif
 
 // Emulate next & prev if unavailable

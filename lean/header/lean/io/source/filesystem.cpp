@@ -76,5 +76,8 @@ LEAN_MAYBE_LINK lean::uint8 lean::io::file_size(const utf16_nti& file)
 // characters written, otherwise (excluding the terminating null appended).
 LEAN_MAYBE_LINK size_t lean::io::current_directory(utf16_t *buffer, size_t bufferSize)
 {
-	return ::GetCurrentDirectoryW(bufferSize, buffer);
+	return ::GetCurrentDirectoryW(
+			(bufferSize > static_cast<DWORD>(-1)) ? static_cast<DWORD>(-1) : static_cast<DWORD>(bufferSize),
+			buffer
+		);
 }

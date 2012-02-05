@@ -244,8 +244,8 @@ inline typename enable_if_range2<Range1, Range2, String>::type relative_path(con
 	String result;
 	string_traits::reserve(
 			result,
-			static_cast<size_t>(base.end() - baseMarker)
-			+ static_cast<size_t>(path.end() - pathMarker)
+			static_cast<typename string_traits::size_type>(base.end() - baseMarker)
+			+ static_cast<typename string_traits::size_type>(path.end() - pathMarker)
 		);
 
 	// Slash already skipped, don't lose corresponding directory
@@ -276,8 +276,8 @@ inline typename enable_if_range2<Range1, Range2, String>::type relative_path(con
 	{
 		bool needSeparation = !string_traits::empty(result);
 		
-		size_t insertPos = string_traits::size(result);
-		string_traits::resize(result, insertPos + static_cast<size_t>(path.end() - pathMarker) + needSeparation);
+		typename string_traits::size_type insertPos = string_traits::size(result);
+		string_traits::resize(result, insertPos + static_cast<typename string_traits::size_type>(path.end() - pathMarker) + needSeparation);
 		typename string_traits::iterator insertCursor = string_traits::begin(result) + insertPos;
 		
 		if (needSeparation)

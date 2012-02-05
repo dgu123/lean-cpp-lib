@@ -29,7 +29,8 @@ LEAN_MAYBE_INLINE size_t lean::io::raw_file::read(char *begin, size_t count) con
 	DWORD read = 0;
 
 	// Thread-safe: http://msdn.microsoft.com/en-us/library/ms810467
-	if (!::ReadFile(handle(), begin, count, &read, nullptr))
+	// MONITOR: DWORD 32 bit only!
+	if (!::ReadFile(handle(), begin, (count > static_cast<DWORD>(-1)) ? static_cast<DWORD>(-1) : static_cast<DWORD>(count), &read, nullptr))
 		LEAN_LOG_WIN_ERROR_CTX("ReadFile()", name().c_str());
 	
 	return read;
@@ -41,7 +42,8 @@ LEAN_MAYBE_INLINE size_t lean::io::raw_file::write(const char *begin, size_t cou
 	DWORD written = 0;
 
 	// Thread-safe: http://msdn.microsoft.com/en-us/library/ms810467
-	if (!::WriteFile(handle(), begin, count, &written, nullptr))
+	// MONITOR: DWORD 32 bit only!
+	if (!::WriteFile(handle(), begin, (count > static_cast<DWORD>(-1)) ? static_cast<DWORD>(-1) : static_cast<DWORD>(count), &written, nullptr))
 		LEAN_LOG_WIN_ERROR_CTX("WriteFile()", name().c_str());
 	
 	return written;

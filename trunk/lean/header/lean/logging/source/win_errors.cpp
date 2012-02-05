@@ -13,7 +13,7 @@ LEAN_ALWAYS_LINK size_t lean::logging::get_last_win_error_msg(utf16_t *buffer, s
 		FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 		nullptr, ::GetLastError(),
 		0,
-		buffer, maxCount,
+		buffer, static_cast<DWORD>(maxCount),
 		nullptr );
 
 	if (count == 0)

@@ -45,7 +45,7 @@ LEAN_ALWAYS_LINK void lean::logging::log_file::print(const char_ntri &message)
 	// Thread-safe: http://msdn.microsoft.com/en-us/library/ms810467
 	if (m_handle != INVALID_HANDLE_VALUE)
 	{
-		::WriteFile(m_handle, message.c_str(), message.size(), &written, nullptr);
+		::WriteFile(m_handle, message.c_str(), static_cast<DWORD>(message.size()), &written, nullptr);
 		::FlushFileBuffers(m_handle);
 	}
 }

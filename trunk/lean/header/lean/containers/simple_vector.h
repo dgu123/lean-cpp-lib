@@ -332,7 +332,15 @@ public:
 		m_elementsEnd(nullptr),
 		m_capacityEnd(nullptr)
 	{
-		assign_disj(right.begin(), right.end());
+		try
+		{
+			assign_disjoint(right.begin(), right.end());
+		}
+		catch (...)
+		{
+			free();
+			throw;
+		}
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given vector to this vector.
@@ -357,7 +365,7 @@ public:
 	simple_vector& operator =(const simple_vector &right)
 	{
 		if (&right != this)
-			assign_disj(right.begin(), right.end());
+			assign_disjoint(right.begin(), right.end());
 		return *this;
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
@@ -405,11 +413,11 @@ public:
 			destruct(m_elementsEnd, oldElementsEnd);
 		}
 		else
-			assign_disj(source, sourceEnd);
+			assign_disjoint(source, sourceEnd);
 	}
 	/// Assigns the given disjoint range of elements to this vector.
 	template <class Iterator>
-	void assign_disj(Iterator source, Iterator sourceEnd)
+	void assign_disjoint(Iterator source, Iterator sourceEnd)
 	{
 		// Clear before reallocation to prevent full-range moves
 		clear();

@@ -16,10 +16,13 @@
 /// 'True' has-*-parameter-argument.
 #define LEAN_VARIADIC_HAS_PARAMS ,
 
+#define LEAN_VARIADIC_TEMPLATE__LEAN_VARIADIC_NO_PARAMS()
+#define LEAN_VARIADIC_TEMPLATE__LEAN_VARIADIC_HAS_PARAMS(tparams) template <tparams>
+
 /// Defines a variadic perfect-forwarding function, optionally including additional template & function parameters.
 #define LEAN_VARIADIC_PERFECT_FORWARDING_XXL(fun, tparams, has_tparams, params, has_params, modifiers, body, args) \
 	/* 0 */ \
-	template <tparams>								\
+	LEAN_VARIADIC_TEMPLATE__##has_tparams(tparams)	\
 	fun(params) modifiers							\
 	body((args))									\
 	/* 1 */ \
@@ -222,19 +225,19 @@
 		))											\
 	// End
 
-/// Defines variadic perfect-forwarding function function including additional template & function parameters.
+/// Defines variadic perfect-forwarding function including additional template & function parameters.
 #define LEAN_VARIADIC_PERFECT_FORWARDING_TP(fun, tparams, params, modifiers, body, args) \
 	LEAN_VARIADIC_PERFECT_FORWARDING_XXL(fun, tparams, LEAN_VARIADIC_HAS_PARAMS, params, LEAN_VARIADIC_HAS_PARAMS, modifiers, body, args)
 
-/// Defines variadic perfect-forwarding function function including additional template parameters.
+/// Defines variadic perfect-forwarding function including additional template parameters.
 #define LEAN_VARIADIC_PERFECT_FORWARDING_T(fun, tparams, modifiers, body) \
 	LEAN_VARIADIC_PERFECT_FORWARDING_XXL(fun, tparams, LEAN_VARIADIC_HAS_PARAMS, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, modifiers, body, LEAN_NOTHING)
 
-/// Defines variadic perfect-forwarding function function including additional function parameters.
+/// Defines variadic perfect-forwarding function including additional function parameters.
 #define LEAN_VARIADIC_PERFECT_FORWARDING_P(fun, params, modifiers, body, args) \
 	LEAN_VARIADIC_PERFECT_FORWARDING_XXL(fun, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, params, LEAN_VARIADIC_HAS_PARAMS, modifiers, body, args)
 
-/// Defines variadic perfect-forwarding function function.
+/// Defines variadic perfect-forwarding function.
 #define LEAN_VARIADIC_PERFECT_FORWARDING(fun, modifiers, body) \
 	LEAN_VARIADIC_PERFECT_FORWARDING_XXL(fun, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, modifiers, body, LEAN_NOTHING)
 

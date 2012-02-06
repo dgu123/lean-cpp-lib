@@ -876,7 +876,16 @@ public:
 		if (!right.empty())
 		{
 			growTo(right.size());
-			copy_elements_to_empty(right.m_elements, right.m_elementsEnd);
+
+			try
+			{
+				copy_elements_to_empty(right.m_elements, right.m_elementsEnd);
+			}
+			catch (...)
+			{
+				free();
+				throw;
+			}
 		}
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES

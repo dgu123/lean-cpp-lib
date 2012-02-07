@@ -70,8 +70,8 @@ struct dynamic_array_base : public noncopyable
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given vector to this vector.
 	LEAN_INLINE dynamic_array_base(dynamic_array_base &&right) throw()
-		: m_elements( std::move(right.m_elements) ),
-		m_elementsEnd( std::move(right.m_elementsEnd) )
+		: m_elements(right.m_elements),
+		m_elementsEnd(right.m_elementsEnd)
 	{
 		right.m_elements = nullptr;
 		right.m_elementsEnd = nullptr;
@@ -92,20 +92,31 @@ struct dynamic_array_base : public noncopyable
 			heap_type::free(m_elements);
 	}
 
-#ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given vector to this vector.
-	LEAN_INLINE dynamic_array_base& operator =(dynamic_array_base &&right) throw()
+	LEAN_INLINE void assign(dynamic_array_base &right, consume_t) throw()
 	{
 		if (&right != this)
 		{
 			free();
 
-			m_elements = std::move(right.m_elements);
-			m_elementsEnd = std::move(right.m_elementsEnd);
+			m_elements = right.m_elements;
+			m_elementsEnd = right.m_elementsEnd;
 
 			right.m_elements = nullptr;
 			right.m_elementsEnd = nullptr;
 		}
+	}
+
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Moves all elements from the given vector to this vector.
+	LEAN_INLINE void assign(dynamic_array_base &&right) throw()
+	{
+		assign(right, consume);
+	}
+	/// Moves all elements from the given vector to this vector.
+	LEAN_INLINE dynamic_array_base& operator =(dynamic_array_base &&right) throw()
+	{
+		assign(right, consume);
 		return *this;
 	}
 #endif
@@ -249,7 +260,7 @@ private:
 		if (m_elements)
 		{
 			clear();
-			free();
+			this->free();
 		}
 	}
 
@@ -303,7 +314,7 @@ public:
 	}
 
 	/// Copies all elements of the given vector to this vector.
-	dynamic_array& operator =(const dynamic_array &right)
+	void assign(const dynamic_array &right)
 	{
 		if (&right != this)
 		{
@@ -312,17 +323,35 @@ public:
 			copy_construct(right.m_elements, right.m_elementsEnd, m_elements);
 			m_elementsEnd += right.size();
 		}
-		return *this;
 	}
-#ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given vector to this vector.
-	dynamic_array& operator =(dynamic_array &&right)
+	void assign(dynamic_array &right, consume_t)
 	{
 		if (&right != this)
 		{
 			clear();
-			static_cast<base_type&>(*this) = std::move(right);
+			this->assign(right, base_type::consume);
 		}
+	}
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Moves all elements from the given vector to this vector.
+	LEAN_INLINE void assign(dynamic_array &&right)
+	{
+		assign(right, consume);
+	}
+#endif
+
+	/// Copies all elements of the given vector to this vector.
+	LEAN_INLINE dynamic_array& operator =(const dynamic_array &right)
+	{
+		assign(right);
+		return *this;
+	}
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Moves all elements from the given vector to this vector.
+	LEAN_INLINE dynamic_array& operator =(dynamic_array &&right)
+	{
+		assign(right, consume);
 		return *this;
 	}
 #endif
@@ -421,7 +450,7 @@ public:
 
 		if (newCapacity > 0)
 		{
-			m_elements = allocate(newCapacity);
+			m_elements = this->allocate(newCapacity);
 			m_elementsEnd = m_elements;
 		}
 	}

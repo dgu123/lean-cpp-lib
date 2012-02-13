@@ -237,7 +237,31 @@ public:
 	{
 		// Freeing of individual memory blocks unsupported
 	}
+
+	/// Swaps the contents of the given chunk heap with the ones of this chunk heap.
+	LEAN_INLINE void swap(chunk_heap &right)
+	{
+		LEAN_STATIC_ASSERT_MSG_ALT(StaticChunkSize == 0,
+			"Swap only supported for purely dynamic chunk heaps.",
+			Swap_only_supported_for_purely_dynamic_chunk_heaps);
+
+		using std::swap;
+
+		swap(m_chunk, right.m_chunk);
+		swap(m_chunkOffset, right.m_chunkOffset);
+		swap(m_chunkEnd, right.m_chunkEnd);
+		swap(m_nextChunkSize, right.m_nextChunkSize);
+	}
 };
+
+/// Swaps the contents of the given chunk heap with the ones of this chunk heap.
+template <size_t ChunkSize, class Heap, size_t StaticChunkSize, size_t DefaultAlignment>
+LEAN_INLINE void swap(
+	chunk_heap<ChunkSize, Heap, StaticChunkSize, DefaultAlignment> &left,
+	chunk_heap<ChunkSize, Heap, StaticChunkSize, DefaultAlignment> &right)
+{
+	left.swap(right);
+}
 
 } // namespace
 

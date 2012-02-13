@@ -330,7 +330,7 @@ public:
 		if (&right != this)
 		{
 			clear();
-			this->assign(right, base_type::consume);
+			this->base_type::assign(right, base_type::consume);
 		}
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES

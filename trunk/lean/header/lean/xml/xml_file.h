@@ -33,7 +33,8 @@ namespace impl
 		raw_file file(fileName, file::read);
 		
 		size_t fileSize = static_cast<size_t>(file.size());
-		char *source = document.allocate_string(nullptr, fileSize);
+		char *source = document.allocate_string(nullptr, fileSize + 1);
+		source[fileSize] = 0;
 		
 		file.read(source, fileSize); // TODO: strict (exception on error)
 		return source;

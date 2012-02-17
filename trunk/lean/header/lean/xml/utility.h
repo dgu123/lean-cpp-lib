@@ -130,6 +130,19 @@ LEAN_INLINE rapidxml::xml_node<Char>* allocate_node(rapidxml::xml_document<Char>
 		);
 }
 
+/// Counts the number of child nodes in the given node.
+template <class Char>
+LEAN_INLINE size_t node_count(const rapidxml::xml_node<Char> &node, const Char *name = nullptr, size_t nameSize = 0, bool caseSensitive = true)
+{
+	size_t count = 0;
+
+	for (const rapidxml::xml_node<Char> *pNode = node.first_node(name, nameSize, caseSensitive);
+		pNode; pNode = pNode->next_sibling(name, nameSize, caseSensitive))
+		++count;
+
+	return count;
+}
+
 } // namespace
 
 using xml::allocate_string;
@@ -137,6 +150,7 @@ using xml::allocate_attribute;
 using xml::append_attribute;
 using xml::get_attribute;
 using xml::allocate_node;
+using xml::node_count;
 
 } // namespace
 

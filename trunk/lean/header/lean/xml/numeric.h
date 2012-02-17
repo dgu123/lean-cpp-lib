@@ -56,12 +56,42 @@ inline Float get_float_attribute(const rapidxml::xml_node<Char> &node, const Ran
 	return value;
 }
 
+/// Gets the minimum of the given integer attribute considering all direct child nodes.
+template <class Int, class Char, class Range>
+LEAN_INLINE Int min_int_attribute(const rapidxml::xml_node<Char> &node, const Range &attribute, Int startValue,
+	const Char *name = nullptr, size_t nameSize = 0, bool caseSensitive = true)
+{
+	Int value = startValue;
+
+	for (const rapidxml::xml_node<Char> *pNode = node.first_node(name, nameSize, caseSensitive);
+		pNode; pNode = pNode->next_sibling(name, nameSize, caseSensitive))
+		value = min( get_int_attribute(*pNode, attribute, value), value );
+
+	return value;
+}
+
+/// Gets the maximum of the given integer attribute considering all direct child nodes.
+template <class Int, class Char, class Range>
+LEAN_INLINE Int max_int_attribute(const rapidxml::xml_node<Char> &node, const Range &attribute, Int startValue,
+	const Char *name = nullptr, size_t nameSize = 0, bool caseSensitive = true)
+{
+	Int value = startValue;
+
+	for (const rapidxml::xml_node<Char> *pNode = node.first_node(name, nameSize, caseSensitive);
+		pNode; pNode = pNode->next_sibling(name, nameSize, caseSensitive))
+		value = max( get_int_attribute(*pNode, attribute, value), value );
+
+	return value;
+}
+
 } // namespace
 
 using xml::append_int_attribute;
 using xml::append_float_attribute;
 using xml::get_int_attribute;
 using xml::get_float_attribute;
+using xml::min_int_attribute;
+using xml::max_int_attribute;
 
 } // namespace
 

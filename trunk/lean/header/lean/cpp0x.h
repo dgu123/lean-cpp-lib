@@ -32,6 +32,8 @@
 	#define LEAN0X_NO_DELETE_METHODS
 	/// Indicates that the standard library enhancements are not available.
 	#define LEAN0X_NO_STL
+	/// Indicates that attributes are not available.
+	#define LEAN0X_NO_ATTRIBUTES
 #endif
 
 #ifndef LEAN0X_DISABLE
@@ -111,6 +113,14 @@
 	
 	/// Static assertion incorporating either the given message or the given incomplete type in a compiler error on failure.
 	#define LEAN_STATIC_ASSERT_MSG_ALT(expr, msg, msgtype) static_assert(expr, msg)
+#endif
+
+#ifndef LEAN0X_NO_ATTRIBUTES
+	/// Indicates that the corresponding function will never return.
+	#define LEAN_NORETURN [[noreturn]]
+#else
+	/// Indicates that the corresponding function will never return.
+	#define LEAN_NORETURN __declspec(noreturn)
 #endif
 
 #ifndef LEAN0X_NO_RVALUE_REFERENCES

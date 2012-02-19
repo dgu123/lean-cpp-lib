@@ -89,11 +89,21 @@
 
 #endif
 
+#ifdef _MSC_VER
+	/// Assumes that the given expression is always true.
+	#define LEAN_ASSUME(expr) __assume(expr)
+	/// Defined, if LEAN_ASSUME supported.
+	#define LEAN_HAS_ASSUME 1
+#else
+	/// Assumes that the given expression is always true.
+	#define LEAN_ASSUME(expr)
+#endif
+
 #ifdef LEAN_DEBUG_BUILD
 	#include <cassert>
-	#ifdef _MSC_VER
+	#ifdef LEAN_HAS_ASSUME
 		/// Asserts that the given expression is always true.
-		#define LEAN_ASSERT(expr) ( assert(expr), __assume(expr) )
+		#define LEAN_ASSERT(expr) ( assert(expr), LEAN_ASSUME(expr) )
 	#else
 		/// Asserts that the given expression is always true.
 		#define LEAN_ASSERT(expr) assert(expr)
@@ -101,9 +111,9 @@
 	/// Asserts that the given expression is always true, does not assume anything in release builds.
 	#define LEAN_ASSERT_DEBUG(expr) assert(expr)
 #else
-	#ifdef _MSC_VER
+	#ifdef LEAN_HAS_ASSUME
 		/// Asserts that the given expression is always true.
-		#define LEAN_ASSERT(expr) __assume(expr)
+		#define LEAN_ASSERT(expr) LEAN_ASSUME(expr)
 	#else
 		/// Asserts that the given expression is always true.
 		#define LEAN_ASSERT(expr)

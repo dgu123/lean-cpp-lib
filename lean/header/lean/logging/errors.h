@@ -17,25 +17,25 @@ namespace logging
 {
 
 /// Throws a runtime_error exception.
-LEAN_MAYBE_EXPORT void throw_error(const char *source);
+LEAN_MAYBE_EXPORT LEAN_NORETURN void throw_error(const char *source);
 /// Throws a runtime_error exception.
-LEAN_MAYBE_EXPORT void throw_error(const char *source, const char *reason);
+LEAN_MAYBE_EXPORT LEAN_NORETURN void throw_error(const char *source, const char *reason);
 /// Throws a runtime_error exception.
-LEAN_MAYBE_EXPORT void throw_error(const char *source, const char *reason, const char *context);
+LEAN_MAYBE_EXPORT LEAN_NORETURN void throw_error(const char *source, const char *reason, const char *context);
 /// Throws a runtime_error exception.
-LEAN_MAYBE_EXPORT void throw_error_ex(const char *source, const char *reason, const char *origin);
+LEAN_MAYBE_EXPORT LEAN_NORETURN void throw_error_ex(const char *source, const char *reason, const char *origin);
 /// Throws a runtime_error exception.
-LEAN_MAYBE_EXPORT void throw_error_ex(const char *source, const char *reason, const char *origin, const char *context);
+LEAN_MAYBE_EXPORT LEAN_NORETURN void throw_error_ex(const char *source, const char *reason, const char *origin, const char *context);
 
 /// Throws an invalid_argument exception.
-LEAN_MAYBE_EXPORT void throw_invalid(const char *source);
+LEAN_MAYBE_EXPORT LEAN_NORETURN void throw_invalid(const char *source);
 /// Throws an invalid_argument exception.
-LEAN_MAYBE_EXPORT void throw_invalid(const char *source, const char *reason);
+LEAN_MAYBE_EXPORT LEAN_NORETURN void throw_invalid(const char *source, const char *reason);
 
 /// Throws a bad_alloc exception.
-LEAN_MAYBE_EXPORT void throw_bad_alloc(const char *source);
+LEAN_MAYBE_EXPORT LEAN_NORETURN void throw_bad_alloc(const char *source);
 /// Throws a bad_alloc exception.
-LEAN_MAYBE_EXPORT void throw_bad_alloc(const char *source, size_t size);
+LEAN_MAYBE_EXPORT LEAN_NORETURN void throw_bad_alloc(const char *source, size_t size);
 
 /// Logs an error.
 LEAN_MAYBE_EXPORT void log_error(const char *source);
@@ -51,44 +51,44 @@ LEAN_MAYBE_EXPORT void log_error_ex(const char *source, const char *reason, cons
 
 /// Throws a runtime_error exception.
 template <class String1>
-inline void throw_error(const String1 &source)
+inline LEAN_NORETURN void throw_error(const String1 &source)
 {
 	throw_error(utf_to_utf8(source).c_str());
 }
 /// Throws a runtime_error exception.
 template <class String1, class String2>
-inline void throw_error(const String1 &source, const String2 &reason)
+inline LEAN_NORETURN void throw_error(const String1 &source, const String2 &reason)
 {
 	throw_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str());
 }
 /// Throws a runtime_error exception.
 template <class String1, class String2, class String3>
-inline void throw_error(const String1 &source, const String2 &reason, const String3 &context)
+inline LEAN_NORETURN void throw_error(const String1 &source, const String2 &reason, const String3 &context)
 {
 	throw_error(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(context).c_str());
 }
 /// Throws a runtime_error exception.
 template <class String1, class String2, class String3>
-inline void throw_error_ex(const String1 &source, const String2 &reason, const String3 &origin)
+inline LEAN_NORETURN void throw_error_ex(const String1 &source, const String2 &reason, const String3 &origin)
 {
 	throw_error_ex(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(origin).c_str());
 }
 /// Throws a runtime_error exception.
 template <class String1, class String2, class String3, class String4>
-inline void throw_error_ex(const String1 &source, const String2 &reason, const String3 &origin, const String4 &context)
+inline LEAN_NORETURN void throw_error_ex(const String1 &source, const String2 &reason, const String3 &origin, const String4 &context)
 {
 	throw_error_ex(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(origin).c_str(), utf_to_utf8(context).c_str());
 }
 
 /// Throws an invalid_argument exception.
 template <class String1>
-inline void throw_invalid(const String1 &source)
+inline LEAN_NORETURN void throw_invalid(const String1 &source)
 {
 	throw_invalid(utf_to_utf8(source).c_str());
 }
 /// Throws an invalid_argument exception.
 template <class String1, class String2>
-inline void throw_invalid(const String1 &source, const String2 &reason)
+inline LEAN_NORETURN void throw_invalid(const String1 &source, const String2 &reason)
 {
 	throw_invalid(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str());
 }

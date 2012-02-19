@@ -406,7 +406,7 @@ public:
 		return *m_elementsEnd++;
 	}
 	/// Appends a default-constructed element to this vector.
-	LEAN_INLINE pointer push_back(size_type count)
+	LEAN_INLINE pointer push_back_n(size_type count)
 	{
 		Element *firstElement = m_elementsEnd;
 		default_construct(firstElement, firstElement + count);

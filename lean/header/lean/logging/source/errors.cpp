@@ -26,7 +26,7 @@ namespace impl
 } // namespace
 
 // Throws a runtime_error exception.
-LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source)
+LEAN_ALWAYS_LINK LEAN_NORETURN void lean::logging::throw_error(const char *source)
 {
 	// Store valid source, re-used in throw clause!
 	source = impl::make_source_valid(source);
@@ -35,48 +35,48 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source)
 }
 
 // Throws a runtime_error exception.
-LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source, const char *reason)
+LEAN_ALWAYS_LINK LEAN_NORETURN void lean::logging::throw_error(const char *source, const char *reason)
 {
 	if (!reason)
-		return throw_error(source);
+		throw_error(source);
 
 	log_stream_out(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << std::endl;
 	throw std::runtime_error(reason);
 }
 
 // Throws a runtime_error exception.
-LEAN_ALWAYS_LINK void lean::logging::throw_error(const char *source, const char *reason, const char *context)
+LEAN_ALWAYS_LINK LEAN_NORETURN void lean::logging::throw_error(const char *source, const char *reason, const char *context)
 {
 	if (!context)
-		return throw_error(source, reason);
+		throw_error(source, reason);
 	if (!reason)
-		return throw_error(source, context);
+		throw_error(source, context);
 
 	log_stream_out(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << " (" << context << ")" << std::endl;
 	throw std::runtime_error(reason);
 }
 
 // Throws a runtime_error exception.
-LEAN_ALWAYS_LINK void lean::logging::throw_error_ex(const char *source, const char *reason, const char *origin)
+LEAN_ALWAYS_LINK LEAN_NORETURN void lean::logging::throw_error_ex(const char *source, const char *reason, const char *origin)
 {
 	if (!origin)
-		return throw_error(source, reason);
+		throw_error(source, reason);
 	if (!reason)
-		return throw_error(source, origin);
+		throw_error(source, origin);
 
 	log_stream_out(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason << " << " << origin << std::endl;
 	throw std::runtime_error(reason);
 }
 
 // Throws a runtime_error exception.
-LEAN_ALWAYS_LINK void lean::logging::throw_error_ex(const char *source, const char *reason, const char *origin, const char *context)
+LEAN_ALWAYS_LINK LEAN_NORETURN void lean::logging::throw_error_ex(const char *source, const char *reason, const char *origin, const char *context)
 {
 	if (!context)
-		return throw_error_ex(source, reason, origin);
+		throw_error_ex(source, reason, origin);
 	if (!origin)
-		return throw_error(source, reason, context);
+		throw_error(source, reason, context);
 	if (!reason)
-		return throw_error(source, origin, context);
+		throw_error(source, origin, context);
 
 	log_stream_out(error_log()) << impl::make_source_valid(source) << ": An error occurred: " << reason
 		<< " << " << origin << " (" << context << ")" << std::endl;
@@ -84,7 +84,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_error_ex(const char *source, const ch
 }
 
 // Throws an invalid_argument exception.
-LEAN_ALWAYS_LINK void lean::logging::throw_invalid(const char *source)
+LEAN_ALWAYS_LINK LEAN_NORETURN void lean::logging::throw_invalid(const char *source)
 {
 	// Store valid source, re-used in throw clause!
 	source = impl::make_source_valid(source);
@@ -93,17 +93,17 @@ LEAN_ALWAYS_LINK void lean::logging::throw_invalid(const char *source)
 }
 
 // Throws an invalid_argument exception.
-LEAN_ALWAYS_LINK void lean::logging::throw_invalid(const char *source, const char *reason)
+LEAN_ALWAYS_LINK LEAN_NORETURN void lean::logging::throw_invalid(const char *source, const char *reason)
 {
 	if (!reason)
-		return throw_invalid(source);
+		throw_invalid(source);
 
 	log_stream_out(error_log()) << impl::make_source_valid(source) << ": Invalid argument: " << reason << std::endl;
 	throw std::invalid_argument(reason);
 }
 
 // Throws a bad_alloc exception.
-LEAN_ALWAYS_LINK void lean::logging::throw_bad_alloc(const char *source)
+LEAN_ALWAYS_LINK LEAN_NORETURN void lean::logging::throw_bad_alloc(const char *source)
 {
 	char msg[2048];
 	size_t msgLen = 0;
@@ -119,7 +119,7 @@ LEAN_ALWAYS_LINK void lean::logging::throw_bad_alloc(const char *source)
 }
 
 // Throws a bad_alloc exception.
-LEAN_ALWAYS_LINK void lean::logging::throw_bad_alloc(const char *source, size_t size)
+LEAN_ALWAYS_LINK LEAN_NORETURN void lean::logging::throw_bad_alloc(const char *source, size_t size)
 {
 	char msg[2048];
 	size_t msgLen = 0;

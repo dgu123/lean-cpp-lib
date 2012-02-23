@@ -131,12 +131,12 @@ public:
 
 	/// Gets whether this character range is currently empty.
 	LEAN_INLINE bool empty() const { return traits_type::empty(m_begin); }
-	/// Gets the length of this character range, in characters (same as size()). O(n).
-	LEAN_INLINE size_type length() const { return traits_type::length(m_begin); }
-	/// Gets the length of this character range, in characters (same as length()). O(n).
-	LEAN_INLINE size_type size() const { return length(); }
+	/// Gets the length of this character range, in characters (same as compute_size()). O(n).
+	LEAN_INLINE size_type compute_length() const { return traits_type::length(m_begin); }
+	/// Gets the length of this character range, in characters (same as compute_length()). O(n).
+	LEAN_INLINE size_type compute_size() const { return compute_length(); }
 	/// Gets the length of this character range, in code points (might differ from length() and size()). O(n).
-	LEAN_INLINE size_type count() const { return traits_type::count(m_begin); }
+	LEAN_INLINE size_type compute_count() const { return traits_type::count(m_begin); }
 	
 	/// Gets an element by position, access violation on failure.
 	LEAN_INLINE const_reference operator [](size_type pos) const { return m_begin[pos]; }
@@ -149,7 +149,7 @@ public:
 	/// Returns a constant iterator to the first element contained by this character range. O(1).
 	LEAN_INLINE const_iterator begin() const { return m_begin; }
 	/// Returns a constant iterator  the last element contained by this character range. O(n).
-	LEAN_INLINE const_iterator end() const { return m_begin + length(); }
+	LEAN_INLINE const_iterator compute_end() const { return m_begin + compute_length(); }
 
 	/// Swaps the contents of this range with the contents of the given range.
 	LEAN_INLINE void swap(nullterminated_implicit& right)

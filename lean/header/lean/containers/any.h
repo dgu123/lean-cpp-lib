@@ -7,6 +7,7 @@
 
 #include "../lean.h"
 #include "../meta/strip.h"
+#include "../meta/type_traits.h"
 #include "../smart/cloneable.h"
 #include "../memory/heap_bound.h"
 #include <typeinfo>
@@ -36,7 +37,7 @@ public:
 };
 
 /// Any value.
-template <class Value, class Heap = default_heap>
+template <class Value, class UnionValue = Value, class Heap = default_heap>
 class any_value : public heap_bound<Heap>, public any
 {
 private:
@@ -46,7 +47,7 @@ protected:
 	/// Gets a pointer to the stored value, if the given type matches the value stored by this object, nullptr otherwise.
 	void* get_any_ptr(const std::type_info& type)
 	{
-		return (typeid(Value) == type)
+		return (typeid(Value) == type || !is_equal<Value, UnionValue>::value && typeid(UnionValue) == type)
 			? &m_value
 			: nullptr;
 	}
@@ -204,6 +205,23 @@ LEAN_INLINE Value any_cast(const volatile any &container)
 	return any_cast<const volatile nonref_value_type&>(const_cast<any&>(container));
 }
 
+/// Gets a value of the given type, if the given value type matches the value stored by the given object, default otherwise.
+template <class Value>
+LEAN_INLINE Value any_cast_default(const any *container, const Value &defaultValue = Value())
+{
+	Value value;
+	const Value *pValue = any_cast<Value>(container);
+	value = (pValue) ? *pValue : defaultValue;
+	return value;
+}
+
+/// Gets a value of the given type, if the given value type matches the value stored by the given object, default otherwise.
+template <class Value>
+LEAN_INLINE Value any_cast_default(const any &container, const Value &defaultValue = Value())
+{
+	return any_cast_default<Value>(&container, defaultValue);
+}
+
 } // namespace
 
 using containers::any;
@@ -211,6 +229,7 @@ using containers::any_value;
 
 using containers::any_cast;
 using containers::any_cast_checked;
+using containers::any_cast_default;
 
 } // namespace
 

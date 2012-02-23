@@ -70,14 +70,14 @@ public:
 	/// Constructs a character range from the given half-range.
 	LEAN_INLINE nullterminated_range_implicit(const nullterminated_implicit<Char, Traits> &right)
 		: base_type(right),
-		m_end(right.end())
+		m_end(right.compute_end())
 	{
 		assert_null_terminated(m_end);
 	}
 	/// Constructs a character range from the given C string.
 	LEAN_INLINE nullterminated_range_implicit(const_pointer begin)
 		: base_type(begin),
-		m_end(base_type::end())
+		m_end(base_type::compute_end())
 	{
 		assert_null_terminated(m_end);
 	}
@@ -96,7 +96,7 @@ public:
 		m_end(
 			first_non_null(
 				nullterminated_compatible<Compatible, value_type, traits_type>::from(from, base_type::begin()),
-				base_type::end() )
+				base_type::compute_end() )
 			)
 	{
 		assert_null_terminated(m_end);

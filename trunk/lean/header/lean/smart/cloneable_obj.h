@@ -27,10 +27,46 @@ LEAN_INLINE void destroy_cloneable(Cloneable *cloneable)
 		cloneable->destroy();
 }
 
+namespace impl
+{
+
+/// Returns a pointer or a reference to the object pointed to.
+template <class Type, bool Pointer>
+struct ptr_or_ref_to
+{
+	template <class T>
+	LEAN_INLINE Type get(const T &p)
+	{
+		return p;
+	}
+};
+
+template <class Type>
+struct ptr_or_ref_to<Type, false>
+{
+	template <class T>
+	LEAN_INLINE Type get(const T &p)
+	{
+		return *p;
+	}
+};
+
+}
+
 /// Cloneable object class that stores an automatic instance of the given cloneable type.
 template <class Cloneable, bool PointerSemantics = false>
 class cloneable_obj
 {
+public:
+	/// Type of the cloneable value stored by this cloneable object.
+	typedef Cloneable value_type;
+	/// Const value_type for value semantics, value_type for pointer semantics.
+	typedef typename conditional_type<PointerSemantics, value_type, const value_type>::type maybe_const_value_type;
+	/// Reference type for value semantics, pointer type for pointer semantics.
+	typedef typename conditional_type<PointerSemantics, value_type*, value_type&>::type maybe_pointer;
+	/// Const reference type for value semantics, pointer type for pointer semantics.
+	typedef typename conditional_type<PointerSemantics, value_type*, const value_type&>::type const_maybe_pointer;
+
 private:
 	Cloneable *m_cloneable;
 
@@ -55,11 +91,6 @@ private:
 	}
 
 public:
-	/// Type of the cloneable value stored by this cloneable object.
-	typedef Cloneable value_type;
-	/// Const value_type for value semantics, value_type for pointer semantics.
-	typedef typename conditional_type<PointerSemantics, value_type, const value_type>::type maybe_const_value_type;
-
 	/// Constructs a cloneable object by cloning the given cloneable value.
 	cloneable_obj(const value_type &cloneable)
 		: m_cloneable( acquire(cloneable) ) { };
@@ -173,9 +204,9 @@ public:
 	maybe_const_value_type* operator ->() const { LEAN_ASSERT(m_cloneable); return m_cloneable; };
 
 	/// Gets the value stored by this cloneable object.
-	operator value_type&() { return get(); };
+	operator maybe_pointer() { return impl::ptr_or_ref_to<maybe_pointer, PointerSemantics>( getptr() ); };
 	/// Gets the value stored by this cloneable object.
-	operator maybe_const_value_type&() const { return get(); };
+	operator const_maybe_pointer() const { return impl::ptr_or_ref_to<const_maybe_pointer, PointerSemantics>( getptr() ); };
 };
 
 } // namespace

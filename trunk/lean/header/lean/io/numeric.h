@@ -205,8 +205,8 @@ inline CharIter char_to_float(CharIter begin, CharIter end, Float &num)
 
 	CharIter stop = begin + (pEnd - pBegin);
 
-	// First check for errors, the
-	if (stop == end)
+	// First check for errors, then assign
+	if (stop != begin)
 		num = static_cast<Float>(value);
 
 	return stop;

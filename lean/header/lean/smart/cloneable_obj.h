@@ -35,7 +35,7 @@ template <class Type, bool Pointer>
 struct ptr_or_ref_to
 {
 	template <class T>
-	LEAN_INLINE Type get(const T &p)
+	static LEAN_INLINE Type get(const T &p)
 	{
 		return p;
 	}
@@ -45,7 +45,7 @@ template <class Type>
 struct ptr_or_ref_to<Type, false>
 {
 	template <class T>
-	LEAN_INLINE Type get(const T &p)
+	static LEAN_INLINE Type get(const T &p)
 	{
 		return *p;
 	}
@@ -204,9 +204,9 @@ public:
 	maybe_const_value_type* operator ->() const { LEAN_ASSERT(m_cloneable); return m_cloneable; };
 
 	/// Gets the value stored by this cloneable object.
-	operator maybe_pointer() { return impl::ptr_or_ref_to<maybe_pointer, PointerSemantics>( getptr() ); };
+	operator maybe_pointer() { return impl::ptr_or_ref_to<maybe_pointer, PointerSemantics>::get( getptr() ); };
 	/// Gets the value stored by this cloneable object.
-	operator const_maybe_pointer() const { return impl::ptr_or_ref_to<const_maybe_pointer, PointerSemantics>( getptr() ); };
+	operator const_maybe_pointer() const { return impl::ptr_or_ref_to<const_maybe_pointer, PointerSemantics>::get( getptr() ); };
 };
 
 } // namespace

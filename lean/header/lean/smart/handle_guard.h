@@ -81,8 +81,8 @@ public:
 		ReleasePolicy::release(m_handle);
 	}
 
-	/// Detatches the stored handle.
-	LEAN_INLINE Handle detatch()
+	/// Detaches the stored handle.
+	LEAN_INLINE Handle detach()
 	{
 		Handle handle = m_handle;
 		m_handle = ReleasePolicy::invalid();

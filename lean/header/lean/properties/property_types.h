@@ -6,7 +6,7 @@
 #define LEAN_PROPERTIES_PROPERTY_TYPES
 
 #include "../lean.h"
-#include "property.h"
+#include "property_type.h"
 #include "../type_info.h"
 #include "../memory/default_heap.h"
 
@@ -68,10 +68,19 @@ LEAN_INLINE const property_type& get_property_type()
 	return type;
 }
 
+/// Gets a type info object for the given type.
+template <class Type>
+inline const property_type_info& get_property_type_info()
+{
+	static property_type_info info(get_type_info<Type>(), get_property_type<Type>());
+	return info;
+}
+
 } // namespace
 
 using properties::generic_property_type;
 using properties::get_property_type;
+using properties::get_property_type_info;
 
 } // namespace
 

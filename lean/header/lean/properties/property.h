@@ -6,6 +6,7 @@
 #define LEAN_PROPERTIES_PROPERTY
 
 #include "../lean.h"
+#include "property_type.h"
 #include "../smart/cloneable.h"
 #include "../smart/cloneable_obj.h"
 #include "../tags/noncopyable.h"
@@ -20,7 +21,7 @@ namespace properties
 
 /// Passes data to a specific destination.
 template <class Class>
-class property_setter : public cloneable
+class LEAN_INTERFACE property_setter : public cloneable
 {
 public:
 	/// Passes the given values of the given type to the given object.
@@ -36,7 +37,7 @@ public:
 
 /// Fetches data from a specific source.
 template <class Class>
-class property_getter : public cloneable
+class LEAN_INTERFACE property_getter : public cloneable
 {
 public:
 	/// Fetches the given number of values of the given type from the given object.
@@ -50,82 +51,6 @@ public:
 	}
 };
 
-class property_type
-{
-protected:
-	~property_type() throw() { }
-
-public:
-	/// Gets the size required by the given number of elements.
-	virtual size_t size(size_t count) const = 0;
-	/// Gets the element type info.
-	virtual const type_info& type_info() const = 0;
-
-	/// Allocates the given number of elements.
-	virtual void* allocate(size_t count) const = 0;
-	/// Constructs the given number of elements.
-	virtual void construct(void *elements, size_t count) const = 0;
-	/// Destructs the given number of elements.
-	virtual void destruct(void *elements, size_t count) const = 0;
-	/// Deallocates the given number of elements.
-	virtual void deallocate(void *elements, size_t count) const = 0;
-};
-
-struct destruct_property_data_policy
-{
-	static void release(const property_type &type, void *data, size_t count)
-	{
-		type.destruct(data, count);
-	}
-};
-struct deallocate_property_data_policy
-{
-	static void release(const property_type &type, void *data, size_t count)
-	{
-		type.deallocate(data, count);
-	}
-};
-struct delete_property_data_policy
-{
-	static void release(const property_type &type, void *data, size_t count)
-	{
-		try
-		{
-			type.destruct(data, count);
-		}
-		catch (...)
-		{
-			type.deallocate(data, count);
-			throw;
-		}
-
-		type.deallocate(data, count);
-	}
-};
-
-template <class Polocy = delete_property_data_policy>
-class scoped_property_data : public noncopyable
-{
-	const property_type *m_type;
-	void *m_data;
-	size_t m_count;
-
-public:
-	LEAN_INLINE scoped_property_data(const property_type *type, void *data, size_t count)
-		: m_type(type),
-		m_data(data),
-		m_count(count) { }
-	LEAN_INLINE ~scoped_property_data()
-	{
-		m_type->destruct(m_data, m_count);
-	}
-
-	LEAN_INLINE void* data() { return m_data; }
-	LEAN_INLINE const void* data() const { return m_data; }
-
-	LEAN_INLINE size_t count() const { return m_count; }
-};
-
 /// Destribes a property.
 template <class Class, class Derived = void>
 struct property_desc
@@ -134,8 +59,8 @@ struct property_desc
 	typedef typename first_non_void<Derived, property_desc>::type actual_type;
 
 	/// Property type
-	const property_type *type;	///< Property type.
-	size_t count;				///< Number of elements.
+	const property_type_info *type_info;	///< Property type.
+	size_t count;							///< Number of elements.
 
 	/// Setter type.
 	typedef property_setter<Class> setter_type;
@@ -149,13 +74,13 @@ struct property_desc
 
 	/// Constructs an empty property description.
 	property_desc()
-		: type(nullptr),
+		: type_info(nullptr),
 		count(0),
 		setter(setter_storage_type::null()),
 		getter(getter_storage_type::null()) { }
 	/// Constructs a property description from the given parameters.
-	property_desc(const property_type &type, size_t count)
-		: type(&type),
+	property_desc(const property_type_info &type, size_t count)
+		: type_info(&type),
 		count(count),
 		setter(setter_storage_type::null()),
 		getter(getter_storage_type::null()) { }
@@ -178,7 +103,7 @@ struct named_property_desc : public property_desc<Class, typename first_non_void
 	/// Constructs an empty property description.
 	named_property_desc() { }
 	/// Constructs a property description from the given parameters.
-	named_property_desc(const utf8_ntri &name, const property_type &type, size_t count)
+	named_property_desc(const utf8_ntri &name, const property_type_info &type, size_t count)
 		: property_desc<Class, actual_type>(type, count),
 		name(name.to<utf8_string>()) { }
 };
@@ -209,7 +134,7 @@ struct ui_property_desc : public named_property_desc<Class, typename first_non_v
 		value_step(value_storage_type::null()),
 		max_value(value_storage_type::null()) { }
 	/// Constructs a property description from the given parameters.
-	ui_property_desc(const utf8_ntri &name, const property_type &type, size_t count, const Widget &widget)
+	ui_property_desc(const utf8_ntri &name, const property_type_info &type, size_t count, const Widget &widget)
 		: named_property_desc<Class, actual_type>(name, type, count),
 		widget(widget),
 		default_value(value_storage_type::null()),

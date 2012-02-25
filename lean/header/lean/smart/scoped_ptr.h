@@ -125,7 +125,7 @@ public:
 	/// Constructs a scoped pointer from the given scoped pointer.
 	template <class Type2>
 	scoped_ptr(scoped_ptr<Type2> &&right)
-		: m_object( right.detatch() ) { }
+		: m_object( right.detach() ) { }
 #endif
 	
 	/// Releases the object pointed to.
@@ -134,8 +134,8 @@ public:
 		ReleasePolicy::release(m_object);
 	}
 
-	/// Detatches the object pointed to.
-	LEAN_INLINE object_type* detatch()
+	/// Detaches the object pointed to.
+	LEAN_INLINE object_type* detach()
 	{
 		value_type prevObject = m_object;
 		m_object = nullptr;
@@ -164,7 +164,7 @@ public:
 		if (addressof(right) != static_cast<void*>(this))
 		{
 			value_type prevObject = m_object;
-			m_object = right.detatch();
+			m_object = right.detach();
 			ReleasePolicy::release(prevObject);
 		}
 

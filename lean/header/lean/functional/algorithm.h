@@ -91,28 +91,18 @@ inline bool lexicographical_compare(const Range1 &range1, const Range2 &range2, 
 template <class Iterator>
 inline Iterator insert_last(Iterator first, Iterator last)
 {
-	for  (Iterator current = first; current != last; ++current)
-		if (*last < *current)
-		{
-			std::rotate(current, last, next(last));
-			return current;
-		}
-
-	return last;
+	Iterator pos = std::upper_bound(first, last, *last);
+	std::rotate(pos, last, next(last));
+	return pos;
 }
 
 /// Inserts the element pointed at by <code>last</code> into the given sorted range <code>[first, last)</code>.
 template <class Iterator, class Predicate>
 inline Iterator insert_last(Iterator first, Iterator last, Predicate predicate)
 {
-	for  (Iterator current = first; current != last; ++current)
-		if (predicate(*last, *current))
-		{
-			std::rotate(current, last, next(last));
-			return current;
-		}
-
-	return last;
+	Iterator pos = std::upper_bound(first, last, *last, predicate);
+	std::rotate(pos, last, next(last));
+	return pos;
 }
 
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
@@ -121,16 +111,16 @@ inline Iterator insert_last(Iterator first, Iterator last, Predicate predicate)
 template <class Vector, class Value>
 inline typename Vector::iterator push_sorted(Vector &vector, Value &&value)
 {
-	vector.push_back( std::forward<Value>(value) );
-	return insert_last( vector.begin(), prev(vector.end()) );
+	typename Vector::iterator pos = std::upper_bound( vector.begin(), vector.end(), value );
+	return vector.insert( pos, std::forward<Value>(value) );
 }
 
 /// Pushes the given element into the given sorted vector.
 template <class Vector, class Value, class Predicate>
 inline typename Vector::iterator push_sorted(Vector &vector, Value &&value, Predicate &&predicate)
 {
-	vector.push_back( std::forward<Value>(value) );
-	return insert_last( vector.begin(), prev(vector.end()), std::forward<Predicate>(predicate) );
+	typename Vector::iterator pos = std::upper_bound( vector.begin(), vector.end(), value, std::forward<Predicate>(predicate) );
+	return vector.insert( pos, std::forward<Value>(value) );
 }
 
 #else
@@ -139,16 +129,16 @@ inline typename Vector::iterator push_sorted(Vector &vector, Value &&value, Pred
 template <class Vector, class Value>
 inline typename Vector::iterator push_sorted(Vector &vector, const Value &value)
 {
-	vector.push_back( value );
-	return insert_last( vector.begin(), prev(vector.end()) );
+	typename Vector::iterator pos = std::upper_bound( vector.begin(), vector.end(), value );
+	return vector.insert( pos, value );
 }
 
 /// Pushes the given element into the given sorted vector.
 template <class Vector, class Value, class Predicate>
 inline typename Vector::iterator push_sorted(Vector &vector, const Value &value, Predicate predicate)
 {
-	vector.push_back( value );
-	return insert_last( vector.begin(), prev(vector.end()), predicate );
+	typename Vector::iterator pos = std::upper_bound( vector.begin(), vector.end(), value, predicate );
+	return vector.insert( pos, value );
 }
 
 #endif

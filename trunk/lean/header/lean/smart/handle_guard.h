@@ -68,13 +68,22 @@ struct free_library_policy
 template < class Handle, class ReleasePolicy = close_handle_policy<Handle> >
 class handle_guard : public noncopyable
 {
+public:
+	/// Type of the handle stored by this guard.
+	typedef Handle value_type;
+
 private:
-	Handle m_handle;
+	value_type m_handle;
 
 public:
 	/// Releases the given handle on destruction.
-	LEAN_INLINE explicit handle_guard(Handle handle)
+	LEAN_INLINE explicit handle_guard(value_type handle = ReleasePolicy::invalid())
 		: m_handle(handle) { }
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Releases the given handle on destruction.
+	handle_guard(handle_guard<value_type, ReleasePolicy> &&right)
+		: m_handle( right.detach() ) { }
+#endif
 	/// Releases the stored handle.
 	LEAN_INLINE ~handle_guard()
 	{
@@ -82,17 +91,46 @@ public:
 	}
 
 	/// Detaches the stored handle.
-	LEAN_INLINE Handle detach()
+	LEAN_INLINE value_type detach()
 	{
-		Handle handle = m_handle;
+		value_type handle = m_handle;
 		m_handle = ReleasePolicy::invalid();
 		return handle;
 	}
 
+	/// Replaces the stored handle with the given handle. <b>[ESA]</b>
+	handle_guard& operator =(value_type handle)
+	{
+		// Self-assignment would be wrong
+		if (handle != m_handle)
+		{
+			value_type prevHandle = m_handle;
+			m_handle = handle;
+			ReleasePolicy::release(prevHandle);
+		}
+		
+		return *this;
+	}
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Replaces the stored handle with the one stored by the given r-value guard. <b>[ESA]</b>
+	handle_guard& operator =(handle_guard<value_type, ReleasePolicy> &&right)
+	{
+		// Self-assignment would be wrong
+		if (addressof(right) != this)
+		{
+			value_type prevHandle = m_handle;
+			m_handle = right.detach();
+			ReleasePolicy::release(prevHandle);
+		}
+
+		return *this;
+	}
+#endif
+
 	/// Retrieves the stored handle.
-	LEAN_INLINE Handle get() const { return m_handle; }
+	LEAN_INLINE value_type get() const { return m_handle; }
 	/// Retrieves the stored handle.
-	LEAN_INLINE operator Handle() const { return get(); }
+	LEAN_INLINE operator value_type() const { return get(); }
 };
 
 } // namespace

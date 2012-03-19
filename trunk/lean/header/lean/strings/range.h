@@ -62,6 +62,36 @@ public:
 	LEAN_INLINE typename std::iterator_traits<iterator>::reference operator [](size_t n) const { return *(begin() + n); }
 };
 
+/// Casts the iterators of the given range into iterators of the given type.
+template <class Iterator, class Range>
+LEAN_INLINE range<Iterator> const_range_cast(const Range &right)
+{
+	return range<Iterator>(
+			const_cast<Iterator>(right.begin()),
+			const_cast<Iterator>(right.end())
+		);
+}
+
+/// Casts the iterators of the given range into iterators of the given type.
+template <class Iterator, class Range>
+LEAN_INLINE range<Iterator> reinterpret_range_cast(const Range &right)
+{
+	return range<Iterator>(
+			reinterpret_cast<Iterator>(right.begin()),
+			reinterpret_cast<Iterator>(right.end())
+		);
+}
+
+/// Casts the iterators of the given range into iterators of the given type.
+/// WARNING: In most cases, this is effectively the same as reinterpret_cast!
+template <class Iterator, class Range>
+LEAN_INLINE range<Iterator> static_range_cast(const Range &right)
+{
+	return range<Iterator>(
+			static_cast<Iterator>(right.begin()),
+			static_cast<Iterator>(right.end())
+		);
+}
 
 /// Makes a range from the given pair of iterators.
 template <class Iterator>
@@ -156,6 +186,10 @@ using strings::enable_if_range2;
 using strings::enable_if_not_range2;
 using strings::range_char_type;
 using strings::range_char_type2;
+
+using strings::const_range_cast;
+using strings::reinterpret_range_cast;
+using strings::static_range_cast;
 
 } // namespace
 

@@ -107,6 +107,18 @@ inline Iterator insert_last(Iterator first, Iterator last, Predicate predicate)
 
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 
+/// Pushes the given element onto the given vector.
+template <class Vector, class Value>
+inline typename Vector::iterator push_unique(Vector &vector, Value &&value)
+{
+	typename Vector::iterator pos = std::find( vector.begin(), vector.end(), value );
+
+	if (pos == vector.end())
+		pos = vector.insert( pos, std::forward<Value>(value) );
+
+	return pos;
+}
+
 /// Pushes the given element into the given sorted vector.
 template <class Vector, class Value>
 inline typename Vector::iterator push_sorted(Vector &vector, Value &&value)
@@ -124,6 +136,18 @@ inline typename Vector::iterator push_sorted(Vector &vector, Value &&value, Pred
 }
 
 #else
+
+/// Pushes the given element onto the given vector.
+template <class Vector, class Value>
+inline typename Vector::iterator push_unique(Vector &vector, const Value &value)
+{
+	typename Vector::iterator pos = std::find( vector.begin(), vector.end(), value );
+
+	if (pos == vector.end())
+		pos = vector.insert( pos, value );
+
+	return pos;
+}
 
 /// Pushes the given element into the given sorted vector.
 template <class Vector, class Value>
@@ -209,6 +233,7 @@ inline bool remove_ordered(Vector &vector, const Value &value)
 using functional::equal;
 using functional::lexicographical_compare;
 using functional::insert_last;
+using functional::push_unique;
 using functional::push_sorted;
 using functional::find_sorted;
 using functional::remove;

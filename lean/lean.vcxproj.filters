@@ -492,6 +492,9 @@
     <ClInclude Include="header\lean\properties\property_type.h">
       <Filter>Header Files\properties</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\default.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

@@ -5,11 +5,10 @@
 #ifndef LEAN_FUNCTIONAL_VARIADIC
 #define LEAN_FUNCTIONAL_VARIADIC
 
+#include "../macros.h"
+
 /// @addtogroup GlobalMacros
 /// @{
-
-/// Nothing.
-#define LEAN_NOTHING
 
 /// 'False' has-*-parameter-argument.
 #define LEAN_VARIADIC_NO_PARAMS

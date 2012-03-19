@@ -124,7 +124,7 @@ public:
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs a scoped pointer from the given scoped pointer.
 	template <class Type2>
-	scoped_ptr(scoped_ptr<Type2> &&right)
+	scoped_ptr(scoped_ptr<Type2, ReleasePolicy> &&right)
 		: m_object( right.detach() ) { }
 #endif
 	
@@ -146,7 +146,7 @@ public:
 	scoped_ptr& operator =(object_type *object)
 	{
 		// Self-assignment would be wrong
-		if(object != m_object)
+		if (object != m_object)
 		{
 			value_type prevObject = m_object;
 			m_object = object;
@@ -158,7 +158,7 @@ public:
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Replaces the stored object with the one stored by the given r-value scoped pointer. <b>[ESA]</b>
 	template <class Type2>
-	scoped_ptr& operator =(scoped_ptr<Type2> &&right)
+	scoped_ptr& operator =(scoped_ptr<Type2, ReleasePolicy> &&right)
 	{
 		// Self-assignment would be wrong
 		if (addressof(right) != static_cast<void*>(this))

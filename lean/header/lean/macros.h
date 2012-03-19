@@ -21,6 +21,9 @@
 /// String literal that contains the current source file and line
 #define LEAN_SOURCE_STRING __FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) ")"
 
+/// Nothing.
+#define LEAN_NOTHING
+
 /// @}
 
 #endif

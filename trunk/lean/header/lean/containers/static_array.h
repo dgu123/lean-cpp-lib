@@ -179,6 +179,14 @@ public:
 		copy_construct(right.elements(), right.elementsEnd(), elements());
 		elementsEnd() += right.size();
 	}
+	/// Copies all elements from the given vector to this vector.
+	template <size_t RightCapacity>
+	explicit static_array(const static_array<value_type, RightCapacity> &right)
+		: m_elementsEnd(elements())
+	{
+		copy_construct(right.elements(), right.elementsEnd(), elements());
+		elementsEnd() += right.size();
+	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given vector to this vector.
 	static_array(static_array &&right)
@@ -187,9 +195,18 @@ public:
 		move_construct(right.elements(), right.elementsEnd(), elements());
 		elementsEnd() += right.size();
 	}
+	/// Moves all elements from the given vector to this vector.
+	template <size_t RightCapacity>
+	explicit static_array(static_array<value_type, RightCapacity> &&right)
+		: m_elementsEnd(elements())
+	{
+		move_construct(right.elements(), right.elementsEnd(), elements());
+		elementsEnd() += right.size();
+	}
 #endif
 	/// Moves all elements from the given vector to this vector.
-	static_array(static_array &right, consume_t)
+	template <size_t RightCapacity>
+	static_array(static_array<value_type, RightCapacity> &right, consume_t)
 		: m_elementsEnd(elements())
 	{
 		move_construct(right.elements(), right.elementsEnd(), elements());
@@ -216,7 +233,8 @@ public:
 	}
 
 	/// Copies all elements of the given vector to this vector.
-	void assign(const static_array &right)
+	template <size_t RightCapacity>
+	void assign(const static_array<value_type, RightCapacity> &right)
 	{
 		if (&right != this)
 		{
@@ -226,7 +244,8 @@ public:
 		}
 	}
 	/// Moves all elements from the given vector to this vector.
-	void assign(static_array &right, consume_t)
+	template <size_t RightCapacity>
+	void assign(static_array<value_type, RightCapacity> &right, consume_t)
 	{
 		if (&right != this)
 		{
@@ -237,7 +256,8 @@ public:
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given vector to this vector.
-	LEAN_INLINE void assign(static_array &&right)
+	template <size_t RightCapacity>
+	LEAN_INLINE void assign(static_array<value_type, RightCapacity> &&right)
 	{
 		assign(right, consume);
 	}
@@ -372,15 +392,41 @@ public:
 	LEAN_INLINE size_type size(void) const { return elementsEnd() - elements(); };
 
 	/// Swaps the contents of this vector and the given vector.
-	LEAN_INLINE void swap(static_array &right) throw()
+	template <size_t RightCapacity>
+	LEAN_INLINE void swap(static_array<value_type, RightCapacity> &right)
 	{
-		swap(elements(), elementsEnd(), right.elements());
+		value_type *min, *minEnd, *max, *maxEnd;
+
+		if (size() < right.size())
+		{
+			min = elements();
+			minEnd = elementsEnd();
+			max = right.elements();
+			maxEnd = right.elementsEnd();
+		}
+		else
+		{
+			min = right.elements();
+			minEnd = right.elementsEnd();
+			max = elements();
+			maxEnd = elementsEnd();
+		}
+
+		swap(min, minEnd, max);
+		move(max + (minEnd - min), maxEnd, minEnd);
+		destruct(max + (minEnd - min), maxEnd);
+
+		size_type leftSize = right.size();
+		size_type rightSize = size();
+
+		elementsEnd() = elements() + leftSize;
+		right.elementsEnd() = right.elements() + rightSize;
 	}
 };
 
 /// Swaps the contents of the given arrays.
-template <class Element, size_t Capacity>
-LEAN_INLINE void swap(static_array<Element, Capacity> &left, static_array<Element, Capacity> &right)
+template <class Element, size_t LeftCapacity, size_t RightCapacity>
+LEAN_INLINE void swap(static_array<Element, LeftCapacity> &left, static_array<Element, RightCapacity> &right)
 {
 	left.swap(right);
 }

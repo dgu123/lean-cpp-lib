@@ -2,8 +2,8 @@
 /* lean Containers              (c) Tobias Zirr 2011 */
 /*****************************************************/
 
-#ifndef LEAN_CONTAINERS_DYNAMIC_ARRAY
-#define LEAN_CONTAINERS_DYNAMIC_ARRAY
+#ifndef LEAN_CONTAINERS_STATIC_ARRAY
+#define LEAN_CONTAINERS_STATIC_ARRAY
 
 #include "../lean.h"
 #include "../functional/variadic.h"
@@ -50,7 +50,7 @@ private:
 	/// First element in the array.
 	value_type *const elements() { return reinterpret_cast<value_type*>(&m_memory[0]); }
 	/// First element in the array.
-	const value_type *const elements() const { return reinterpret_cast<value_type*>(&m_memory[0]); }
+	const value_type *const elements() const { return reinterpret_cast<const value_type*>(&m_memory[0]); }
 	/// One past the last element in the array.
 	value_type*& elementsEnd() { return m_elementsEnd; }
 	/// One past the last element in the array.

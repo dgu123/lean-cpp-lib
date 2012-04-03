@@ -122,11 +122,6 @@
 	#define LEAN_ASSERT_DEBUG(expr)
 #endif
 
-/// Asserts that the given expression is never null, returning the expression.
-#define LEAN_ASSERT_NOT_NULL(expr) ( LEAN_ASSERT(expr != nullptr), expr )
-/// Asserts that the given expression is never null, returning the expression.
-#define LEAN_ASSERT_NOT_NULL_DEBUG(expr) ( LEAN_ASSERT_DEBUG(expr != nullptr), expr )
-
 #ifdef _MSC_VER
 	/// Instructs the compiler to inline a specific method.
 	#define LEAN_INLINE __forceinline
@@ -210,26 +205,6 @@
 namespace lean
 {
 
-/// Asserts that the given value is always true.
-LEAN_INLINE void check(bool value)
-{
-	LEAN_ASSERT_DEBUG(value);
-}
-
-/// Returns the smaller of both arguments.
-template <class Type>
-LEAN_INLINE const Type& min(const Type &a,const Type &b)
-{
-	return (a < b) ? a : b;
-}
-
-/// Returns the larger of both arguments.
-template <class Type>
-LEAN_INLINE const Type& max(const Type &a, const Type &b)
-{
-	return (a < b) ? b : a;
-}
-
 /// Returns the address of the given reference.
 template <class Type>
 LEAN_INLINE Type* addressof(Type& value)
@@ -249,6 +224,88 @@ LEAN_INLINE size_t arraylen(Type (&)[Size])
 
 /// @}
 
+#include "macros.h"
+#include "cpp0x.h"
+
+namespace lean
+{
+
+/// Asserts that the given value is always true.
+LEAN_INLINE void check(bool value)
+{
+	LEAN_ASSERT_DEBUG(value);
+}
+
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+
+/// Asserts that the given value is not null.
+template <class Value>
+Value assert_not_null(Value &&value)
+{
+	LEAN_ASSERT(value != nullptr);
+	return std::forward<Value>(value);
+}
+
+/// Asserts that the given value is not null.
+template <class Value>
+Value assert_not_null_debug(Value &&value)
+{
+	LEAN_ASSERT_DEBUG(value != nullptr);
+	return std::forward<Value>(value);
+}
+
+#else
+
+/// Asserts that the given value is not null.
+template <class Value>
+Value& assert_not_null(Value &value)
+{
+	LEAN_ASSERT(value != nullptr);
+	return value;
+}
+
+/// Asserts that the given value is not null.
+template <class Value>
+const Value& assert_not_null(const Value &value)
+{
+	LEAN_ASSERT(value != nullptr);
+	return value;
+}
+
+/// Asserts that the given value is not null.
+template <class Value>
+Value& assert_not_null_debug(Value &value)
+{
+	LEAN_ASSERT_DEBUG(value != nullptr);
+	return value;
+}
+
+/// Asserts that the given value is not null.
+template <class Value>
+const Value& assert_not_null_debug(const Value &value)
+{
+	LEAN_ASSERT_DEBUG(value != nullptr);
+	return value;
+}
+
+#endif
+
+/// Returns the smaller of both arguments.
+template <class Type>
+LEAN_INLINE const Type& min(const Type &a,const Type &b)
+{
+	return (a < b) ? a : b;
+}
+
+/// Returns the larger of both arguments.
+template <class Type>
+LEAN_INLINE const Type& max(const Type &a, const Type &b)
+{
+	return (a < b) ? b : a;
+}
+
+} // namespace
+
 #ifdef DOXYGEN_READ_THIS
 	/// @ingroup GlobalSwitches
 	/// Define this to disable global check function.
@@ -260,17 +317,25 @@ LEAN_INLINE size_t arraylen(Type (&)[Size])
 	#undef LEAN_NO_MINMAX
 #endif
 
-#ifndef LEAN_NO_CHECK	
-	using lean::check;
-#endif
+/// @addtogroup Libray
+/// @{
+
+/// Asserts that the given expression is never null, returning the expression.
+#define LEAN_ASSERT_NOT_NULL(expr) ::lean::assert_not_null(expr)
+/// Asserts that the given expression is never null, returning the expression.
+#define LEAN_ASSERT_NOT_NULL_DEBUG(expr) ::lean::assert_not_null_debug(expr)
+
+/// @}
 
 #ifndef LEAN_NO_MINMAX	
 	using lean::min;
 	using lean::max;
 #endif
 
-#include "macros.h"
-#include "cpp0x.h"
+#ifndef LEAN_NO_CHECK	
+	using lean::check;
+#endif
+
 #include "types.h"
 
 #endif

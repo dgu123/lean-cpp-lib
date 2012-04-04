@@ -491,7 +491,7 @@ inline typename enable_if_range<Range, String>::type absolute_path(const Range &
 
 	result = canonical_path<String>(result);
 	
-	result;
+	return result;
 }
 /// Gets the absolute path euqivalent to the given relative path.
 template <class String, class Chars, class Base>

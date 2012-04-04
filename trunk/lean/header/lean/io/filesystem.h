@@ -199,14 +199,15 @@ LEAN_INLINE Char& canonize_path_separator(Char &chr)
 /// Gets the relative path euqivalent to the given absolute path when starting at the given base.
 /// Does not resolve redirections, use CanonicalPath prior to calling this function to resolve these.
 template <class String, class Range1, class Range2>
-inline typename enable_if_range2<Range1, Range2, String>::type relative_path(const Range1 &base, const Range2 &path)
+inline typename enable_if_range2<Range1, Range2, String>::type relative_path(const Range1 &path, const Range2 &base, bool matchingOnly = false)
 {
+	String result;
 	typedef string_traits<String> string_traits;
 
-	typename Range1::const_iterator baseMarker = base.begin(),
-		baseCursor = base.begin();
-	typename Range2::const_iterator pathMarker = path.begin(),
+	typename Range1::const_iterator pathMarker = path.begin(),
 		pathCursor = path.begin();
+	typename Range2::const_iterator baseMarker = base.begin(),
+		baseCursor = base.begin();
 
 	bool endOfBase = (baseCursor == base.end()),
 		endOfPath = (pathCursor == path.end());
@@ -241,66 +242,70 @@ inline typename enable_if_range2<Range1, Range2, String>::type relative_path(con
 
 	// ASSERT: paths equal up to their corresponding markers
 
-	String result;
-	string_traits::reserve(
-			result,
-			static_cast<typename string_traits::size_type>(base.end() - baseMarker)
-			+ static_cast<typename string_traits::size_type>(path.end() - pathMarker)
-		);
-
-	// Slash already skipped, don't lose corresponding directory
-	int mismatchCount = (baseMarker != base.end()) ? 1 : 0;
-	
-	// Count mismatching base sub-directories
-	for (baseCursor = baseMarker; baseCursor != base.end(); ++baseCursor)
-		if (is_path_separator(*baseCursor))
-			++mismatchCount;
-
-	if (mismatchCount != 0)
+	if (!matchingOnly || baseMarker != base.begin())
 	{
-		string_traits::resize(result, 3U * mismatchCount - 1U);
-		typename string_traits::iterator insertCursor = string_traits::begin(result);
+		string_traits::reserve(
+				result,
+				static_cast<typename string_traits::size_type>(base.end() - baseMarker)
+				+ static_cast<typename string_traits::size_type>(path.end() - pathMarker)
+			);
 
-		// Add redirection for each mismatching sub-directory
-		for (int i = 0; i < mismatchCount; ++i)
+		// Slash already skipped, don't lose corresponding directory
+		int mismatchCount = (baseMarker != base.end()) ? 1 : 0;
+	
+		// Count mismatching base sub-directories
+		for (baseCursor = baseMarker; baseCursor != base.end(); ++baseCursor)
+			if (is_path_separator(*baseCursor))
+				++mismatchCount;
+
+		if (mismatchCount != 0)
 		{
-			if (i != 0)
+			string_traits::resize(result, 3U * mismatchCount - 1U);
+			typename string_traits::iterator insertCursor = string_traits::begin(result);
+
+			// Add redirection for each mismatching sub-directory
+			for (int i = 0; i < mismatchCount; ++i)
+			{
+				if (i != 0)
+					assign_path_separator(*(insertCursor++));
+				assign_redirection(*(insertCursor++));
+				assign_redirection(*(insertCursor++));
+			}
+		}
+
+		// Append remaining sub-directories
+		if (pathMarker != path.end())
+		{
+			bool needSeparation = !string_traits::empty(result);
+		
+			typename string_traits::size_type insertPos = string_traits::size(result);
+			string_traits::resize(result, insertPos + static_cast<typename string_traits::size_type>(path.end() - pathMarker) + needSeparation);
+			typename string_traits::iterator insertCursor = string_traits::begin(result) + insertPos;
+		
+			if (needSeparation)
 				assign_path_separator(*(insertCursor++));
-			assign_redirection(*(insertCursor++));
-			assign_redirection(*(insertCursor++));
+
+			insertCursor = std::copy(pathMarker, path.end(), insertCursor);
 		}
 	}
-
-	// Append remaining sub-directories
-	if (pathMarker != path.end())
-	{
-		bool needSeparation = !string_traits::empty(result);
-		
-		typename string_traits::size_type insertPos = string_traits::size(result);
-		string_traits::resize(result, insertPos + static_cast<typename string_traits::size_type>(path.end() - pathMarker) + needSeparation);
-		typename string_traits::iterator insertCursor = string_traits::begin(result) + insertPos;
-		
-		if (needSeparation)
-			assign_path_separator(*(insertCursor++));
-
-		insertCursor = std::copy(pathMarker, path.end(), insertCursor);
-	}
+	else
+		string_traits::assign(result, path.begin(), path.end());
 
 	return result;
 }
 /// Gets the relative path euqivalent to the given absolute path when starting at the given base.
 /// Does not resolve redirections, use CanonicalPath prior to calling this function to resolve these.
 template <class String, class Chars1, class Chars2>
-LEAN_INLINE typename enable_if_not_range2<Chars1, Chars2, String>::type relative_path(const Chars1 &base, const Chars2 &path)
+LEAN_INLINE typename enable_if_not_range2<Chars1, Chars2, String>::type relative_path(const Chars1 &path, const Chars2 &base)
 {
-	return relative_path<String>(make_char_range(base), make_char_range(path));
+	return relative_path<String>(make_char_range(path), make_char_range(base));
 }
 /// Gets the relative path euqivalent to the given absolute path when starting at the given base.
 /// Does not resolve redirections, use CanonicalPath prior to calling this function to resolve these.
 template <class Chars1, class Chars2>
-LEAN_INLINE std::basic_string<typename range_char_type2<Chars1, Chars2>::type> relative_path(const Chars1 &base, const Chars2 &path)
+LEAN_INLINE std::basic_string<typename range_char_type2<Chars1, Chars2>::type> relative_path(const Chars1 &path, const Chars2 &base)
 {
-	return relative_path< std::basic_string<typename range_char_type2<Chars1, Chars2>::type> >(make_char_range(base), make_char_range(path));
+	return relative_path< std::basic_string<typename range_char_type2<Chars1, Chars2>::type> >(make_char_range(path), make_char_range(base));
 }
 
 /// Gets a canonical relative path euqivalent to the given relative path.
@@ -444,20 +449,6 @@ LEAN_INLINE std::basic_string<typename range_char_type2<Chars1, Chars2>::type> a
 	return append_path< std::basic_string<typename range_char_type2<Chars1, Chars2>::type> >(make_char_range(path), make_char_range(file));
 }
 
-/// Gets the absolute path euqivalent to the given relative path.
-template <class String, class Range1, class Range2>
-LEAN_INLINE String absolute_path(const Range1 &base, const Range2 &path)
-{
-	return canonical_path<String>( append_path<String>(make_char_range(base), make_char_range(path)) );
-}
-/// Gets the absolute path euqivalent to the given relative path.
-template <class Chars1, class Chars2>
-LEAN_INLINE std::basic_string<typename range_char_type2<Chars1, Chars2>::type> absolute_path(const Chars1 &base, const Chars2 &path)
-{
-	typedef std::basic_string<typename range_char_type2<Chars1, Chars2>::type> string_type;
-	return canonical_path<string_type>( append_path<string_type>(make_char_range(base), make_char_range(path)) );
-}
-
 /// Checks if the given path is rooted.
 template <class Range>
 inline typename enable_if_range<Range, bool>::type is_rooted(const Range &path)
@@ -488,30 +479,46 @@ LEAN_INLINE typename enable_if_not_range<Chars, bool>::type is_rooted(const Char
 }
 
 /// Gets the absolute path euqivalent to the given relative path.
-template <class String, class Range>
-inline typename enable_if_range<Range, String>::type absolute_path(const Range &path)
+template <class String, class Range, class Base>
+inline typename enable_if_range<Range, String>::type absolute_path(const Range &path, const Base &base)
 {
 	String result;
 
 	if (!is_rooted(path))
-		result = append_path<String>(current_directory<String>(), make_char_range(path));
+		result = append_path<String>(base, path);
 	else
 		string_traits<String>::assign(result, path.begin(), path.end());
 
-	return canonical_path<String>(result);
+	result = canonical_path<String>(result);
+	
+	result;
 }
 /// Gets the absolute path euqivalent to the given relative path.
-template <class String, class Chars>
-LEAN_INLINE typename enable_if_not_range<Chars, String>::type absolute_path(const Chars &path)
+template <class String, class Chars, class Base>
+LEAN_INLINE typename enable_if_not_range<Chars, String>::type absolute_path(const Chars &path, const Base &base)
 {
-	return absolute_path<String>( make_char_range(path) );
+	return absolute_path<String>( make_char_range(path), make_char_range(base) );
+}
+/// Gets the absolute path euqivalent to the given relative path.
+template <class Chars, class Base>
+LEAN_INLINE std::basic_string<typename range_char_type<Chars>::type> absolute_path(const Chars &path, const Base &base)
+{
+	typedef std::basic_string<typename range_char_type<Chars>::type> string_type;
+	return absolute_path<string_type>( make_char_range(path), make_char_range(base) );
+}
+
+/// Gets the absolute path euqivalent to the given relative path.
+template <class String, class Chars>
+LEAN_INLINE String absolute_path(const Chars &path)
+{
+	return absolute_path<String>( make_char_range(path), current_directory<String>() );
 }
 /// Gets the absolute path euqivalent to the given relative path.
 template <class Chars>
 LEAN_INLINE std::basic_string<typename range_char_type<Chars>::type> absolute_path(const Chars &path)
 {
 	typedef std::basic_string<typename range_char_type<Chars>::type> string_type;
-	return absolute_path<string_type>( make_char_range(path) );
+	return absolute_path<string_type>(path);
 }
 
 /// Gets the end of the parent directory, e.g. '..' from '../test.txt'.
@@ -707,6 +714,8 @@ using io::get_directory;
 using io::get_filename;
 using io::get_stem;
 using io::get_extension;
+
+using io::is_rooted;
 
 } // namespace
 

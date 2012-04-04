@@ -196,10 +196,78 @@ LEAN_INLINE Char& canonize_path_separator(Char &chr)
 	return chr;
 }
 
+/// Checks whether the given path fully contains the given sequence of directories.
+template <class Range1, class Range2>
+inline typename enable_if_range2<Range1, Range2, bool>::type contains_path(const Range1 &path, const Range2 &frac)
+{
+	typename Range1::const_iterator pathMarker = path.begin(),
+		pathCursor = path.begin(),
+		pathFallback = path.end();
+	typename Range2::const_iterator fracMarker = frac.begin(),
+		fracCursor = frac.begin();
+
+	bool endOfFrac = (fracCursor == frac.end()),
+		endOfPath = (pathCursor == path.end());
+
+	// Find frac directories in path
+	while (!endOfFrac && !endOfPath)
+	{
+		// Move forward to the end of the next directory name
+		while (!endOfPath && !is_path_separator(*pathCursor))
+			endOfPath = (++pathCursor == path.end());
+		while (!endOfFrac && !is_path_separator(*fracCursor))
+			endOfFrac = (++fracCursor == frac.end());
+
+		// Compare directory names
+		bool matching = (fracCursor - fracMarker != pathCursor - pathMarker)
+			|| !std::equal(fracMarker, fracCursor, pathMarker);
+
+		// Skip path separator
+		if (!endOfPath)
+			endOfPath = (++pathCursor == path.end());
+		if (!endOfFrac)
+			endOfFrac = (++fracCursor == frac.end());
+
+		// Mark beginning of next directory name
+		pathMarker = pathCursor;
+		fracMarker = fracCursor;
+
+		if (matching)
+		{
+			// Fall back to SECOND directory on failure
+			if (pathFallback == path.end())
+				pathFallback = pathMarker;
+		}
+		else
+		{
+			// Rewind sequence
+			fracCursor = fracMarker = frac.begin();
+			endOfFrac = (fracCursor == frac.end());
+			
+			// Fall back to SECOND directory not matched
+			if (pathFallback != path.end())
+			{
+				pathCursor = pathMarker = pathFallback;
+				endOfPath = (pathCursor == path.end());
+				pathFallback = path.end();
+			}
+		}
+	}
+
+	return endOfFrac;
+}
+/// Checks whether the given path fully contains the given sequence of directories.
+template <class Chars1, class Chars2>
+LEAN_INLINE typename enable_if_not_range2<Chars1, Chars2, bool>::type contains_path(const Chars1 &path, const Chars2 &frac)
+{
+	return contains_path(make_char_range(path), make_char_range(frac));
+}
+
 /// Gets the relative path euqivalent to the given absolute path when starting at the given base.
 /// Does not resolve redirections, use CanonicalPath prior to calling this function to resolve these.
 template <class String, class Range1, class Range2>
-inline typename enable_if_range2<Range1, Range2, String>::type relative_path(const Range1 &path, const Range2 &base, bool matchingOnly = false)
+inline typename enable_if_range2<Range1, Range2, String>::type relative_path(const Range1 &path, const Range2 &base,
+	bool matchingOnly = false, bool *pMatch = nullptr)
 {
 	String result;
 	typedef string_traits<String> string_traits;
@@ -241,6 +309,9 @@ inline typename enable_if_range2<Range1, Range2, String>::type relative_path(con
 	}
 
 	// ASSERT: paths equal up to their corresponding markers
+
+	if (pMatch)
+		*pMatch = (baseMarker != base.begin());
 
 	if (!matchingOnly || baseMarker != base.begin())
 	{
@@ -296,16 +367,18 @@ inline typename enable_if_range2<Range1, Range2, String>::type relative_path(con
 /// Gets the relative path euqivalent to the given absolute path when starting at the given base.
 /// Does not resolve redirections, use CanonicalPath prior to calling this function to resolve these.
 template <class String, class Chars1, class Chars2>
-LEAN_INLINE typename enable_if_not_range2<Chars1, Chars2, String>::type relative_path(const Chars1 &path, const Chars2 &base)
+LEAN_INLINE typename enable_if_not_range2<Chars1, Chars2, String>::type relative_path(const Chars1 &path, const Chars2 &base,
+	bool matchingOnly = false, bool *pMatch = nullptr)
 {
-	return relative_path<String>(make_char_range(path), make_char_range(base));
+	return relative_path<String>(make_char_range(path), make_char_range(base), matchingOnly, pMatch);
 }
 /// Gets the relative path euqivalent to the given absolute path when starting at the given base.
 /// Does not resolve redirections, use CanonicalPath prior to calling this function to resolve these.
 template <class Chars1, class Chars2>
-LEAN_INLINE std::basic_string<typename range_char_type2<Chars1, Chars2>::type> relative_path(const Chars1 &path, const Chars2 &base)
+LEAN_INLINE std::basic_string<typename range_char_type2<Chars1, Chars2>::type> relative_path(const Chars1 &path, const Chars2 &base,
+	bool matchingOnly = false, bool *pMatch = nullptr)
 {
-	return relative_path< std::basic_string<typename range_char_type2<Chars1, Chars2>::type> >(make_char_range(path), make_char_range(base));
+	return relative_path< std::basic_string<typename range_char_type2<Chars1, Chars2>::type> >(make_char_range(path), make_char_range(base), matchingOnly, pMatch);
 }
 
 /// Gets a canonical relative path euqivalent to the given relative path.
@@ -709,6 +782,8 @@ using io::relative_path;
 using io::absolute_path;
 using io::canonical_path;
 using io::append_path;
+
+using io::contains_path;
 
 using io::get_directory;
 using io::get_filename;

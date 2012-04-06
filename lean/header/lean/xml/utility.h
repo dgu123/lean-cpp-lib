@@ -132,7 +132,7 @@ LEAN_INLINE rapidxml::xml_node<Char>* allocate_node(rapidxml::xml_document<Char>
 
 /// Counts the number of child nodes in the given node.
 template <class Char>
-LEAN_INLINE size_t node_count(const rapidxml::xml_node<Char> &node, const Char *name = nullptr, size_t nameSize = 0, bool caseSensitive = true)
+inline size_t node_count(const rapidxml::xml_node<Char> &node, const Char *name = nullptr, size_t nameSize = 0, bool caseSensitive = true)
 {
 	size_t count = 0;
 
@@ -143,6 +143,30 @@ LEAN_INLINE size_t node_count(const rapidxml::xml_node<Char> &node, const Char *
 	return count;
 }
 
+/// Skips the given number of nodes.
+template <class Char>
+inline const rapidxml::xml_node<Char>* skip_nodes(const rapidxml::xml_node<Char> *node, size_t count,
+	const Char *name = nullptr, size_t nameSize = 0, bool caseSensitive = true)
+{
+	const rapidxml::xml_node<Char> *nextNode = node;
+
+	while (nextNode && count > 0)
+	{
+		nextNode = nextNode->next_sibling(name, nameSize, caseSensitive);
+		--count;
+	}
+
+	return nextNode;
+}
+
+/// Gets the n-th child node in the given node.
+template <class Char>
+inline const rapidxml::xml_node<Char>* nth_child(const rapidxml::xml_node<Char> &node, size_t n,
+	const Char *name = nullptr, size_t nameSize = 0, bool caseSensitive = true)
+{
+	return skip_nodes(node.first_node(name, nameSize, caseSensitive), n, name, nameSize, caseSensitive);
+}
+
 } // namespace
 
 using xml::allocate_string;
@@ -151,6 +175,8 @@ using xml::append_attribute;
 using xml::get_attribute;
 using xml::allocate_node;
 using xml::node_count;
+using xml::skip_nodes;
+using xml::nth_child;
 
 } // namespace
 

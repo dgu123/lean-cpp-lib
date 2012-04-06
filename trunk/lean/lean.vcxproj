@@ -159,6 +159,7 @@
     <ClInclude Include="header\lean\export_all.h" />
     <ClInclude Include="header\lean\functional\algorithm.h" />
     <ClInclude Include="header\lean\functional\callable.h" />
+    <ClInclude Include="header\lean\functional\predicates.h" />
     <ClInclude Include="header\lean\functional\variadic.h" />
     <ClInclude Include="header\lean\functional\functional.h" />
     <ClInclude Include="header\lean\functional\hashing.h" />

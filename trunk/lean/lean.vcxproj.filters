@@ -498,6 +498,9 @@
     <ClInclude Include="header\lean\containers\static_array.h">
       <Filter>Header Files\containers</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\functional\predicates.h">
+      <Filter>Header Files\functional</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

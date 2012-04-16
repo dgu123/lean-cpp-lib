@@ -88,7 +88,7 @@ public:
 	/// Constructs a new element from the given value at the given pointer.
 	LEAN_INLINE void construct(pointer ptr, value_type&& value)
 	{
-		new(reinterpret_cast<void*>(ptr)) Element(std::forward<value_type>(value));
+		new(reinterpret_cast<void*>(ptr)) Element(std::move(value));
 	}
 	/// Constructs a new element from the given value at the given pointer.
 	template<class Other>
@@ -115,9 +115,9 @@ public:
 	}
 
 	/// Estimates the maximum number of elements that may be constructed.
-	LEAN_INLINE size_t max_size() const
+	LEAN_INLINE size_type max_size() const
 	{
-		size_t count = static_cast<size_t>(-1) / sizeof(Element);
+		size_type count = static_cast<size_type>(-1) / sizeof(Element);
 		return (0 < count) ? count : 1;
 	}
 };

@@ -21,6 +21,20 @@
 /// String literal that contains the current source file and line
 #define LEAN_SOURCE_STRING __FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) ")"
 
+/// Makes a 4-byte word from the given four characters.
+#define LEAN_MAKE_WORD_4(a, b, c, d)															\
+	static_cast<::lean::uint4>(															\
+		static_cast<::lean::uint4>(a) << 3U * ::lean::size_info<lean::uint1>::bits		\
+		| static_cast<::lean::uint4>(b) << 2U * ::lean::size_info<lean::uint1>::bits	\
+		| static_cast<::lean::uint4>(c) << 1U * ::lean::size_info<lean::uint1>::bits	\
+		| static_cast<::lean::uint4>(d) << 0U * ::lean::size_info<lean::uint1>::bits )
+
+/// Makes a 8-byte word from the given eight characters.
+#define LEAN_MAKE_WORD_8(a, b, c, d, e, f, g, h)																		\
+	static_cast<::lean::uint8>(																					\
+		static_cast<::lean::uint8>(LEAN_MAKE_WORD_4(a, b, c, d)) << 1U * ::lean::size_info<lean::uint4>::bits		\
+		| static_cast<::lean::uint8>(LEAN_MAKE_WORD_4(e, f, g, h)) << 0U * ::lean::size_info<lean::uint4>::bits )
+
 /// Nothing.
 #define LEAN_NOTHING
 

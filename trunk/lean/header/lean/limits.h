@@ -51,7 +51,7 @@ struct numeric_limits
 	static const Type infinity;
 };
 
-namespace impl
+namespace limits_impl
 {
 	template <class Integer>
 	struct int_limits_base
@@ -81,121 +81,125 @@ namespace impl
 		static const bool is_float = true;
 		static const bool is_unsigned = false;
 	};
-}
+
+} // namespace
 
 template <>
-struct numeric_limits<char> : public impl::sint_limits_base<char>
+struct numeric_limits<char> : public limits_impl::sint_limits_base<char>
 {
 	static const char min = CHAR_MIN;
 	static const char max = CHAR_MAX;
 };
 template <>
-struct numeric_limits<unsigned char> : public impl::uint_limits_base<unsigned char>
+struct numeric_limits<unsigned char> : public limits_impl::uint_limits_base<unsigned char>
 {
 	static const unsigned char max = UCHAR_MAX;
 };
 
 template <>
-struct numeric_limits<short> : public impl::sint_limits_base<short>
+struct numeric_limits<short> : public limits_impl::sint_limits_base<short>
 {
 	static const short min = SHRT_MIN;
 	static const short max = SHRT_MAX;
 };
 template <>
-struct numeric_limits<unsigned short> : public impl::uint_limits_base<unsigned short>
+struct numeric_limits<unsigned short> : public limits_impl::uint_limits_base<unsigned short>
 {
 	static const unsigned short max = USHRT_MAX;
 };
 
 template <>
-struct numeric_limits<int> : public impl::sint_limits_base<int>
+struct numeric_limits<int> : public limits_impl::sint_limits_base<int>
 {
 	static const int min = INT_MIN;
 	static const int max = INT_MAX;
 };
 template <>
-struct numeric_limits<unsigned int> : public impl::uint_limits_base<unsigned int>
+struct numeric_limits<unsigned int> : public limits_impl::uint_limits_base<unsigned int>
 {
 	static const unsigned int max = UINT_MAX;
 };
 
 template <>
-struct numeric_limits<long> : public impl::sint_limits_base<long>
+struct numeric_limits<long> : public limits_impl::sint_limits_base<long>
 {
 	static const long min = LONG_MIN;
 	static const long max = LONG_MAX;
 };
 template <>
-struct numeric_limits<unsigned long> : public impl::uint_limits_base<unsigned long>
+struct numeric_limits<unsigned long> : public limits_impl::uint_limits_base<unsigned long>
 {
 	static const unsigned long max = ULONG_MAX;
 };
 
 template <>
-struct numeric_limits<long long> : public impl::sint_limits_base<long long>
+struct numeric_limits<long long> : public limits_impl::sint_limits_base<long long>
 {
 	static const long long min = LLONG_MIN;
 	static const long long max = LLONG_MAX;
 };
 template <>
-struct numeric_limits<unsigned long long> : public impl::uint_limits_base<unsigned long long>
+struct numeric_limits<unsigned long long> : public limits_impl::uint_limits_base<unsigned long long>
 {
 	static const unsigned long long max = ULLONG_MAX;
 };
 
 #ifdef LEAN_BUILTIN_SIZE_T
 template <>
-struct numeric_limits<size_t> : public impl::uint_limits_base<size_t>
+struct numeric_limits<size_t> : public limits_impl::uint_limits_base<size_t>
 {
 	static const size_t max = SIZE_MAX;
 };
 #endif
 
 template <>
-struct numeric_limits<float> : public impl::float_limits_base
+struct numeric_limits<float> : public limits_impl::float_limits_base
 {
 	static const float min;
 	static const float max;
 	static const float has_infinity;
 	static const float infinity;
 };
-const float numeric_limits<float>::min = FLT_MIN;
+const float numeric_limits<float>::min = -FLT_MAX;
 const float numeric_limits<float>::max = FLT_MAX;
-const float numeric_limits<float>::has_infinity = std::numeric_limits<float>::has_infinity;
-const float numeric_limits<float>::infinity = std::numeric_limits<float>::infinity();
+const float numeric_limits<float>::has_infinity = true;
+// WARNING: Breaks everything due to VC++'s strictly unordered template constant initialization
+// const float numeric_limits<float>::infinity = std::numeric_limits<float>::infinity();
 
 template <>
-struct numeric_limits<double> : public impl::float_limits_base
+struct numeric_limits<double> : public limits_impl::float_limits_base
 {
 	static const double min;
 	static const double max;
 	static const double has_infinity;
 	static const double infinity;
 };
-const double numeric_limits<double>::min = DBL_MIN;
+const double numeric_limits<double>::min = -DBL_MAX;
 const double numeric_limits<double>::max = DBL_MAX;
-const double numeric_limits<double>::has_infinity = std::numeric_limits<double>::has_infinity;
-const double numeric_limits<double>::infinity = std::numeric_limits<double>::infinity();
+const double numeric_limits<double>::has_infinity = true;
+// WARNING: Breaks everything due to VC++'s strictly unordered template constant initialization
+// const double numeric_limits<double>::infinity = std::numeric_limits<double>::infinity();
 
 template <>
-struct numeric_limits<long double> : public impl::float_limits_base
+struct numeric_limits<long double> : public limits_impl::float_limits_base
 {
 	static const long double min;
 	static const long double max;
 	static const long double has_infinity;
 	static const long double infinity;
 };
-const long double numeric_limits<long double>::min = LDBL_MIN;
+const long double numeric_limits<long double>::min = -LDBL_MAX;
 const long double numeric_limits<long double>::max = LDBL_MAX;
-const long double numeric_limits<long double>::has_infinity = std::numeric_limits<long double>::has_infinity;
-const long double numeric_limits<long double>::infinity = std::numeric_limits<long double>::infinity();
+const long double numeric_limits<long double>::has_infinity = true;
+// WARNING: Breaks everything due to VC++'s strictly unordered template constant initialization
+// const long double numeric_limits<long double>::infinity = std::numeric_limits<long double>::infinity();
 
-}
+} // namespace
 
-}
+} // namespace
 
 using types::numeric_limits;
 
-}
+} // namespace
 
 #endif

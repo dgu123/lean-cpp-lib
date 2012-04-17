@@ -799,7 +799,9 @@ public:
 		/// Continues iteration.
 		LEAN_INLINE basic_iterator operator ++(int)
 		{
-			return ++basic_iterator(*this);
+			basic_iterator prev(*this);
+			++(*this);
+			return prev;
 		}
 
 		/// Comparison operator.

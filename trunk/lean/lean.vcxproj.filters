@@ -501,6 +501,9 @@
     <ClInclude Include="header\lean\functional\predicates.h">
       <Filter>Header Files\functional</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\pimpl\forward_iterator.h">
+      <Filter>Header Files\pimpl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

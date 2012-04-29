@@ -134,4 +134,15 @@ using pimpl::pimpl_ptr;
 
 } // namespace
 
+/// @addtogroup PImplMacros PImpl macros
+/// @see lean::pimpl
+/// @{
+
+/// Defines a local reference to the private implementation of the given type and name.
+#define LEAN_PIMPL(t, m) t &m = *this->m;
+/// Defines a local reference to the private implementation 'm' of type 'M'.
+#define LEAN_PIMPL_M LEAN_PIMPL(M, m)
+
+/// @}
+
 #endif

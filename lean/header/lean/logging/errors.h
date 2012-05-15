@@ -142,6 +142,19 @@ using logging::log_error_ex;
 /// @{
 
 /// Throws a runtime_error exception.
+#define LEAN_THROW_ERROR_FROM(src) ::lean::logging::throw_error((src) ? (src) : LEAN_SOURCE_STRING)
+/// Throws a runtime_error exception.
+#define LEAN_THROW_ERROR_MSG_FROM(src, msg) ::lean::logging::throw_error((src) ? (src) : LEAN_SOURCE_STRING, msg)
+/// Throws a runtime_error exception.
+#define LEAN_THROW_ERROR_CTX_FROM(src, msg, ctx) ::lean::logging::throw_error((src) ? (src) : LEAN_SOURCE_STRING, msg, ctx)
+/// Throws a runtime_error exception.
+#define LEAN_THROW_ERROR_XMSG_FROM(src, msg, orig) ::lean::logging::throw_error_ex((src) ? (src) : LEAN_SOURCE_STRING, msg, orig)
+/// Throws a runtime_error exception.
+#define LEAN_THROW_ERROR_XCTX_FROM(src, msg, orig, ctx) ::lean::logging::throw_error_ex((src) ? (src) : LEAN_SOURCE_STRING, msg, orig, ctx)
+/// Throws a runtime_error exception.
+#define LEAN_THROW_ERROR_ANY_FROM(src, msg) LEAN_THROW_ERROR_MSG_FROM(src, static_cast<::std::ostringstream&>(::std::ostringstream() << msg).str().c_str())
+
+/// Throws a runtime_error exception.
 #define LEAN_THROW_ERROR() ::lean::logging::throw_error(LEAN_SOURCE_STRING)
 /// Throws a runtime_error exception.
 #define LEAN_THROW_ERROR_MSG(msg) ::lean::logging::throw_error(LEAN_SOURCE_STRING, msg)

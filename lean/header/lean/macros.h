@@ -21,6 +21,11 @@
 /// String literal that contains the current source file and line
 #define LEAN_SOURCE_STRING __FILE__ " (" LEAN_QUOTE_VALUE(__LINE__) ")"
 
+#ifndef LEAN_NO_SOURCE_STRING
+	/// String literal that contains the current source file and line
+	#define LSS LEAN_SOURCE_STRING
+#endif
+
 /// Makes a 4-byte word from the given four characters.
 #define LEAN_MAKE_WORD_4(a, b, c, d)															\
 	static_cast<::lean::uint4>(															\

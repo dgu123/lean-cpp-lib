@@ -507,6 +507,9 @@
     <ClInclude Include="header\lean\meta\math.h">
       <Filter>Header Files\meta</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\containers\array.h">
+      <Filter>Header Files\containers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

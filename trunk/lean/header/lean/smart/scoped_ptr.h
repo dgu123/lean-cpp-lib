@@ -182,6 +182,14 @@ public:
 
 	/// Gets the object stored by this scoped pointer.
 	LEAN_INLINE operator object_type*() const { return get(); }
+
+	/// Gets a double-pointer allowing for COM-style object retrieval. The pointer returned may
+	/// only ever be used until the next call to one of this pointer's methods.
+	LEAN_INLINE object_type** rebind()
+	{
+		*this = nullptr;
+		return &m_object;
+	}
 };
 
 } // namespace

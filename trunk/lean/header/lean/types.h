@@ -349,4 +349,28 @@ using types::size_info;
 
 }
 
+/// Redeclares the numeric types defined by lean in a namespace of the given name.
+#define LEAN_REDECLARE_NUMERIC_TYPES(namespacename) namespace namespacename \
+	{ \
+		using ::lean::types::char1; \
+		using ::lean::types::char2; \
+		using ::lean::types::char4; \
+		\
+		using ::lean::types::int1; \
+		using ::lean::types::int2; \
+		using ::lean::types::int4; \
+		using ::lean::types::int8; \
+		\
+		using ::lean::types::uint1; \
+		using ::lean::types::uint2; \
+		using ::lean::types::uint4; \
+		using ::lean::types::uint8; \
+		\
+		using ::lean::types::float4; \
+		using ::lean::types::float8; \
+	}
+
+/// Redeclares the numeric types defined by lean in a namespace of the given name.
+#define LEAN_REIMPORT_NUMERIC_TYPES LEAN_REDECLARE_NUMERIC_TYPES(lean_numeric_types) using namespace lean_numeric_types;
+
 #endif

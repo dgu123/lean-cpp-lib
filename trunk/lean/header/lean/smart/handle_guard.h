@@ -131,6 +131,14 @@ public:
 	LEAN_INLINE value_type get() const { return m_handle; }
 	/// Retrieves the stored handle.
 	LEAN_INLINE operator value_type() const { return get(); }
+
+	/// Gets a pointer allowing for COM-style handle retrieval. The pointer returned may
+	/// only ever be used until the next call to one of this handle's methods.
+	LEAN_INLINE value_type* rebind()
+	{
+		*this = ReleasePolicy::invalid();
+		return &m_handle;
+	}
 };
 
 } // namespace

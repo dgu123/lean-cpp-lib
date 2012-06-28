@@ -136,6 +136,11 @@ public:
 	{
 		return (iterator_wrapper::as_iterator(m_memory) == iterator_wrapper::as_iterator(right.m_memory));
 	}
+	/// Compares the wrapped iterators.
+	LEAN_INLINE bool operator !=(const forward_iterator &right) const
+	{
+		return !(*this == right);
+	}
 };
 
 } // namespace

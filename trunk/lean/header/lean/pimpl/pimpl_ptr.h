@@ -142,6 +142,8 @@ using pimpl::pimpl_ptr;
 #define LEAN_PIMPL(t, m) t &m = *this->m;
 /// Defines a local reference to the private implementation 'm' of type 'M'.
 #define LEAN_PIMPL_M LEAN_PIMPL(M, m)
+/// Defines a local reference to the private implementation 'm' of type 'M'.
+#define LEAN_PIMPL_CM LEAN_PIMPL(const M, m)
 
 /// @}
 

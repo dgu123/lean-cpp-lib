@@ -178,7 +178,22 @@ public:
 		*this = nullptr;
 		return &m_object;
 	}
+
+	/// Swaps the given pointers.
+	void swap(com_ptr& right)
+	{
+		value_type prevObject = m_object;
+		m_object = right.m_object;
+		right.m_object = prevObject;
+	}
 };
+
+/// Swaps the given pointers.
+template <class T, bool C>
+LEAN_INLINE void swap(com_ptr<T, C> &left, com_ptr<T, C> &right)
+{
+	left.swap(right);
+}
 
 /// Binds the given COM reference to a new COM pointer.
 template <class COMType>

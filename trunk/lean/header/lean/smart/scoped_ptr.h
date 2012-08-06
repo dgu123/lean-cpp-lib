@@ -119,7 +119,7 @@ public:
 	/// Constructs a scoped pointer from the given object pointer.
 	template <class Type2>
 	explicit scoped_ptr(Type2 *object)
-		: m_object( object ) { };
+		: m_object( object ) { }
 
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs a scoped pointer from the given scoped pointer.
@@ -190,7 +190,22 @@ public:
 		*this = nullptr;
 		return &m_object;
 	}
+
+	/// Swaps the given pointers.
+	void swap(scoped_ptr& right)
+	{
+		value_type prevObject = m_object;
+		m_object = right.m_object;
+		right.m_object = prevObject;
+	}
 };
+
+/// Swaps the given pointers.
+template <class T, class R>
+LEAN_INLINE void swap(scoped_ptr<T, R> &left, scoped_ptr<T, R> &right)
+{
+	left.swap(right);
+}
 
 } // namespace
 

@@ -115,7 +115,7 @@ private:
 public:
 	/// Constructs a scoped pointer from the given object pointer.
 	explicit scoped_ptr(object_type *object = nullptr)
-		: m_object( object ) { };
+		: m_object( object ) { }
 	/// Constructs a scoped pointer from the given object pointer.
 	template <class Type2>
 	explicit scoped_ptr(Type2 *object)

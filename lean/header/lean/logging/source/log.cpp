@@ -108,6 +108,6 @@ LEAN_ALWAYS_LINK lean::logging::log& lean::logging::error_log()
 // Gets the info log.
 LEAN_ALWAYS_LINK lean::logging::log& lean::logging::info_log()
 {
-	static log infoLog(&log_debugger::get());
+	static log infoLog(nullptr);
 	return infoLog;
 }

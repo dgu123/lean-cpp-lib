@@ -24,7 +24,7 @@ namespace logging
 {
 
 /// Log file class that prints any given input to a given file.
-class log_file : public log_target
+class log_file : public noncopyable, public log_target
 {
 private:
 	windows_file_handle m_handle;

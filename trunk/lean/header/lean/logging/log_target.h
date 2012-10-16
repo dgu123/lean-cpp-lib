@@ -17,12 +17,9 @@ namespace logging
 class log;
 
 /// Log target interface.
-class log_target : public noncopyable
+class LEAN_INTERFACE log_target
 {
-protected:
-	// Disallow interface construction / destruction
-	log_target() { }
-	~log_target() { }
+	LEAN_INTERFACE_BEHAVIOR(log_target)
 
 public:
 	/// Prints the given message.

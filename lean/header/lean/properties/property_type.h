@@ -16,10 +16,9 @@ namespace properties
 {
 
 /// Property type interface.
-class LEAN_INTERFACE property_type : public lean::noncopyable
+class LEAN_INTERFACE property_type
 {
-protected:
-	~property_type() throw() { }
+	LEAN_INTERFACE_BEHAVIOR(property_type)
 
 public:
 	/// Gets the size required by the given number of elements.

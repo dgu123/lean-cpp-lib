@@ -5,18 +5,17 @@
 #ifndef LEAN_SMART_CLONEABLE
 #define LEAN_SMART_CLONEABLE
 
+#include "../lean.h"
+
 namespace lean
 {
 namespace smart
 {
 
 /// Base class that may be used to tag a specific class cloneable.
-class cloneable
+class LEAN_INTERFACE cloneable
 {
-protected:
-#ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
-	~cloneable() throw() { };
-#endif
+	LEAN_INTERFACE_BEHAVIOR(cloneable)
 
 public:
 	/// Constructs and returns a clone of this cloneable.

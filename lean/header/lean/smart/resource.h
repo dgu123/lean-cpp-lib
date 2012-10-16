@@ -97,21 +97,16 @@ public:
 template < class Counter = long, class Allocator = std::allocator<Counter> >
 class resource_interface
 {
+	LEAN_SHARED_INTERFACE_BEHAVIOR(resource_interface)
 	LEAN_MAKE_RESOURCE
 
 protected:
-	/// Assignment operator.
-	LEAN_INLINE resource_interface& operator =(const resource_interface& right) { return *this; }
-
 	/// Reference counter type.
 	typedef ref_counter<Counter, Allocator> ref_counter_type;
 	/// Returns the reference counter of this resource.
 	virtual const ref_counter_type& ref_counter() const = 0;
 
 public:
-	/// Destructor.
-	virtual ~resource_interface() throw() { }
-
 	/// Gets the reference count.
 	virtual typename ref_counter_type::counter_type ref_count() const = 0;
 };

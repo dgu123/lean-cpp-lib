@@ -23,6 +23,8 @@ namespace properties
 template <class Class>
 class LEAN_INTERFACE property_setter : public cloneable
 {
+	LEAN_INTERFACE_BEHAVIOR(property_setter)
+
 public:
 	/// Passes the given values of the given type to the given object.
 	virtual bool operator ()(Class &object, const std::type_info &type, const void *values, size_t count) = 0;
@@ -39,6 +41,8 @@ public:
 template <class Class>
 class LEAN_INTERFACE property_getter : public cloneable
 {
+	LEAN_INTERFACE_BEHAVIOR(property_getter)
+
 public:
 	/// Fetches the given number of values of the given type from the given object.
 	virtual bool operator ()(const Class &object, const std::type_info &type, void *values, size_t count) const = 0;

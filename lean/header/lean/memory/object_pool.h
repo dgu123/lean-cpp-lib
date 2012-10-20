@@ -15,7 +15,7 @@ namespace lean
 namespace memory
 {
 
-/// Object pool.
+/// Enhances the chunk_heap by proper object deconstruction.
 template <class Element, size_t ChunkSize, class Heap = default_heap, size_t StaticChunkSize = ChunkSize, size_t Alignment = alignof(Element)>
 class object_pool : public lean::noncopyable
 {
@@ -38,8 +38,9 @@ private:
 public:
 	/// Constructor.
 	LEAN_INLINE object_pool(size_type chunkSize = ChunkSize)
+		// WARNING: Include alignment, otherwise aligned objects in small chunks might not be destructed
 		: m_heap( max(chunkSize * sizeof(Element), sizeof(Element) + (Alignment - 1)) ) { }
-	/// Destructor
+	/// Destructs all objects in this pool.
 	LEAN_INLINE ~object_pool()
 	{
 		clear();
@@ -64,7 +65,7 @@ public:
 				current = align<Alignment>(current + sizeof(Element));
 			}
 
-			char *nextChunkBegin = m_heap.clearFreeNext();
+			char *nextChunkBegin = m_heap.clearNext();
 
 			if (nextChunkBegin != chunkBegin)
 			{
@@ -77,18 +78,18 @@ public:
 		}
 	}
 
-	/// Places the given value into this object pool. Copy construction MAY NOT THROW.
+	/// Allocates a new element in the object pool. Object MUST BE CONSTRUCTED, WILL BE DESTRUCTED.
 	LEAN_INLINE void* allocate() throw()
 	{
 		return m_heap.allocate<Alignment>( sizeof(Element) );
 	}
-	/// Places the given value into this object pool. Copy construction MAY NOT THROW.
+	/// Places the given value into this object pool. Copy construction MAY NOT THROW, object WILL BE DESTRUCTED.
 	LEAN_INLINE Element* place(const Element &value) throw()
 	{
 		return new( m_heap.allocate<Alignment>( sizeof(Element) ) ) Element(value);
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
-	/// Places the given value into this object pool. Move construction MAY NOT THROW.
+	/// Places the given value into this object pool. Move construction MAY NOT THROW, object WILL BE DESTRUCTED.
 	LEAN_INLINE Element* place(Element &&value) throw()
 	{
 		return new( m_heap.allocate<Alignment>( sizeof(Element) ) ) Element( std::move(value) );

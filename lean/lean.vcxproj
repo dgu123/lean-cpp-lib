@@ -186,6 +186,7 @@
     <ClInclude Include="header\lean\logging\win_errors.h" />
     <ClInclude Include="header\lean\memory\aligned.h" />
     <ClInclude Include="header\lean\memory\chunk_heap.h" />
+    <ClInclude Include="header\lean\memory\chunk_pool.h" />
     <ClInclude Include="header\lean\memory\crt_heap.h" />
     <ClInclude Include="header\lean\containers\accumulation_vector.h" />
     <ClInclude Include="header\lean\containers\containers.h" />

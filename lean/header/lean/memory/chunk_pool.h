@@ -40,7 +40,7 @@ private:
 		free_node *next;
 
 		/// Constructor.
-		free_node(char *next)
+		free_node(free_node *next)
 			: next(next) { }
 	};
 
@@ -82,9 +82,16 @@ public:
 		m_freeHead = nullptr;
 		m_heap.clear();
 	}
+	
+	/// Clears all chunks and frees all chunks but the first one dynamically allocated by this allocator if it has not been exhausted yet.
+	void clearButFirst()
+	{
+		m_freeHead = nullptr;
+		m_heap.clearButFirst();
+	}
 
-	/// Allocates the given amount of memory.
-	LEAN_INLINE void* allocate(size_type size)
+	/// Allocates one element.
+	LEAN_INLINE void* allocate()
 	{
 		void *freeElement;
 
@@ -94,11 +101,11 @@ public:
 			m_freeHead = m_freeHead->next;
 		}
 		else
-			freeElement = m_heap.allocate<alignment>(size);
+			freeElement = m_heap.allocate<alignment>( sizeof(Element) );
 
 		return freeElement;
 	}
-	/// Frees the given block of memory.
+	/// Frees the given element.
 	LEAN_INLINE void free(void *memory)
 	{
 		m_freeHead = new(memory) free_node(m_freeHead);

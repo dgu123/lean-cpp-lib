@@ -28,7 +28,7 @@ namespace types
 {
 
 /// Sign classes enumeration.
-namespace sign_class
+struct sign_class
 {
 	/// Sign classes enumeration.
 	enum t
@@ -36,7 +36,7 @@ namespace sign_class
 		no_sign,	///< Unsigned class.
 		sign		///< Signed class.
 	};
-}
+};
 
 /// Provides an integer type of the given class and size.
 template <sign_class::t Class, size_t Size>
@@ -306,7 +306,7 @@ struct size_info
 
 }
 
-namespace sign_class = types::sign_class;
+using types::sign_class;
 using types::int_type;
 using types::float_type;
 using types::char_type;

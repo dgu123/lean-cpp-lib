@@ -6,6 +6,7 @@
 #define LEAN_CPP0X
 
 #include "macros.h"
+#include "meta/dependent_false.h"
 
 /// @addtogroup CPP0X C++0x-related macros
 /// @see GlobalMacros
@@ -145,6 +146,17 @@
 	/// Moves the given value.
 	#define LEAN_MOVE(arg) arg
 #endif
+
+/// Turns the given enum wrapper struct into an enum struct.
+#define LEAN_MAKE_ENUM_STRUCT(name) \
+	T v; \
+	name(T v) : v(v) { } \
+	operator T() const { return v; } \
+	template <class S> operator S() const \
+	{ \
+		LEAN_STATIC_ASSERT_MSG_ALT(lean::dependent_false<S>::value, "Unsafe enum cast attempted", Unsafe_enum_cast_attempted); \
+		return v; \
+	}
 
 // Emulate next & prev if unavailable
 #ifdef LEAN0X_NO_STL

@@ -185,25 +185,25 @@ public:
 			clear();
 	}
 
-	/// Gets whether the current chunk is static.
+	/// Gets whether the current chunk is static. For advanced clean-up logic only.
 	bool currentStatic()
 	{
 		return (m_chunk == m_firstChunk);
 	}
-	/// Gets the current chunk offset.
+	/// Gets the current chunk offset. For advanced clean-up logic only.
 	char* currentOffset()
 	{
 		return m_chunkOffset;
 	}
-	/// Clears the current chunk but frees none.
+	/// Clears the current chunk but frees none. For advanced clean-up logic only.
 	char* clearCurrent()
 	{
 		// Re-initialize with current chunk
 		m_chunkOffset = m_chunk;
 		return m_chunk;
 	}
-	/// Clears all chunks and frees the current chunk, returning the next.
-	char* clearFreeNext()
+	/// Clears all chunks and frees the current chunk, returning the next. For advanced clean-up logic only.
+	char* clearNext()
 	{
 		if (m_chunk != m_firstChunk)
 		{

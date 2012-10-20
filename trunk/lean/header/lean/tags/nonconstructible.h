@@ -21,8 +21,8 @@ private:
 	nonconstructible() = delete;
 	~nonconstructible() = delete;
 #else
-	nonconstructible() { }
-	~nonconstructible() throw() { }
+	nonconstructible();
+	~nonconstructible() throw();
 #endif
 };
 

@@ -513,6 +513,9 @@
     <ClInclude Include="header\lean\memory\chunk_pool.h">
       <Filter>Header Files\memory</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\pimpl\static_interface.h">
+      <Filter>Header Files\pimpl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

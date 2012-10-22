@@ -159,14 +159,16 @@
 	#define LEAN_INTERFACE_BEHAVIOR(name) \
 			protected: \
 				LEAN_INLINE name& operator =(const name&) throw() { return *this; } \
-				LEAN_INLINE ~name() throw() { }
+				LEAN_INLINE ~name() throw() { } \
+			private:
 
 	/// Makes the given class behave like an interface supporting shared ownership.
 	#define LEAN_SHARED_INTERFACE_BEHAVIOR(name) \
 			public: \
 				virtual ~name() throw() { } \
 			protected: \
-				LEAN_INLINE name& operator =(const name&) throw() { return *this; }
+				LEAN_INLINE name& operator =(const name&) throw() { return *this; } \
+			private:
 #endif
 
 #if !defined(LEAN_INTEGRATE_ONCE) && defined(LEAN_HEADER_ONLY) && !defined(LEAN_BUILD_LIB)

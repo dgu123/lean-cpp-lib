@@ -30,7 +30,7 @@ struct multi_vector_base
 };
 
 template < class Type, int ID, class Base = multi_vector_base, class Alloc = std::allocator<Type> >
-class multi_vector : public Base
+class multi_vector : private Base
 {
 	template <class OtherType, int OtherID, class OtherBase, class OtherAlloc>
 	friend class multi_vector;
@@ -105,6 +105,18 @@ public:
 	LEAN_INLINE multi_vector(size_t size, const Alloc &allocator = Alloc())
 		: Base(size, allocator),
 		v(size, allocator) { }
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	LEAN_INLINE multi_vector(multi_vector &&right)
+		: Base(std::move(right)),
+		v(std::move(right.v)) { }
+
+	multi_vector& operator =(multi_vector &&right)
+	{
+		this->Base::operator =(std::move(right));
+		v = std::move(right.v);
+		return *this;
+	}
+#endif
 
 	template <class T>
 	LEAN_INLINE typename get_helper<T>::type& get() { return get_helper<T>::get(*this); }
@@ -172,7 +184,7 @@ public:
 		v.clear();
 		try
 		{
-			this->Base::clear(idx);
+			this->Base::clear();
 		}
 		catch (...)
 		{

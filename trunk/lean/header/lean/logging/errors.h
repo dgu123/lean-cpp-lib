@@ -9,6 +9,7 @@
 #include "../strings/types.h"
 #include "../strings/conversions.h"
 #include <sstream>
+#include <exception>
 #include "streamconv.h"
 
 namespace lean
@@ -125,6 +126,25 @@ inline void log_error_ex(const String1 &source, const String2 &reason, const Str
 	log_error_ex(utf_to_utf8(source).c_str(), utf_to_utf8(reason).c_str(), utf_to_utf8(origin).c_str(), utf_to_utf8(context).c_str());
 }
 
+/// Allows for additional error context reporting on exception.
+struct error_context
+{
+	const char *source;
+	const char *reason;
+	const char *origin;
+	const char *context;
+
+	/// Stores the given error context.
+	error_context(const char *source, const char *reason = nullptr, const char *origin = nullptr, const char *context = nullptr)
+		: source(source), reason(reason), origin(origin), context(context) { }
+	/// Logs the stored error context when an exception is thrown.
+	~error_context()
+	{
+		if (std::uncaught_exception())
+			log_error_ex(source, reason, origin, context);
+	}
+};
+
 } // namespace
 
 using logging::throw_error;
@@ -155,11 +175,11 @@ using logging::log_error_ex;
 #define LEAN_THROW_ERROR_ANY_FROM(src, msg) LEAN_THROW_ERROR_MSG_FROM(src, static_cast<::std::ostringstream&>(::std::ostringstream() << msg).str().c_str())
 
 /// Throws a runtime_error exception.
-#define LEAN_THROW_ERROR() ::lean::logging::throw_error(LEAN_SOURCE_STRING)
+#define LEAN_THROW_ERROR() ::lean::logging::throw_error(LEAN_SOURCE_STRING, LEAN_SOURCE_FUNCTION)
 /// Throws a runtime_error exception.
-#define LEAN_THROW_ERROR_MSG(msg) ::lean::logging::throw_error(LEAN_SOURCE_STRING, msg)
+#define LEAN_THROW_ERROR_MSG(msg) ::lean::logging::throw_error_ex(LEAN_SOURCE_STRING, msg, LEAN_SOURCE_FUNCTION)
 /// Throws a runtime_error exception.
-#define LEAN_THROW_ERROR_CTX(msg, ctx) ::lean::logging::throw_error(LEAN_SOURCE_STRING, msg, ctx)
+#define LEAN_THROW_ERROR_CTX(msg, ctx) ::lean::logging::throw_error_ex(LEAN_SOURCE_STRING, msg, LEAN_SOURCE_FUNCTION, ctx)
 /// Throws a runtime_error exception.
 #define LEAN_THROW_ERROR_XMSG(msg, orig) ::lean::logging::throw_error_ex(LEAN_SOURCE_STRING, msg, orig)
 /// Throws a runtime_error exception.
@@ -187,15 +207,26 @@ using logging::log_error_ex;
 /// @{
 
 /// Logs an error message, prepending the caller's file and line.
-#define LEAN_LOG_ERROR_NIL() ::lean::logging::log_error(LEAN_SOURCE_STRING)
+#define LEAN_LOG_ERROR_NIL() ::lean::logging::log_error(LEAN_SOURCE_STRING, LEAN_SOURCE_FUNCTION)
 /// Logs the given error message, prepending the caller's file and line.
-#define LEAN_LOG_ERROR_MSG(msg) ::lean::logging::log_error(LEAN_SOURCE_STRING, msg)
+#define LEAN_LOG_ERROR_MSG(msg) ::lean::logging::log_error_ex(LEAN_SOURCE_STRING, msg, LEAN_SOURCE_FUNCTION)
 /// Logs the given error message and context, prepending the caller's file and line.
-#define LEAN_LOG_ERROR_CTX(msg, ctx) ::lean::logging::log_error(LEAN_SOURCE_STRING, msg, ctx)
+#define LEAN_LOG_ERROR_CTX(msg, ctx) ::lean::logging::log_error_ex(LEAN_SOURCE_STRING, msg, LEAN_SOURCE_FUNCTION, ctx)
 /// Logs the given error message and context, prepending the caller's file and line.
 #define LEAN_LOG_ERROR_XMSG(msg, orig) ::lean::logging::log_error_ex(LEAN_SOURCE_STRING, msg, orig)
 /// Logs the given error message and context, prepending the caller's file and line.
 #define LEAN_LOG_ERROR_XCTX(msg, orig, ctx) ::lean::logging::log_error_ex(LEAN_SOURCE_STRING, msg, orig, ctx)
+
+/// Logs an error context, prepending the caller's file and line.
+#define LEAN_ERROR_CONTEXT() ::lean::logging::error_context LEAN_JOIN_VALUES(error_context_, __LINE__)(LEAN_SOURCE_STRING ": TRACE", nullptr, LEAN_SOURCE_FUNCTION)
+/// Logs the given error context, prepending the caller's file and line.
+#define LEAN_ERROR_CONTEXT_MSG(msg) ::lean::logging::error_context LEAN_JOIN_VALUES(error_context_, __LINE__)(LEAN_SOURCE_STRING ": TRACE", msg, LEAN_SOURCE_FUNCTION)
+/// Logs the given error context, prepending the caller's file and line.
+#define LEAN_ERROR_CONTEXT_CTX(msg, ctx) ::lean::logging::error_context LEAN_JOIN_VALUES(error_context_, __LINE__)(LEAN_SOURCE_STRING ": TRACE", msg, LEAN_SOURCE_FUNCTION, ctx)
+/// Logs the given error context, prepending the caller's file and line.
+#define LEAN_ERROR_CONTEXT_XMSG(msg, orig) ::lean::logging::error_context LEAN_JOIN_VALUES(error_context_, __LINE__)(LEAN_SOURCE_STRING ": TRACE", msg, orig)
+/// Logs the given error context, prepending the caller's file and line.
+#define LEAN_ERROR_CONTEXT_XCTX(msg, orig, ctx) ::lean::logging::error_context LEAN_JOIN_VALUES(error_context_, __LINE__)(LEAN_SOURCE_STRING ": TRACE", msg, orig, ctx)
 
 /// @}
 

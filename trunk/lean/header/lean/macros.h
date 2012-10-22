@@ -26,6 +26,14 @@
 	#define LSS LEAN_SOURCE_STRING
 #endif
 
+#ifdef _MSC_VER
+	/// String that contains the current function
+	#define LEAN_SOURCE_FUNCTION __FUNCTION__
+#else
+	/// String that contains the current function
+	#define LEAN_SOURCE_FUNCTION __func__
+#endif
+
 /// Makes a 4-byte word from the given four characters.
 #define LEAN_MAKE_WORD_4(a, b, c, d)															\
 	static_cast<::lean::uint4>(															\

@@ -17,17 +17,18 @@ namespace tags
 template <class Type, bool Immutable = false>
 class transitive_ptr
 {
-private:
-	typename lean::conditional_type<Immutable, Type *const, Type*>::type m_object;
-
 public:
 	/// Type of the object pointed to.
 	typedef Type object_type;
 	/// Type of the pointer stored by this pointer.
-	typedef object_type* value_type;
+	typedef typename lean::conditional_type<Immutable, object_type *const, object_type*>::type value_type;
 	/// Type of the pointer stored by this pointer.
-	typedef const object_type* const_value_type;
+	typedef typename lean::conditional_type<Immutable, const object_type *const, const object_type*>::type const_value_type;
 
+private:
+	value_type m_object;
+
+public:
 	/// Constructs a transitive pointer from the given pointer.
 	LEAN_INLINE transitive_ptr(object_type *object = nullptr)
 		: m_object( object ) { };

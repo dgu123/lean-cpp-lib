@@ -19,7 +19,7 @@
 #define LEAN_VARIADIC_TEMPLATE__LEAN_VARIADIC_HAS_PARAMS(tparams) template <tparams>
 
 /// Defines a variadic perfect-forwarding function, optionally including additional template & function parameters.
-#define LEAN_VARIADIC_PERFECT_FORWARDING_XXL(fun, tparams, has_tparams, params, has_params, modifiers, body, args) \
+#define LEAN_VARIADIC_PERFECT_FORWARDING_XXL(fun, tparams, has_tparams, params, has_params, modifiers, body, args, has_args) \
 	/* 0 */ \
 	LEAN_VARIADIC_TEMPLATE__##has_tparams(tparams)	\
 	fun(params) modifiers							\
@@ -31,7 +31,7 @@
 	fun( params has_params							\
 			__lean__t1 LEAN_FW_REF __lean__p1		\
 		) modifiers									\
-	body(( args has_params							\
+	body(( args has_args							\
 			LEAN_FORWARD(__lean__t1, __lean__p1)	\
 		))											\
 	/* 2 */ \
@@ -43,7 +43,7 @@
 			__lean__t1 LEAN_FW_REF __lean__p1,		\
 			__lean__t2 LEAN_FW_REF __lean__p2		\
 		) modifiers									\
-	body(( args has_params							\
+	body(( args has_args							\
 			LEAN_FORWARD(__lean__t1, __lean__p1),	\
 			LEAN_FORWARD(__lean__t2, __lean__p2)	\
 		))											\
@@ -58,7 +58,7 @@
 			__lean__t2 LEAN_FW_REF __lean__p2,		\
 			__lean__t3 LEAN_FW_REF __lean__p3		\
 		) modifiers									\
-	body(( args has_params							\
+	body(( args has_args							\
 			LEAN_FORWARD(__lean__t1, __lean__p1),	\
 			LEAN_FORWARD(__lean__t2, __lean__p2),	\
 			LEAN_FORWARD(__lean__t3, __lean__p3)	\
@@ -76,7 +76,7 @@
 			__lean__t3 LEAN_FW_REF __lean__p3,		\
 			__lean__t4 LEAN_FW_REF __lean__p4		\
 		) modifiers									\
-	body(( args has_params							\
+	body(( args has_args							\
 			LEAN_FORWARD(__lean__t1, __lean__p1),	\
 			LEAN_FORWARD(__lean__t2, __lean__p2),	\
 			LEAN_FORWARD(__lean__t3, __lean__p3),	\
@@ -97,7 +97,7 @@
 			__lean__t4 LEAN_FW_REF __lean__p4,		\
 			__lean__t5 LEAN_FW_REF __lean__p5		\
 		) modifiers									\
-	body(( args has_params							\
+	body(( args has_args							\
 			LEAN_FORWARD(__lean__t1, __lean__p1),	\
 			LEAN_FORWARD(__lean__t2, __lean__p2),	\
 			LEAN_FORWARD(__lean__t3, __lean__p3),	\
@@ -121,7 +121,7 @@
 			__lean__t5 LEAN_FW_REF __lean__p5,		\
 			__lean__t6 LEAN_FW_REF __lean__p6		\
 		) modifiers									\
-	body(( args has_params							\
+	body(( args has_args							\
 			LEAN_FORWARD(__lean__t1, __lean__p1),	\
 			LEAN_FORWARD(__lean__t2, __lean__p2),	\
 			LEAN_FORWARD(__lean__t3, __lean__p3),	\
@@ -148,7 +148,7 @@
 			__lean__t6 LEAN_FW_REF __lean__p6,		\
 			__lean__t7 LEAN_FW_REF __lean__p7		\
 		) modifiers									\
-	body(( args has_params							\
+	body(( args has_args							\
 			LEAN_FORWARD(__lean__t1, __lean__p1),	\
 			LEAN_FORWARD(__lean__t2, __lean__p2),	\
 			LEAN_FORWARD(__lean__t3, __lean__p3),	\
@@ -178,7 +178,7 @@
 			__lean__t7 LEAN_FW_REF __lean__p7,		\
 			__lean__t8 LEAN_FW_REF __lean__p8		\
 		) modifiers									\
-	body(( args has_params							\
+	body(( args has_args							\
 			LEAN_FORWARD(__lean__t1, __lean__p1),	\
 			LEAN_FORWARD(__lean__t2, __lean__p2),	\
 			LEAN_FORWARD(__lean__t3, __lean__p3),	\
@@ -211,7 +211,7 @@
 			__lean__t8 LEAN_FW_REF __lean__p8,		\
 			__lean__t9 LEAN_FW_REF __lean__p9		\
 		) modifiers									\
-	body(( args has_params							\
+	body(( args has_args							\
 			LEAN_FORWARD(__lean__t1, __lean__p1),	\
 			LEAN_FORWARD(__lean__t2, __lean__p2),	\
 			LEAN_FORWARD(__lean__t3, __lean__p3),	\
@@ -225,20 +225,24 @@
 	// End
 
 /// Defines variadic perfect-forwarding function including additional template & function parameters.
-#define LEAN_VARIADIC_PERFECT_FORWARDING_TP(fun, tparams, params, modifiers, body, args) \
-	LEAN_VARIADIC_PERFECT_FORWARDING_XXL(fun, tparams, LEAN_VARIADIC_HAS_PARAMS, params, LEAN_VARIADIC_HAS_PARAMS, modifiers, body, args)
+#define LEAN_VARIADIC_PERFECT_FORWARDING_TP(fun, tparams, params, modifiers, body) \
+	LEAN_VARIADIC_PERFECT_FORWARDING_XXL(fun, tparams, LEAN_VARIADIC_HAS_PARAMS, params, LEAN_VARIADIC_HAS_PARAMS, modifiers, body, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS)
 
 /// Defines variadic perfect-forwarding function including additional template parameters.
 #define LEAN_VARIADIC_PERFECT_FORWARDING_T(fun, tparams, modifiers, body) \
-	LEAN_VARIADIC_PERFECT_FORWARDING_XXL(fun, tparams, LEAN_VARIADIC_HAS_PARAMS, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, modifiers, body, LEAN_NOTHING)
+	LEAN_VARIADIC_PERFECT_FORWARDING_XXL(fun, tparams, LEAN_VARIADIC_HAS_PARAMS, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, modifiers, body, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS)
 
 /// Defines variadic perfect-forwarding function including additional function parameters.
-#define LEAN_VARIADIC_PERFECT_FORWARDING_P(fun, params, modifiers, body, args) \
-	LEAN_VARIADIC_PERFECT_FORWARDING_XXL(fun, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, params, LEAN_VARIADIC_HAS_PARAMS, modifiers, body, args)
+#define LEAN_VARIADIC_PERFECT_FORWARDING_P(fun, params, modifiers, body) \
+	LEAN_VARIADIC_PERFECT_FORWARDING_XXL(fun, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, params, LEAN_VARIADIC_HAS_PARAMS, modifiers, body, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS)
+
+/// Defines variadic perfect-forwarding function including additional function parameters.
+#define LEAN_VARIADIC_PERFECT_FORWARDING_PA(fun, params, modifiers, body, args) \
+	LEAN_VARIADIC_PERFECT_FORWARDING_XXL(fun, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, params, LEAN_VARIADIC_HAS_PARAMS, modifiers, body, args, LEAN_VARIADIC_HAS_PARAMS)
 
 /// Defines variadic perfect-forwarding function.
 #define LEAN_VARIADIC_PERFECT_FORWARDING(fun, modifiers, body) \
-	LEAN_VARIADIC_PERFECT_FORWARDING_XXL(fun, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, modifiers, body, LEAN_NOTHING)
+	LEAN_VARIADIC_PERFECT_FORWARDING_XXL(fun, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, modifiers, body, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS)
 
 /// @}
 

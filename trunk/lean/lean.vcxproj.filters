@@ -519,6 +519,9 @@
     <ClInclude Include="header\lean\containers\multi_vector.h">
       <Filter>Header Files\containers</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\containers\construction.h">
+      <Filter>Header Files\containers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

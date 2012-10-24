@@ -129,20 +129,6 @@ private:
 		// NOTE: Use copy tag, move tag only when no destruction takes place
 		containers::move_construct(source, sourceEnd, dest, m_allocator, typename Policy::copy_tag());
 	}
-	/// Moves the given source element to the given destination.
-	LEAN_INLINE void move(Element *dest, Element &source)
-	{
-		// NOTE: Use copy tag, move tag only when no destruction takes place
-		containers::move(dest, source, typename Policy::copy_tag());
-	}
-	/// Moves elements from the given source range to the given destination.
-	template <class Iterator>
-	LEAN_INLINE void move(Iterator source, Iterator sourceEnd, Element *dest)
-	{
-		// NOTE: Use copy tag, move tag only when no destruction takes place
-		containers::move(source, sourceEnd, dest, typename Policy::copy_tag());
-	}
-
 	/// Destructs the elements in the given range.
 	LEAN_INLINE void destruct(Element *destr)
 	{
@@ -465,17 +451,17 @@ public:
 		LEAN_ASSERT(m_elements <= where);
 		LEAN_ASSERT(where < m_elementsEnd);
 
-		if (Policy::raw_move)
-		{
-			destruct(where);
-			memmove(where, where + 1, (m_elementsEnd - where - 1) * sizeof(Element));
-			--m_elementsEnd;
-		}
-		else
-		{
-			move(where + 1, m_elementsEnd, where);
-			destruct(--m_elementsEnd);
-		}
+		containers::close(where, where + 1, m_elementsEnd, m_allocator, typename Policy::move_tag(), typename Policy::destruct_tag());
+	}
+	/// Erases the given range of elements.
+	LEAN_INLINE void erase(iterator where, iterator whereEnd)
+	{
+		LEAN_ASSERT(m_elements <= where);
+		LEAN_ASSERT(whereEnd <= m_elementsEnd);
+		LEAN_ASSERT(where <= whereEnd);
+
+		if (where != whereEnd)
+			containers::close(where, whereEnd, m_elementsEnd, m_allocator, typename Policy::move_tag(), typename Policy::destruct_tag());
 	}
 
 	/// Clears all elements from this vector.

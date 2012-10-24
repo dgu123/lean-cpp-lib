@@ -11,15 +11,10 @@ namespace lean
 	namespace containers { }
 }
 
+#include "any.h"
+#include "array.h"
+
 #include "simple_vector.h"
 #include "simple_hash_map.h"
-
-#include "default_reallocation_policy.h"
-#include "move_reallocation_policy.h"
-#include "accumulation_vector.h"
-
-#include "accumulation_map.h"
-
-#include "any.h"
 
 #endif

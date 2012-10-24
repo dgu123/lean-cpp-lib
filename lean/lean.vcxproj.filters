@@ -93,16 +93,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="header\lean\containers\accumulation_vector.h">
-      <Filter>Header Files\containers</Filter>
-    </ClInclude>
     <ClInclude Include="header\lean\containers\containers.h">
-      <Filter>Header Files\containers</Filter>
-    </ClInclude>
-    <ClInclude Include="header\lean\containers\default_reallocation_policy.h">
-      <Filter>Header Files\containers</Filter>
-    </ClInclude>
-    <ClInclude Include="header\lean\containers\move_reallocation_policy.h">
       <Filter>Header Files\containers</Filter>
     </ClInclude>
     <ClInclude Include="header\lean\pimpl\pimpl.h">
@@ -266,9 +257,6 @@
     </ClInclude>
     <ClInclude Include="header\lean\config\windows.h">
       <Filter>Header Files\config</Filter>
-    </ClInclude>
-    <ClInclude Include="header\lean\containers\accumulation_map.h">
-      <Filter>Header Files\containers</Filter>
     </ClInclude>
     <ClInclude Include="header\lean\memory\win_heap.h">
       <Filter>Header Files\memory</Filter>

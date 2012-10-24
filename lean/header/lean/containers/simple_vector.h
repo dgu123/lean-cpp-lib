@@ -446,7 +446,7 @@ public:
 	LEAN_INLINE void insert(iterator where, const value_type &value)
 	{
 		LEAN_ASSERT(m_elements <= where);
-		LEAN_ASSERT(where < m_elementsEnd);
+		LEAN_ASSERT(where <= m_elementsEnd);
 
 		const value_type *safeVal = addressof(value);
 
@@ -474,7 +474,7 @@ public:
 	LEAN_INLINE void insert(iterator where, value_type &&value)
 	{
 		LEAN_ASSERT(m_elements <= where);
-		LEAN_ASSERT(where < m_elementsEnd);
+		LEAN_ASSERT(where <= m_elementsEnd);
 
 		value_type *safeVal = addressof(value);
 

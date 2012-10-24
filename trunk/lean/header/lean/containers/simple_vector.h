@@ -448,10 +448,12 @@ public:
 		LEAN_ASSERT(m_elements <= where);
 		LEAN_ASSERT(where < m_elementsEnd);
 
+		const value_type *safeVal = addressof(value);
+
 		if (m_elementsEnd == m_capacityEnd)
 		{
 			size_t whereIdx = where - m_elements;
-			growHL(1);
+			safeVal = addressof(grow_and_relocate(const_cast<Element&>(value)));
 			where = m_elements + whereIdx;
 		}
 
@@ -459,7 +461,7 @@ public:
 
 		try
 		{
-			copy_construct(where, value);
+			copy_construct(where, *safeVal);
 		}
 		catch (...)
 		{
@@ -469,15 +471,17 @@ public:
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Inserts the given element.
-	LEAN_INLINE void insert(iterator where, const value_type &value)
+	LEAN_INLINE void insert(iterator where, value_type &&value)
 	{
 		LEAN_ASSERT(m_elements <= where);
 		LEAN_ASSERT(where < m_elementsEnd);
 
+		value_type *safeVal = addressof(value);
+
 		if (m_elementsEnd == m_capacityEnd)
 		{
 			size_t whereIdx = where - m_elements;
-			growHL(1);
+			safeVal = addressof(grow_and_relocate(value));
 			where = m_elements + whereIdx;
 		}
 
@@ -485,7 +489,7 @@ public:
 
 		try
 		{
-			move_construct(where, value);
+			move_construct(where, *safeVal);
 		}
 		catch (...)
 		{

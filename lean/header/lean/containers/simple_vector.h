@@ -6,7 +6,9 @@
 #define LEAN_CONTAINERS_SIMPLE_VECTOR
 
 #include "../lean.h"
+#include "construction.h"
 #include "../meta/type_traits.h"
+#include "../meta/conditional.h"
 #include <memory>
 #include <stdexcept>
 
@@ -19,25 +21,32 @@ namespace containers
 namespace simple_vector_policies
 {
 	/// Simple vector element construction policy.
-	template <bool RawMove = false, bool NoDestruct = false, bool NoConstruct = false>
+	template <bool RawMove = false, bool RawCopy = false, bool NoDestruct = false, bool NoConstruct = false>
 	struct policy
 	{
 		/// Specifies whether memory containing constructed elements may be moved as a whole, without invoking the contained elements' copy or move constructors.
 		static const bool raw_move = RawMove;
+		/// Specifies whether memory containing constructed elements may be copied as a whole, without invoking the contained elements' copy constructors.
+		static const bool raw_copy = RawCopy;
 		/// Specifies whether memory containing constructed elements may be freed as a whole, without invoking the contained elements' destructors.
 		static const bool no_destruct = NoDestruct;
 		/// Specifies whether memory needs to be initialized by constructing elements.
 		static const bool no_construct = NoConstruct;
+
+		typedef typename conditional_type<raw_move, trivial_construction_t, nontrivial_construction_t>::type move_tag;
+		typedef typename conditional_type<raw_copy, trivial_construction_t, nontrivial_construction_t>::type copy_tag;
+		typedef typename conditional_type<no_destruct, trivial_construction_t, nontrivial_construction_t>::type destruct_tag;
+		typedef typename conditional_type<no_construct, trivial_construction_t, nontrivial_construction_t>::type construct_tag;
 	};
 
 	/// Default element construction policy.
 	typedef policy<> nonpod;
-	/// Semi-POD element construction policy (raw move, yet properly destructed).
+	/// Semi-POD element construction policy (raw move, yet properly copied and destructed).
 	typedef policy<true> semipod;
 	/// Initialize-POD element construction policy (raw move, no destruction, yet properly constructed).
-	typedef policy<true, true> inipod;
+	typedef policy<true, true, true> inipod;
 	/// POD element (no-)construction policy.
-	typedef policy<true, true, true> pod;
+	typedef policy<true, true, true, true> pod;
 }
 
 /// Simple and fast vector class, partially implementing the STL vector interface.
@@ -88,94 +97,61 @@ private:
 	LEAN_INLINE void default_construct(Element *dest)
 	{
 		if (!Policy::no_construct)
-			m_allocator.construct(dest, Element());
+			containers::default_construct(dest, m_allocator);
 	}
 	/// Default constructs elements in the given range.
-	void default_construct(Element *dest, Element *destEnd)
+	LEAN_INLINE void default_construct(Element *dest, Element *destEnd)
 	{
 		if (!Policy::no_construct)
-		{
-			Element *destr = dest;
-
-			try
-			{
-				for (; dest != destEnd; ++dest)
-					default_construct(dest);
-			}
-			catch(...)
-			{
-				destruct(destr, dest);
-				throw;
-			}
-		}
+			containers::default_construct(dest, destEnd, m_allocator);
 	}
 	/// Copies the given source element to the given destination.
 	LEAN_INLINE void copy_construct(Element *dest, const Element &source)
 	{
-		m_allocator.construct(dest, source);
+		containers::copy_construct(dest, source, m_allocator, typename Policy::copy_tag());
 	}
 	/// Copies elements from the given source range to the given destination.
 	template <class Iterator>
-	void copy_construct(Iterator source, Iterator sourceEnd, Element *dest)
+	LEAN_INLINE void copy_construct(Iterator source, Iterator sourceEnd, Element *dest)
 	{
-		Element *destr = dest;
-
-		try
-		{
-			for (; source != sourceEnd; ++dest, ++source)
-				copy_construct(dest, *source);
-		}
-		catch(...)
-		{
-			destruct(destr, dest);
-			throw;
-		}
+		containers::copy_construct(source, sourceEnd, dest, m_allocator, typename Policy::copy_tag());
 	}
 	/// Moves the given source element to the given destination.
 	LEAN_INLINE void move_construct(Element *dest, Element &source)
 	{
-		m_allocator.construct(dest, LEAN_MOVE(source));
+		// NOTE: Use copy tag, move tag only when no destruction takes place
+		containers::move_construct(dest, source, m_allocator, typename Policy::copy_tag());
 	}
 	/// Moves elements from the given source range to the given destination.
-	void move_construct(Element *source, Element *sourceEnd, Element *dest)
+	template <class Iterator>
+	LEAN_INLINE void move_construct(Iterator source, Iterator sourceEnd, Element *dest)
 	{
-		Element *destr = dest;
-
-		try
-		{
-			for (; source != sourceEnd; ++dest, ++source)
-				move_construct(dest, *source);
-		}
-		catch(...)
-		{
-			destruct(destr, dest);
-			throw;
-		}
+		// NOTE: Use copy tag, move tag only when no destruction takes place
+		containers::move_construct(source, sourceEnd, dest, m_allocator, typename Policy::copy_tag());
 	}
 	/// Moves the given source element to the given destination.
 	LEAN_INLINE void move(Element *dest, Element &source)
 	{
-		*dest = LEAN_MOVE(source);
+		// NOTE: Use copy tag, move tag only when no destruction takes place
+		containers::move(dest, source, typename Policy::copy_tag());
 	}
 	/// Moves elements from the given source range to the given destination.
-	void move(Element *source, Element *sourceEnd, Element *dest)
+	template <class Iterator>
+	LEAN_INLINE void move(Iterator source, Iterator sourceEnd, Element *dest)
 	{
-		for (; source != sourceEnd; ++dest, ++source)
-			move(dest, *source);
+		// NOTE: Use copy tag, move tag only when no destruction takes place
+		containers::move(source, sourceEnd, dest, typename Policy::copy_tag());
 	}
 
 	/// Destructs the elements in the given range.
 	LEAN_INLINE void destruct(Element *destr)
 	{
-		if (!Policy::no_destruct)
-			m_allocator.destroy(destr);
+		containers::destruct(destr, m_allocator, typename Policy::destruct_tag());
 	}
 	/// Destructs the elements in the given range.
-	void destruct(Element *destr, Element *destrEnd)
+	LEAN_INLINE void destruct(Element *destr, Element *destrEnd)
 	{
-		if (!Policy::no_destruct)
-			for (; destr != destrEnd; ++destr)
-				destruct(destr);
+		containers::destruct(destr, destrEnd, m_allocator, typename Policy::destruct_tag());
 	}
 
 	/// Allocates space for the given number of elements.
@@ -479,6 +455,9 @@ public:
 
 		destruct(--m_elementsEnd);
 	}
+
+	// TODO: replace move w/ open/close
+	// TODO: trivially copyable
 
 	/// Erases the given element.
 	LEAN_INLINE void erase(iterator where)

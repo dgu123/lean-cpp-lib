@@ -183,18 +183,18 @@ LEAN_INLINE Element* move_backwards(Iterator source, Iterator sourceEnd, Element
 	return dest + count;
 }
 
-/// Opens a gap of elements, returning the new end element.
+/// Opens a gap of uninitialized elements, returning the new end element.
 template <class Element, class Allocator, class DestructTag>
-LEAN_INLINE void open(Element *gap, Element *gapEnd, Element *&end, Allocator &allocator, trivial_construction_t moveTag, DestructTag destructTag)
+LEAN_INLINE void open_uninit(Element *gap, Element *gapEnd, Element *&end, Allocator &allocator, trivial_construction_t moveTag, DestructTag destructTag)
 {
 	LEAN_ASSERT(gap <= gapEnd);
 	LEAN_ASSERT(gap <= end);
 
 	end = move_backwards(gap, end, gapEnd, moveTag);
 }
-/// Opens a gap of elements, returning the new end element via the given end reference.
+/// Opens a gap of uninitialized elements, returning the new end element via the given end reference.
 template <class Element, class Allocator, class DestructTag>
-inline void open(Element *gap, Element *gapEnd, Element *&end, Allocator &allocator, nontrivial_construction_t moveTag, DestructTag destructTag)
+inline void open_uninit(Element *gap, Element *gapEnd, Element *&end, Allocator &allocator, nontrivial_construction_t moveTag, DestructTag destructTag)
 {
 	LEAN_ASSERT(gap <= gapEnd);
 	LEAN_ASSERT(gap <= end);
@@ -210,6 +210,35 @@ inline void open(Element *gap, Element *gapEnd, Element *&end, Allocator &alloca
 	move_backwards(gap, oldEnd - constructCount, gapEnd, moveTag);
 
 	destruct(gap, gap + constructCount, allocator, destructTag);
+}
+
+/// Closes a gap of uninitialized elements, returning the new end element via the given end reference.
+template <class Element, class Allocator, class DestructTag>
+inline void close_uninit(Element *gap, Element *gapEnd, Element *&end, Allocator &allocator, trivial_construction_t moveTag, DestructTag destructTag)
+{
+	LEAN_ASSERT(gap <= gapEnd);
+	LEAN_ASSERT(gapEnd <= end);
+
+	end = move(gapEnd, end, gap, moveTag);
+}
+
+/// Closes a gap of uninitialized elements, returning the new end element via the given end reference.
+template <class Element, class Allocator, class DestructTag>
+inline void close_uninit(Element *gap, Element *gapEnd, Element *&end, Allocator &allocator, nontrivial_construction_t moveTag, DestructTag destructTag)
+{
+	LEAN_ASSERT(gap <= gapEnd);
+	LEAN_ASSERT(gapEnd <= end);
+
+	size_t gapWidth = gapEnd - gap;
+	size_t postCount = end - gapEnd;
+	Element *oldEnd = end;
+	
+	size_t constructCount = min(gapWidth, postCount);
+	move_construct(gapEnd, gapEnd + constructCount, gap, allocator, moveTag);
+	
+	end = move(gapEnd + constructCount, oldEnd, gap + constructCount, moveTag);
+
+	destruct(end, oldEnd, allocator, destructTag);
 }
 
 /// Closes a gap of elements, returning the new end element via the given end reference.

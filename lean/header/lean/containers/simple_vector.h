@@ -44,20 +44,45 @@ namespace simple_vector_policies
 template < class Element, class Policy = simple_vector_policies::nonpod, class Allocator = std::allocator<Element> >
 class simple_vector
 {
+public:
+	/// Construction policy used.
+	typedef Policy construction_policy;
+
+	/// Type of the allocator used by this vector.
+	typedef typename Allocator::template rebind<Element>::other allocator_type;
+	/// Type of the size returned by this vector.
+	typedef typename allocator_type::size_type size_type;
+	/// Type of the difference between the addresses of two elements in this vector.
+	typedef typename allocator_type::difference_type difference_type;
+
+	/// Type of pointers to the elements contained by this vector.
+	typedef typename allocator_type::pointer pointer;
+	/// Type of constant pointers to the elements contained by this vector.
+	typedef typename allocator_type::const_pointer const_pointer;
+	/// Type of references to the elements contained by this vector.
+	typedef typename allocator_type::reference reference;
+	/// Type of constant references to the elements contained by this vector.
+	typedef typename allocator_type::const_reference const_reference;
+	/// Type of the elements contained by this vector.
+	typedef typename allocator_type::value_type value_type;
+
+	/// Type of iterators to the elements contained by this vector.
+	typedef pointer iterator;
+	/// Type of constant iterators to the elements contained by this vector.
+	typedef const_pointer const_iterator;
+
 private:
-	typedef typename Allocator::template rebind<Element>::other allocator_type_;
-	allocator_type_ m_allocator;
+	allocator_type m_allocator;
 
 	Element *m_elements;
 	Element *m_elementsEnd;
 	Element *m_capacityEnd;
 
-	typedef typename allocator_type_::size_type size_type_;
-	static const size_type_ s_maxSize = static_cast<size_type_>(-1); // WORKAROUND: premature evaluation / sizeof(Element);
-	static const size_type_ s_minSize = (16 < s_maxSize) ? 16 : s_maxSize;
+	static const size_type s_maxSize = static_cast<size_type>(-1); // WORKAROUND: premature evaluation / sizeof(Element);
+	static const size_type s_minSize = (16 < s_maxSize) ? 16 : s_maxSize;
 
 	// Make sure size_type is unsigned
-	LEAN_STATIC_ASSERT(is_unsigned<size_type_>::value);
+	LEAN_STATIC_ASSERT(is_unsigned<size_type>::value);
 
 	/// Default constructs an element at the given location.
 	LEAN_INLINE void default_construct(Element *dest)
@@ -109,11 +134,7 @@ private:
 	/// Moves the given source element to the given destination.
 	LEAN_INLINE void move_construct(Element *dest, Element &source)
 	{
-#ifndef LEAN0X_NO_RVALUE_REFERENCES
-		m_allocator.construct(dest, std::move(source));
-#else
-		copy_construct(dest, source);
-#endif
+		m_allocator.construct(dest, LEAN_MOVE(source));
 	}
 	/// Moves elements from the given source range to the given destination.
 	void move_construct(Element *source, Element *sourceEnd, Element *dest)
@@ -134,11 +155,7 @@ private:
 	/// Moves the given source element to the given destination.
 	LEAN_INLINE void move(Element *dest, Element &source)
 	{
-#ifndef LEAN0X_NO_RVALUE_REFERENCES
-		*dest = std::move(source);
-#else
-		*dest = source;
-#endif
+		*dest = LEAN_MOVE(source);
 	}
 	/// Moves elements from the given source range to the given destination.
 	void move(Element *source, Element *sourceEnd, Element *dest)
@@ -162,7 +179,7 @@ private:
 	}
 
 	/// Allocates space for the given number of elements.
-	void reallocate(size_type_ newCapacity)
+	void reallocate(size_type newCapacity)
 	{
 		Element *newElements = m_allocator.allocate(newCapacity);
 
@@ -182,7 +199,7 @@ private:
 
 		Element *oldElements = m_elements;
 		Element *oldElementsEnd = m_elementsEnd;
-		size_type_ oldCapacity = capacity();
+		size_type oldCapacity = capacity();
 		
 		// Mind the order, size() based on member variables!
 		m_elementsEnd = newElements + size();
@@ -210,7 +227,7 @@ private:
 	}
 
 	/// Grows vector storage to fit the given new count.
-	LEAN_INLINE void growTo(size_type_ newCount, bool checkLength = true)
+	LEAN_INLINE void growTo(size_type newCount, bool checkLength = true)
 	{
 		// Mind overflow
 		if (checkLength)
@@ -219,9 +236,9 @@ private:
 		reallocate(next_capacity_hint(newCount));
 	}
 	/// Grows vector storage to fit the given additional number of elements.
-	LEAN_INLINE void grow(size_type_ count)
+	LEAN_INLINE void grow(size_type count)
 	{
-		size_type_ oldSize = size();
+		size_type oldSize = size();
 
 		// Mind overflow
 		if (count > s_maxSize || s_maxSize - count < oldSize)
@@ -232,7 +249,7 @@ private:
 	/// Grows vector storage and inserts the given element at the end of the vector.
 	LEAN_INLINE Element& grow_and_relocate(Element &value)
 	{
-		size_type_ index = lean::addressof(value) - m_elements;
+		size_type index = lean::addressof(value) - m_elements;
 		grow(1);
 		
 		// Index is unsigned, make use of wrap-around
@@ -242,12 +259,12 @@ private:
 	}
 
 	/// Grows vector storage to fit the given new count, not inlined.
-	LEAN_NOINLINE void growToHL(size_type_ newCount)
+	LEAN_NOINLINE void growToHL(size_type newCount)
 	{
 		growTo(newCount);
 	}
 	/// Grows vector storage to fit the given additional number of elements, not inlined.
-	LEAN_NOINLINE void growHL(size_type_ count)
+	LEAN_NOINLINE void growHL(size_type count)
 	{
 		grow(count);
 	}
@@ -270,7 +287,7 @@ private:
 		throw std::out_of_range("simple_vector<T> out of range");
 	}
 	/// Checks the given position.
-	LEAN_INLINE void check_pos(size_type_ pos) const
+	LEAN_INLINE void check_pos(size_type pos) const
 	{
 		if (pos >= size())
 			out_of_range();
@@ -281,39 +298,13 @@ private:
 		throw std::length_error("simple_vector<T> too long");
 	}
 	/// Checks the given length.
-	LEAN_INLINE static void check_length(size_type_ count)
+	LEAN_INLINE static void check_length(size_type count)
 	{
 		if (count > s_maxSize)
 			length_exceeded();
 	}
 
 public:
-	/// Construction policy used.
-	typedef Policy construction_policy;
-
-	/// Type of the allocator used by this vector.
-	typedef allocator_type_ allocator_type;
-	/// Type of the size returned by this vector.
-	typedef size_type_ size_type;
-	/// Type of the difference between the addresses of two elements in this vector.
-	typedef typename allocator_type::difference_type difference_type;
-
-	/// Type of pointers to the elements contained by this vector.
-	typedef typename allocator_type::pointer pointer;
-	/// Type of constant pointers to the elements contained by this vector.
-	typedef typename allocator_type::const_pointer const_pointer;
-	/// Type of references to the elements contained by this vector.
-	typedef typename allocator_type::reference reference;
-	/// Type of constant references to the elements contained by this vector.
-	typedef typename allocator_type::const_reference const_reference;
-	/// Type of the elements contained by this vector.
-	typedef typename allocator_type::value_type value_type;
-
-	/// Type of iterators to the elements contained by this vector.
-	typedef pointer iterator;
-	/// Type of constant iterators to the elements contained by this vector.
-	typedef const_pointer const_iterator;
-
 	/// Constructs an empty vector.
 	simple_vector()
 		: m_elements(nullptr),
@@ -430,6 +421,23 @@ public:
 		copy_construct(source, sourceEnd, m_elements);
 		m_elementsEnd = m_elements + count;
 	}
+	
+	/// Returns a pointer to the next non-constructed element.
+	LEAN_INLINE void* allocate_back()
+	{
+		if (m_elementsEnd == m_capacityEnd)
+			growHL(1);
+
+		return m_elementsEnd;
+	}
+	/// Marks the next element as constructed.
+	LEAN_INLINE reference shift_back(value_type *newElement)
+	{
+		LEAN_ASSERT(m_elementsEnd != m_capacityEnd);
+		LEAN_ASSERT(newElement == m_elementsEnd);
+
+		return *m_elementsEnd++;
+	}
 
 	/// Appends a default-constructed element to this vector.
 	LEAN_INLINE reference push_back()
@@ -469,7 +477,26 @@ public:
 	{
 		LEAN_ASSERT(!empty());
 
-		destruct(m_elementsEnd--);
+		destruct(--m_elementsEnd);
+	}
+
+	/// Erases the given element.
+	LEAN_INLINE void erase(iterator where)
+	{
+		LEAN_ASSERT(m_elements <= where);
+		LEAN_ASSERT(where < m_elementsEnd);
+
+		if (Policy::raw_move)
+		{
+			destruct(where);
+			memmove(where, where + 1, (m_elementsEnd - where - 1) * sizeof(Element));
+			--m_elementsEnd;
+		}
+		else
+		{
+			move(where + 1, m_elementsEnd, where);
+			destruct(--m_elementsEnd);
+		}
 	}
 
 	/// Clears all elements from this vector.

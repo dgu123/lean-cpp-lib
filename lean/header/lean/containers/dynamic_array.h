@@ -432,7 +432,7 @@ public:
 	{
 		LEAN_ASSERT(!empty());
 
-		destruct(m_elementsEnd--);
+		destruct(--m_elementsEnd);
 	}
 
 	/// Clears all elements from this vector.

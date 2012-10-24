@@ -442,9 +442,59 @@ public:
 		destruct(--m_elementsEnd);
 	}
 
-	// TODO: replace move w/ open/close
-	// TODO: trivially copyable
+	/// Inserts the given element.
+	LEAN_INLINE void insert(iterator where, const value_type &value)
+	{
+		LEAN_ASSERT(m_elements <= where);
+		LEAN_ASSERT(where < m_elementsEnd);
 
+		if (m_elementsEnd == m_capacityEnd)
+		{
+			size_t whereIdx = where - m_elements;
+			growHL(1);
+			where = m_elements + whereIdx;
+		}
+
+		containers::open_uninit(where, where + 1, m_elementsEnd, m_allocator, typename Policy::move_tag(), typename Policy::destruct_tag());
+
+		try
+		{
+			copy_construct(where, value);
+		}
+		catch (...)
+		{
+			containers::close_uninit(where, where + 1, m_elementsEnd, m_allocator, typename Policy::move_tag(), typename Policy::destruct_tag());
+			throw;
+		}
+	}
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Inserts the given element.
+	LEAN_INLINE void insert(iterator where, const value_type &value)
+	{
+		LEAN_ASSERT(m_elements <= where);
+		LEAN_ASSERT(where < m_elementsEnd);
+
+		if (m_elementsEnd == m_capacityEnd)
+		{
+			size_t whereIdx = where - m_elements;
+			growHL(1);
+			where = m_elements + whereIdx;
+		}
+
+		containers::open_uninit(where, where + 1, m_elementsEnd, m_allocator, typename Policy::move_tag(), typename Policy::destruct_tag());
+
+		try
+		{
+			move_construct(where, value);
+		}
+		catch (...)
+		{
+			containers::close_uninit(where, where + 1, m_elementsEnd, m_allocator, typename Policy::move_tag(), typename Policy::destruct_tag());
+			throw;
+		}
+	}
+#endif
+	
 	/// Erases the given element.
 	LEAN_INLINE void erase(iterator where)
 	{

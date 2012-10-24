@@ -149,7 +149,6 @@
     <ClInclude Include="header\lean\config\faststl.h" />
     <ClInclude Include="header\lean\config\stdstd.h" />
     <ClInclude Include="header\lean\config\windows.h" />
-    <ClInclude Include="header\lean\containers\accumulation_map.h" />
     <ClInclude Include="header\lean\containers\any.h" />
     <ClInclude Include="header\lean\containers\array.h" />
     <ClInclude Include="header\lean\containers\construction.h" />
@@ -190,10 +189,7 @@
     <ClInclude Include="header\lean\memory\chunk_heap.h" />
     <ClInclude Include="header\lean\memory\chunk_pool.h" />
     <ClInclude Include="header\lean\memory\crt_heap.h" />
-    <ClInclude Include="header\lean\containers\accumulation_vector.h" />
     <ClInclude Include="header\lean\containers\containers.h" />
-    <ClInclude Include="header\lean\containers\default_reallocation_policy.h" />
-    <ClInclude Include="header\lean\containers\move_reallocation_policy.h" />
     <ClInclude Include="header\lean\cpp0x.h" />
     <ClInclude Include="header\lean\depconfig.h" />
     <ClInclude Include="header\lean\lean.h" />

@@ -5,6 +5,10 @@
 #ifndef LEAN_META_TYPE_TRAITS
 #define LEAN_META_TYPE_TRAITS
 
+#ifndef LEAN0X_NO_STL
+#include <type_traits>
+#endif
+
 namespace lean
 {
 namespace meta
@@ -58,6 +62,8 @@ public:
 		sizeof(yes) );
 };
 
+#ifdef LEAN0X_NO_STL
+
 /// True if Type is an empty class.
 template <class Type>
 struct is_empty
@@ -71,6 +77,12 @@ public:
 	/// Specifies whether Type is empty.
 	static const bool value = (sizeof(check<Type>) == sizeof(int));
 };
+
+#else
+
+using std::is_empty;
+
+#endif
 
 } // namespace
 
@@ -100,10 +112,6 @@ using meta::is_empty;
 	};
 
 } // namespace
-
-#ifndef _MSC_VER
-#include <type_traits>
-#endif
 
 namespace lean
 {

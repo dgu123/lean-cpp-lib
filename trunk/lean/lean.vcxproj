@@ -149,6 +149,7 @@
     <ClInclude Include="header\lean\config\faststl.h" />
     <ClInclude Include="header\lean\config\stdstd.h" />
     <ClInclude Include="header\lean\config\windows.h" />
+    <ClInclude Include="header\lean\containers\allocator_aware.h" />
     <ClInclude Include="header\lean\containers\any.h" />
     <ClInclude Include="header\lean\containers\array.h" />
     <ClInclude Include="header\lean\containers\construction.h" />

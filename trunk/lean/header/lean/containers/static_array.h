@@ -107,11 +107,7 @@ private:
 	/// Moves the given source element to the given destination.
 	static LEAN_INLINE void move_construct(value_type *dest, value_type &source)
 	{
-#ifndef LEAN0X_NO_RVALUE_REFERENCES
-		new (static_cast<void*>(dest)) value_type( std::move(source) );
-#else
-		copy_construct(dest, source);
-#endif
+		new (static_cast<void*>(dest)) value_type( LEAN_MOVE(source) );
 	}
 	/// Moves elements from the given source range to the given destination.
 	template <class Iterator>
@@ -128,11 +124,7 @@ private:
 	/// Moves the given source element to the given destination.
 	static LEAN_INLINE void move(value_type *dest, value_type &source)
 	{
-#ifndef LEAN0X_NO_RVALUE_REFERENCES
-		*dest = std::move(source);
-#else
-		*dest = source;
-#endif
+		*dest = LEAN_MOVE(source);
 	}
 	/// Moves elements from the given source range to the given destination.
 	template <class Iterator>

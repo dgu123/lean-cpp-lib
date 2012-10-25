@@ -107,7 +107,7 @@ public:
 	/// Destroys all elements in this array (even if uninitialized!).
 	~array()
 	{
-		for (pointer it = data(); it < data_end(); ++it)
+		for (pointer it = data_end(); it-- > data(); )
 			it->~value_type();
 	}
 

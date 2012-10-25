@@ -158,8 +158,8 @@ private:
 	/// Destructs the elements in the given range.
 	static void destruct(value_type *destr, value_type *destrEnd)
 	{
-		for (; destr != destrEnd; ++destr)
-			destruct(destr);
+		while (destr < destrEnd)
+			destruct(--destrEnd);
 	}
 
 public:

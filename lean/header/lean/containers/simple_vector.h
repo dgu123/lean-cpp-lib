@@ -20,16 +20,97 @@ namespace containers
 /// Defines construction policies for the class simple_vector.
 namespace simple_vector_policies = vector_policies;
 
+/// Stores an allocator object if the given allocator type is non-empty.
+template <class Allocator, bool IsEmpty = is_empty<Allocator>::value>
+class allocator_aware_base
+{
+public:
+	typedef Allocator allocator_type;
+
+private:
+	Allocator m_allocator;
+
+protected:
+	/// Retrieves the allocator.
+	LEAN_INLINE Allocator& allocator() { return m_allocator; };
+	/// Retrieves the allocator.
+	LEAN_INLINE const Allocator& allocator() const { return m_allocator; };
+
+	struct allocator_ref
+	{
+		Allocator &allocator;
+
+		LEAN_INLINE allocator_ref(allocator_aware_base &self)
+			: allocator(self.allocator()) { }
+	};
+
+	/// Default allocator.
+	LEAN_INLINE allocator_aware_base() { }
+	/// Exeplicit allocator construction.
+	LEAN_INLINE explicit allocator_aware_base(const Allocator &allocator)
+		: m_allocator(allocator) { }
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Move construction.
+	LEAN_INLINE allocator_aware_base(allocator_aware_base &&right)
+		: m_allocator(std::move(right.m_allocator)) { }
+
+	/// Move assignment.
+	LEAN_INLINE allocator_aware_base& operator =(allocator_aware_base &&right)
+	{
+		m_allocator = std::move(right.m_allocator);
+		return *this;
+	}
+#endif
+
+	/// Swaps the allocators of this allocator-aware object and the given allocator-aware object.
+	LEAN_INLINE void swap(allocator_aware_base &right)
+	{
+		using std::swap;
+
+		swap(m_allocator, right.m_allocator);
+	}
+};
+
+/// Stores an allocator object if the given allocator type is non-empty.
+template <class Allocator>
+class allocator_aware_base<Allocator, true>
+{
+public:
+	typedef Allocator allocator_type;
+
+protected:
+	/// Retrieves the allocator.
+	LEAN_INLINE Allocator allocator() const { return Allocator(); };
+
+	struct allocator_ref
+	{
+		Allocator allocator;
+
+		LEAN_INLINE allocator_ref(allocator_aware_base &self) { }
+	};
+
+	/// Default allocator.
+	LEAN_INLINE allocator_aware_base() { }
+	/// Exeplicit allocator construction.
+	LEAN_INLINE explicit allocator_aware_base(const Allocator &allocator) { }
+
+	/// Swaps the allocators of this allocator-aware object and the given allocator-aware object.
+	LEAN_INLINE void swap(allocator_aware_base &right) { }
+};
+
 /// Simple and fast vector class, partially implementing the STL vector interface.
 template < class Element, class Policy = simple_vector_policies::nonpod, class Allocator = std::allocator<Element> >
-class simple_vector
+class simple_vector : protected allocator_aware_base<typename Allocator::template rebind<Element>::other>
 {
+private:
+	typedef allocator_aware_base<typename Allocator::template rebind<Element>::other> base_type;
+
 public:
 	/// Construction policy used.
 	typedef Policy construction_policy;
 
 	/// Type of the allocator used by this vector.
-	typedef typename Allocator::template rebind<Element>::other allocator_type;
+	typedef typename base_type::allocator_type allocator_type;
 	/// Type of the size returned by this vector.
 	typedef typename allocator_type::size_type size_type;
 	/// Type of the difference between the addresses of two elements in this vector.
@@ -52,8 +133,6 @@ public:
 	typedef const_pointer const_iterator;
 
 private:
-	allocator_type m_allocator;
-
 	Element *m_elements;
 	Element *m_elementsEnd;
 	Element *m_capacityEnd;
@@ -64,61 +143,78 @@ private:
 	LEAN_INLINE void default_construct(Element *dest)
 	{
 		if (!Policy::no_construct)
-			containers::default_construct(dest, m_allocator);
+		{
+			base_type::allocator_ref alloc(*this);
+			containers::default_construct(dest, alloc.allocator);
+		}
 	}
 	LEAN_INLINE void default_construct(Element *dest, Element *destEnd)
 	{
 		if (!Policy::no_construct)
-			containers::default_construct(dest, destEnd, m_allocator);
+		{
+			base_type::allocator_ref alloc(*this);
+			containers::default_construct(dest, destEnd, alloc.allocator);
+		}
 	}
 	LEAN_INLINE void copy_construct(Element *dest, const Element &source)
 	{
-		containers::copy_construct(dest, source, m_allocator, typename Policy::copy_tag());
+		base_type::allocator_ref alloc(*this);
+		containers::copy_construct(dest, source, alloc.allocator, typename Policy::copy_tag());
 	}
 	template <class Iterator>
 	LEAN_INLINE void copy_construct(Iterator source, Iterator sourceEnd, Element *dest)
 	{
-		containers::copy_construct(source, sourceEnd, dest, m_allocator, typename Policy::copy_tag());
+		base_type::allocator_ref alloc(*this);
+		containers::copy_construct(source, sourceEnd, dest, alloc.allocator, typename Policy::copy_tag());
 	}
 	LEAN_INLINE void move_construct(Element *dest, Element &source)
 	{
+		base_type::allocator_ref alloc(*this);
 		// NOTE: Use copy tag, move tag only when no destruction takes place
-		containers::move_construct(dest, source, m_allocator, typename Policy::copy_tag());
+		containers::move_construct(dest, source, alloc.allocator, typename Policy::copy_tag());
 	}
 	template <class Iterator>
 	LEAN_INLINE void move_construct(Iterator source, Iterator sourceEnd, Element *dest)
 	{
+		base_type::allocator_ref alloc(*this);
 		// NOTE: Use copy tag, move tag only when no destruction takes place
-		containers::move_construct(source, sourceEnd, dest, m_allocator, typename Policy::copy_tag());
+		containers::move_construct(source, sourceEnd, dest, alloc.allocator, typename Policy::copy_tag());
 	}
 	LEAN_INLINE void destruct(Element *destr)
 	{
-		containers::destruct(destr, m_allocator, typename Policy::destruct_tag());
+		base_type::allocator_ref alloc(*this);
+		containers::destruct(destr, alloc.allocator, typename Policy::destruct_tag());
 	}
 	LEAN_INLINE void destruct(Element *destr, Element *destrEnd)
 	{
-		containers::destruct(destr, destrEnd, m_allocator, typename Policy::destruct_tag());
+		base_type::allocator_ref alloc(*this);
+		containers::destruct(destr, destrEnd, alloc.allocator, typename Policy::destruct_tag());
 	}
 	LEAN_INLINE void open_uninit(Element *where, Element *whereEnd)
 	{
-		containers::open_uninit(where, whereEnd, m_elementsEnd, m_allocator,
+		base_type::allocator_ref alloc(*this);
+		containers::open_uninit(where, whereEnd, m_elementsEnd, alloc.allocator,
 			typename Policy::move_tag(), typename Policy::destruct_tag());
 	}
 	LEAN_INLINE void close_uninit(Element *where, Element *whereEnd)
 	{
-		containers::close_uninit(where, whereEnd, m_elementsEnd, m_allocator,
+		base_type::allocator_ref alloc(*this);
+		containers::close_uninit(where, whereEnd, m_elementsEnd, alloc.allocator,
 			typename Policy::move_tag(), typename Policy::destruct_tag());
 	}
 	LEAN_INLINE void close(Element *where, Element *whereEnd)
 	{
-		containers::close(where, whereEnd, m_elementsEnd, m_allocator,
+		base_type::allocator_ref alloc(*this);
+		containers::close(where, whereEnd, m_elementsEnd, alloc.allocator,
 			typename Policy::move_tag(), typename Policy::destruct_tag());
 	}
 	
 	/// Allocates space for the given number of elements.
 	void reallocate(size_type newCapacity)
 	{
-		Element *newElements = m_allocator.allocate(newCapacity);
+		base_type::allocator_ref alloc(*this);
+
+		Element *newElements = alloc.allocator.allocate(newCapacity);
 
 		if (!Policy::raw_move)
 			try
@@ -127,7 +223,7 @@ private:
 			}
 			catch(...)
 			{
-				m_allocator.deallocate(newElements, newCapacity);
+				alloc.allocator.deallocate(newElements, newCapacity);
 				throw;
 			}
 		else if (!empty())
@@ -150,7 +246,7 @@ private:
 			if (!Policy::raw_move)
 				// Do nothing on exception, resources leaking anyways!
 				destruct(oldElements, oldElementsEnd);
-			m_allocator.deallocate(oldElements, oldCapacity);
+			alloc.allocator.deallocate(oldElements, oldCapacity);
 		}
 	}
 
@@ -161,7 +257,7 @@ private:
 		{
 			// Do nothing on exception, resources leaking anyways!
 			destruct(m_elements, m_elementsEnd);
-			m_allocator.deallocate(m_elements, capacity());
+			this->allocator().deallocate(m_elements, capacity());
 		}
 	}
 
@@ -253,13 +349,13 @@ public:
 		m_capacityEnd(nullptr) { }
 	/// Constructs an empty vector.
 	explicit simple_vector(allocator_type allocator)
-		: m_allocator(allocator),
+		: base_type(allocator),
 		m_elements(nullptr),
 		m_elementsEnd(nullptr),
 		m_capacityEnd(nullptr) { }
 	/// Copies all elements from the given vector to this vector.
 	simple_vector(const simple_vector &right)
-		: m_allocator(right.m_allocator),
+		: base_type(right),
 		m_elements(nullptr),
 		m_elementsEnd(nullptr),
 		m_capacityEnd(nullptr)
@@ -277,7 +373,7 @@ public:
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given vector to this vector.
 	simple_vector(simple_vector &&right)
-		: m_allocator(std::move(right.m_allocator)),
+		: base_type(std::move(right)),
 		m_elements(std::move(right.m_elements)),
 		m_elementsEnd(std::move(right.m_elementsEnd)),
 		m_capacityEnd(std::move(right.m_capacityEnd))
@@ -316,7 +412,7 @@ public:
 			right.m_elementsEnd = nullptr;
 			right.m_capacityEnd = nullptr;
 
-			m_allocator = std::move(right.m_allocator);
+			this->base_type::operator =(std::move(right));
 		}
 		return *this;
 	}
@@ -562,7 +658,7 @@ public:
 	LEAN_INLINE const_iterator end(void) const { return m_elementsEnd; };
 
 	/// Gets a copy of the allocator used by this vector.
-	LEAN_INLINE allocator_type get_allocator() const { return m_allocator; };
+	LEAN_INLINE allocator_type get_allocator() const { return this->allocator(); };
 
 	/// Returns true if the vector is empty.
 	LEAN_INLINE bool empty(void) const { return (m_elements == m_elementsEnd); };
@@ -609,7 +705,7 @@ public:
 	{
 		using std::swap;
 
-		swap(m_allocator, right.m_allocator);
+		this->base_type::swap(right);
 		swap(m_elements, right.m_elements);
 		swap(m_elementsEnd, right.m_elementsEnd);
 		swap(m_capacityEnd, right.m_capacityEnd);

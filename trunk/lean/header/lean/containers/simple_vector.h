@@ -6,9 +6,9 @@
 #define LEAN_CONTAINERS_SIMPLE_VECTOR
 
 #include "../lean.h"
+#include "vector_policies.h"
 #include "construction.h"
 #include "../meta/type_traits.h"
-#include "../meta/conditional.h"
 #include <memory>
 #include <stdexcept>
 
@@ -18,36 +18,7 @@ namespace containers
 {
 
 /// Defines construction policies for the class simple_vector.
-namespace simple_vector_policies
-{
-	/// Simple vector element construction policy.
-	template <bool RawMove = false, bool RawCopy = false, bool NoDestruct = false, bool NoConstruct = false>
-	struct policy
-	{
-		/// Specifies whether memory containing constructed elements may be moved as a whole, without invoking the contained elements' copy or move constructors.
-		static const bool raw_move = RawMove;
-		/// Specifies whether memory containing constructed elements may be copied as a whole, without invoking the contained elements' copy constructors.
-		static const bool raw_copy = RawCopy;
-		/// Specifies whether memory containing constructed elements may be freed as a whole, without invoking the contained elements' destructors.
-		static const bool no_destruct = NoDestruct;
-		/// Specifies whether memory needs to be initialized by constructing elements.
-		static const bool no_construct = NoConstruct;
-
-		typedef typename conditional_type<raw_move, trivial_construction_t, nontrivial_construction_t>::type move_tag;
-		typedef typename conditional_type<raw_copy, trivial_construction_t, nontrivial_construction_t>::type copy_tag;
-		typedef typename conditional_type<no_destruct, trivial_construction_t, nontrivial_construction_t>::type destruct_tag;
-		typedef typename conditional_type<no_construct, trivial_construction_t, nontrivial_construction_t>::type construct_tag;
-	};
-
-	/// Default element construction policy.
-	typedef policy<> nonpod;
-	/// Semi-POD element construction policy (raw move, yet properly copied and destructed).
-	typedef policy<true> semipod;
-	/// Initialize-POD element construction policy (raw move, no destruction, yet properly constructed).
-	typedef policy<true, true, true> inipod;
-	/// POD element (no-)construction policy.
-	typedef policy<true, true, true, true> pod;
-}
+namespace simple_vector_policies = vector_policies;
 
 /// Simple and fast vector class, partially implementing the STL vector interface.
 template < class Element, class Policy = simple_vector_policies::nonpod, class Allocator = std::allocator<Element> >
@@ -86,9 +57,6 @@ private:
 	Element *m_elements;
 	Element *m_elementsEnd;
 	Element *m_capacityEnd;
-
-	static const size_type s_maxSize = static_cast<size_type>(-1); // WORKAROUND: premature evaluation / sizeof(Element);
-	static const size_type s_minSize = (16 < s_maxSize) ? 16 : s_maxSize;
 
 	// Make sure size_type is unsigned
 	LEAN_STATIC_ASSERT(is_unsigned<size_type>::value);
@@ -203,7 +171,7 @@ private:
 		size_type oldSize = size();
 
 		// Mind overflow
-		if (count > s_maxSize || s_maxSize - count < oldSize)
+		if (count > max_size() || max_size() - count < oldSize)
 			length_exceeded();
 
 		growTo(oldSize + count, false);
@@ -236,12 +204,14 @@ private:
 		copy_construct(m_elementsEnd, grow_and_relocate(const_cast<Element&>(value)));
 		++m_elementsEnd;
 	}
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Grows vector storage and inserts the given element at the end of the vector.
 	LEAN_NOINLINE void grow_and_pushHL(Element &&value)
 	{
 		move_construct(m_elementsEnd, grow_and_relocate(value));
 		++m_elementsEnd;
 	}
+#endif
 
 	/// Triggers an out of range error.
 	LEAN_NOINLINE static void out_of_range()
@@ -260,9 +230,9 @@ private:
 		throw std::length_error("simple_vector<T> too long");
 	}
 	/// Checks the given length.
-	LEAN_INLINE static void check_length(size_type count)
+	LEAN_INLINE void check_length(size_type count)
 	{
-		if (count > s_maxSize)
+		if (count > max_size())
 			length_exceeded();
 	}
 
@@ -443,7 +413,7 @@ public:
 	}
 
 	/// Inserts the given element.
-	LEAN_INLINE void insert(iterator where, const value_type &value)
+	void insert(iterator where, const value_type &value)
 	{
 		LEAN_ASSERT(m_elements <= where);
 		LEAN_ASSERT(where <= m_elementsEnd);
@@ -471,7 +441,7 @@ public:
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Inserts the given element.
-	LEAN_INLINE void insert(iterator where, value_type &&value)
+	void insert(iterator where, value_type &&value)
 	{
 		LEAN_ASSERT(m_elements <= where);
 		LEAN_ASSERT(where <= m_elementsEnd);
@@ -500,7 +470,7 @@ public:
 #endif
 	
 	/// Erases the given element.
-	LEAN_INLINE void erase(iterator where)
+	void erase(iterator where)
 	{
 		LEAN_ASSERT(m_elements <= where);
 		LEAN_ASSERT(where < m_elementsEnd);
@@ -538,9 +508,6 @@ public:
 	/// Resizes this vector, either appending empty elements to or removing elements from the back of this vector.
 	void resize(size_type newCount)
 	{
-		// Mind overflow
-		check_length(newCount);
-
 		if (newCount > size())
 		{
 			if (newCount > capacity())
@@ -599,19 +566,25 @@ public:
 	size_type next_capacity_hint(size_type count) const
 	{
 		size_type capacity = this->capacity();
-		LEAN_ASSERT(capacity <= s_maxSize);
+		size_type maxSize = this->max_size();
+
+		LEAN_ASSERT(capacity <= maxSize);
+		LEAN_ASSERT(count <= maxSize);
+		
 		size_type capacityDelta = capacity / 2;
 
 		// Try to increase capacity by 1.5 (mind overflow)
-		capacity = (s_maxSize - capacityDelta < capacity)
-			? s_maxSize
+		capacity = (maxSize - capacityDelta < capacity)
+			? maxSize
 			: capacity + capacityDelta;
 
+		// Fit to count, if greater than next capacity step
 		if (capacity < count)
 			capacity = count;
 
-		if (capacity < s_minSize)
-			capacity = s_minSize;
+		// Always allocate minimum number of 16 elements?
+//		if (capacity < 16)
+//			capacity = 16;
 		
 		return capacity;
 	}
@@ -619,7 +592,7 @@ public:
 	/// Estimates the maximum number of elements that may be constructed.
 	LEAN_INLINE size_type max_size() const
 	{
-		return s_maxSize;
+		return static_cast<size_type>(-1) / sizeof(Element);
 	}
 
 	/// Swaps the contents of this vector and the given vector.

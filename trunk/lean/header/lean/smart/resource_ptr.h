@@ -109,7 +109,7 @@ public:
 	/// Binds the given resource reference to this resource pointer.
 	static LEAN_INLINE resource_ptr<resource_type, true> bind(resource_type *resource)
 	{
-		return resource_ptr<resource_type, true>(resource, resource_ptr<resource_type, true>::bind_reference);
+		return resource_ptr<resource_type, true>(resource, bind_reference);
 	}
 	/// Unbinds the resource reference held by this resource pointer.
 	resource_type* unbind()
@@ -122,7 +122,7 @@ public:
 	resource_ptr<resource_type, true> transfer()
 	{
 		// Visual C++ won't inline delegating function calls
-		return resource_ptr<resource_type, true>(unbind(), resource_ptr<resource_type, true>::bind_reference);
+		return resource_ptr<resource_type, true>(unbind(), bind_reference);
 	}
 
 	/// Replaces the stored resource with the given resource. <b>[ESA]</b>
@@ -190,7 +190,7 @@ template <class Resource>
 LEAN_INLINE resource_ptr<Resource, true> bind_resource(Resource *resource)
 {
 	// Visual C++ won't inline delegating function calls
-	return resource_ptr<Resource, true>(resource, resource_ptr<Resource, true>::bind_reference);
+	return resource_ptr<Resource, true>(resource, bind_reference);
 }
 
 /// Binds a new reference of the given resource to a resource pointer.
@@ -208,7 +208,7 @@ LEAN_INLINE resource_ptr<Resource, true> secure_resource(Resource *resource)
 #else
 	#define LEAN_NEW_RESOURCE_FUNCTION_TPARAMS class Resource
 	#define LEAN_NEW_RESOURCE_FUNCTION_DECL inline resource_ptr<Resource, true> new_resource
-	#define LEAN_NEW_RESOURCE_FUNCTION_BODY(call) { return resource_ptr<Resource, true>( new Resource##call, resource_ptr<Resource, true>::bind_reference ); }
+	#define LEAN_NEW_RESOURCE_FUNCTION_BODY(call) { return resource_ptr<Resource, true>( new Resource##call, bind_reference ); }
 	LEAN_VARIADIC_PERFECT_FORWARDING_T(LEAN_NEW_RESOURCE_FUNCTION_DECL, LEAN_NEW_RESOURCE_FUNCTION_TPARAMS, LEAN_NOTHING, LEAN_NEW_RESOURCE_FUNCTION_BODY)
 #endif
 

@@ -10,6 +10,7 @@
 #include "../functional/variadic.h"
 #include "../meta/type_traits.h"
 #include "../tags/noncopyable.h"
+#include "construction.h"
 
 namespace lean 
 {
@@ -126,7 +127,7 @@ struct dynamic_array_base : public noncopyable
 };
 
 /// Dynamic array class.
-template < class Element, class Heap = default_heap >
+template <class Element, class Heap = default_heap>
 class dynamic_array : private dynamic_array_base<Element, Heap>
 {
 public:
@@ -157,90 +158,7 @@ private:
 	// Make sure size_type is unsigned
 	LEAN_STATIC_ASSERT(is_unsigned<size_type>::value);
 
-	/// Default constructs an element at the given destination address.
-	static LEAN_INLINE void default_construct(value_type *dest)
-	{
-		new (static_cast<void*>(dest)) value_type();
-	}
-	/// Default constructs elements in the given range.
-	static void default_construct(value_type *dest, value_type *destEnd)
-	{
-		value_type *destr = dest;
-
-		try
-		{
-			for (; dest != destEnd; ++dest)
-				default_construct(dest);
-		}
-		catch(...)
-		{
-			destruct(destr, dest);
-			throw;
-		}
-	}
-
-	/// Copies the given source element to the given destination.
-	static LEAN_INLINE void copy_construct(value_type *dest, const value_type &source)
-	{
-		new (static_cast<void*>(dest)) value_type(source);
-	}
-	/// Copies elements from the given source range to the given destination.
-	template <class Iterator>
-	static void copy_construct(Iterator source, Iterator sourceEnd, value_type *dest)
-	{
-		value_type *destr = dest;
-
-		try
-		{
-			for (; source != sourceEnd; ++dest, ++source)
-				copy_construct(dest, *source);
-		}
-		catch(...)
-		{
-			destruct(destr, dest);
-			throw;
-		}
-	}
-
-	/// Moves the given source element to the given destination.
-	static LEAN_INLINE void move_construct(value_type *dest, value_type &source)
-	{
-		new (static_cast<void*>(dest)) value_type( LEAN_MOVE(source) );
-	}
-	/// Moves elements from the given source range to the given destination.
-	template <class Iterator>
-	static void move_construct(Iterator source, Iterator sourceEnd, value_type *dest)
-	{
-		for (; source != sourceEnd; ++dest, ++source)
-			move_construct(dest, *source);
-	}
-
-	/// Moves the given source element to the given destination.
-	static LEAN_INLINE void move(value_type *dest, value_type &source)
-	{
-		*dest = LEAN_MOVE(source);
-	}
-	/// Moves elements from the given source range to the given destination.
-	template <class Iterator>
-	static void move(Iterator source, Iterator sourceEnd, value_type *dest)
-	{
-		for (; source != sourceEnd; ++dest, ++source)
-			move(dest, *source);
-	}
-
-	/// Destructs the elements in the given range.
-	static void destruct(value_type *destr)
-	{
-		destr->~value_type();
-	}
-	/// Destructs the elements in the given range.
-	static void destruct(value_type *destr, value_type *destrEnd)
-	{
-		while (destr < destrEnd)
-			destruct(--destrEnd);
-	}
-
-	/// Frees the given elements.
+	/// Frees all elements.
 	LEAN_INLINE void destroy()
 	{
 		if (m_elements)
@@ -260,8 +178,7 @@ public:
 	dynamic_array(const dynamic_array &right)
 		: base_type(right.size())
 	{
-		copy_construct(right.m_elements, right.m_elementsEnd, m_elements);
-		m_elementsEnd += right.size();
+		m_elementsEnd = containers::copy_construct(right.m_elements, right.m_elementsEnd, m_elements, no_allocator);
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given vector to this vector.
@@ -276,21 +193,19 @@ public:
 	dynamic_array(Iterator begin, Iterator end)
 		: base_type(end - begin)
 	{
-		copy_construct(begin, end, m_elements);
-		m_elementsEnd += end - begin;
+		m_elementsEnd = containers::copy_construct(begin, end, m_elements, no_allocator);
 	}
 	/// Moves all elements from the given range to this vector.
 	template <class Iterator>
 	dynamic_array(Iterator begin, Iterator end, consume_t)
 		: base_type(end - begin)
 	{
-		move_construct(begin, end, m_elements);
-		m_elementsEnd += end - begin;
+		m_elementsEnd = containers::move_construct(begin, end, m_elements, no_allocator);
 	}
 	/// Destroys all elements in this vector.
 	~dynamic_array()
 	{
-		destruct(m_elements, m_elementsEnd);
+		containers::destruct(m_elements, m_elementsEnd, no_allocator);
 	}
 
 	/// Copies all elements of the given vector to this vector.
@@ -299,9 +214,7 @@ public:
 		if (&right != this)
 		{
 			reset(right.size());
-
-			copy_construct(right.m_elements, right.m_elementsEnd, m_elements);
-			m_elementsEnd += right.size();
+			m_elementsEnd = containers::copy_construct(right.m_elements, right.m_elementsEnd, m_elements, no_allocator);
 		}
 	}
 	/// Moves all elements from the given vector to this vector.
@@ -341,16 +254,14 @@ public:
 	void assign_disjoint(Iterator begin, Iterator end)
 	{
 		reset(end - begin);
-		copy_construct(begin, end, m_elements);
-		m_elementsEnd += end - begin;
+		m_elementsEnd = containers::copy_construct(begin, end, m_elements, no_allocator);
 	}
 	/// Moves all elements from the given range to this vector.
 	template <class Iterator>
 	void assign_disjoint(Iterator begin, Iterator end, consume_t)
 	{
 		reset(end - begin);
-		move_construct(begin, end, m_elements);
-		m_elementsEnd += end - begin;
+		m_elementsEnd = containers::move_construct(begin, end, m_elements, no_allocator);
 	}
 
 	/// Returns a pointer to the next non-constructed element.
@@ -382,28 +293,28 @@ public:
 	/// Appends a default-constructed element to this vector.
 	LEAN_INLINE reference push_back()
 	{
-		default_construct(m_elementsEnd);
+		containers::default_construct(m_elementsEnd, no_allocator);
 		return *m_elementsEnd++;
 	}
 	/// Appends a default-constructed element to this vector.
 	LEAN_INLINE pointer push_back_n(size_type count)
 	{
 		Element *firstElement = m_elementsEnd;
-		default_construct(firstElement, firstElement + count);
+		containers::default_construct(firstElement, firstElement + count, no_allocator);
 		m_elementsEnd += count;
 		return firstElement;
 	}
 	/// Appends the given element to this vector.
 	LEAN_INLINE reference push_back(const value_type &value)
 	{
-		copy_construct(m_elementsEnd, value);
+		containers::copy_construct(m_elementsEnd, value, no_allocator);
 		return *m_elementsEnd++;
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Appends the given element to this vector.
 	LEAN_INLINE reference push_back(value_type &&value)
 	{
-		move_construct(m_elementsEnd, value);
+		containers::move_construct(m_elementsEnd, value, no_allocator);
 		return *m_elementsEnd++;
 	}
 #endif
@@ -412,7 +323,7 @@ public:
 	{
 		LEAN_ASSERT(!empty());
 
-		destruct(--m_elementsEnd);
+		containers::destruct(--m_elementsEnd, no_allocator);
 	}
 
 	/// Clears all elements from this vector.
@@ -420,7 +331,7 @@ public:
 	{
 		Element *oldElementsEnd = m_elementsEnd;
 		m_elementsEnd = m_elements;
-		destruct(m_elements, oldElementsEnd);
+		containers::destruct(m_elements, oldElementsEnd, no_allocator);
 	}
 
 	/// Reserves space for the given number of elements.

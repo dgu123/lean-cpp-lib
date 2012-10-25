@@ -6,6 +6,7 @@
 #define LEAN_CONTAINERS_ARRAY
 
 #include "../lean.h"
+#include "construction.h"
 
 namespace lean 
 {
@@ -49,8 +50,7 @@ public:
 	/// Constructs an array.
 	array()
 	{
-		for (pointer it = data(); it < data_end(); ++it)
-			new (static_cast<void*>(it)) value_type();
+		containers::default_construct(data(), data_end(), no_allocator);
 	}
 	
 	/// Constructs an uninitialized array.
@@ -59,19 +59,13 @@ public:
 	/// Copies all elements from the given array to this array.
 	array(const array &right)
 	{
-		const_iterator rit = right.begin();
-
-		for (pointer it = data(); it < data_end(); ++it, ++rit)
-			new (static_cast<void*>(it)) value_type(*rit);
+		containers::copy_construct(right.data(), right.data_end(), data(), no_allocator);
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given array to this array.
 	array(array &&right)
 	{
-		iterator rit = right.begin();
-
-		for (pointer it = data(); it < data_end(); ++it, ++rit)
-			new (static_cast<void*>(it)) value_type(std::move(*rit));
+		containers::move_construct(right.data(), right.data_end(), data(), no_allocator);
 	}
 #endif
 
@@ -79,29 +73,58 @@ public:
 	template <class V1>
 	explicit array(const V1 &v1)
 	{
-		for (pointer it = data(); it < data_end(); ++it)
-			new (static_cast<void*>(it)) value_type(v1);
+		pointer at = data();
+
+		try
+		{
+			for (; at < data_end(); ++at)
+				new (static_cast<void*>(at)) value_type(v1);
+		}
+		catch (...)
+		{
+			containers::destruct(data(), at, no_allocator);
+			throw;
+		}
 	}
 	/// Constructs an array by passing the given arguments to the constructor of every element.
 	template <class V1, class V2>
 	explicit array(const V1 &v1, const V2 &v2)
 	{
-		for (pointer it = data(); it < data_end(); ++it)
-			new (static_cast<void*>(it)) value_type(v1, v2);
+		pointer at = data();
+
+		try
+		{
+			for (; at < data_end(); ++at)
+				new (static_cast<void*>(at)) value_type(v1, v2);
+		}
+		catch (...)
+		{
+			containers::destruct(data(), at, no_allocator);
+			throw;
+		}
 	}
 	/// Constructs an array by passing the given arguments to the constructor of every element.
 	template <class V1, class V2, class V3>
 	explicit array(const V1 &v1, const V2 &v2, const V3 &v3)
 	{
-		for (pointer it = data(); it < data_end(); ++it)
-			new (static_cast<void*>(it)) value_type(v1, v2, v3);
+		pointer at = data();
+
+		try
+		{
+			for (; at < data_end(); ++at)
+				new (static_cast<void*>(at)) value_type(v1, v2, v3);
+		}
+		catch (...)
+		{
+			containers::destruct(data(), at, no_allocator);
+			throw;
+		}
 	}
 
 	/// Destroys all elements in this array (even if uninitialized!).
 	~array()
 	{
-		for (pointer it = data_end(); it-- > data(); )
-			it->~value_type();
+		containers::destruct(data(), data_end(), no_allocator);
 	}
 
 	/// Copies all elements from the given array to this array.
@@ -130,7 +153,8 @@ public:
 	/// Copies the given value to every element of this array.
 	LEAN_INLINE void fill(const value_type& value)
 	{
-		std::fill_n(data(), count, value);
+		for (pointer it = data(); it < data_end(); ++it)
+			*it = value;
 	}
 	/// Copies the given value to every element of this array.
 	LEAN_INLINE void assign(const value_type& value) { fill(value); }

@@ -8,6 +8,7 @@
 #include "../lean.h"
 #include "../functional/variadic.h"
 #include "../meta/type_traits.h"
+#include "construction.h"
 
 namespace lean 
 {
@@ -56,102 +57,14 @@ private:
 	/// One past the last element in the array.
 	const value_type *const& elementsEnd() const { return m_elementsEnd; }
 	
-	/// Default constructs an element at the given destination address.
-	static LEAN_INLINE void default_construct(value_type *dest)
-	{
-		new (static_cast<void*>(dest)) value_type();
-	}
-	/// Default constructs elements in the given range.
-	static void default_construct(value_type *dest, value_type *destEnd)
-	{
-		value_type *destr = dest;
-
-		try
-		{
-			for (; dest != destEnd; ++dest)
-				default_construct(dest);
-		}
-		catch (...)
-		{
-			destruct(destr, dest);
-			throw;
-		}
-	}
-
-	/// Copies the given source element to the given destination.
-	static LEAN_INLINE void copy_construct(value_type *dest, const value_type &source)
-	{
-		new (static_cast<void*>(dest)) value_type(source);
-	}
-	/// Copies elements from the given source range to the given destination.
-	template <class Iterator>
-	static size_type copy_construct(Iterator source, Iterator sourceEnd, value_type *dest)
-	{
-		size_type count = 0;
-		value_type *destr = dest;
-
-		try
-		{
-			for (; source != sourceEnd; ++dest, ++source, ++count)
-				copy_construct(dest, *source);
-		}
-		catch(...)
-		{
-			destruct(destr, dest);
-			throw;
-		}
-
-		return count;
-	}
-
-	/// Moves the given source element to the given destination.
-	static LEAN_INLINE void move_construct(value_type *dest, value_type &source)
-	{
-		new (static_cast<void*>(dest)) value_type( LEAN_MOVE(source) );
-	}
-	/// Moves elements from the given source range to the given destination.
-	template <class Iterator>
-	static size_type move_construct(Iterator source, Iterator sourceEnd, value_type *dest)
-	{
-		size_type count = 0;
-
-		for (; source != sourceEnd; ++dest, ++source, ++count)
-			move_construct(dest, *source);
-
-		return count;
-	}
-
-	/// Moves the given source element to the given destination.
-	static LEAN_INLINE void move(value_type *dest, value_type &source)
-	{
-		*dest = LEAN_MOVE(source);
-	}
-	/// Moves elements from the given source range to the given destination.
-	template <class Iterator>
-	static void move(Iterator source, Iterator sourceEnd, value_type *dest)
-	{
-		for (; source != sourceEnd; ++dest, ++source)
-			move(dest, *source);
-	}
-
 	/// Moves elements from the given source range to the given destination.
 	template <class Iterator>
 	static void swap(value_type *left, value_type *leftEnd, value_type *right)
 	{
+		using std::swap;
+
 		for (; left != leftEnd; ++left, ++right)
 			swap(*left, *right);
-	}
-
-	/// Destructs the elements in the given range.
-	static void destruct(value_type *destr)
-	{
-		destr->~value_type();
-	}
-	/// Destructs the elements in the given range.
-	static void destruct(value_type *destr, value_type *destrEnd)
-	{
-		while (destr < destrEnd)
-			destruct(--destrEnd);
 	}
 
 public:
@@ -160,62 +73,45 @@ public:
 		: m_elementsEnd(elements()) { }
 	/// Copies all elements from the given vector to this vector.
 	static_array(const static_array &right)
-		: m_elementsEnd(elements())
-	{
-		copy_construct(right.elements(), right.elementsEnd(), elements());
-		elementsEnd() += right.size();
-	}
+		: m_elementsEnd( containers::copy_construct(right.elements(), right.elementsEnd(), elements(), no_allocator) ) { }
 	/// Copies all elements from the given vector to this vector.
 	template <size_t RightCapacity>
 	explicit static_array(const static_array<value_type, RightCapacity> &right)
-		: m_elementsEnd(elements())
 	{
-		copy_construct(right.elements(), right.elementsEnd(), elements());
-		elementsEnd() += right.size();
+		LEAN_ASSERT(right.size() <= capacity);
+		elementsEnd() = containers::copy_construct(right.elements(), right.elementsEnd(), elements(), no_allocator);
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given vector to this vector.
 	static_array(static_array &&right)
-		: m_elementsEnd(elements())
-	{
-		move_construct(right.elements(), right.elementsEnd(), elements());
-		elementsEnd() += right.size();
-	}
+		: m_elementsEnd( containers::move_construct(right.elements(), right.elementsEnd(), elements(), no_allocator) ) { }
 	/// Moves all elements from the given vector to this vector.
 	template <size_t RightCapacity>
 	explicit static_array(static_array<value_type, RightCapacity> &&right)
-		: m_elementsEnd(elements())
 	{
-		move_construct(right.elements(), right.elementsEnd(), elements());
-		elementsEnd() += right.size();
+		LEAN_ASSERT(right.size() <= capacity);
+		elementsEnd() = containers::move_construct(right.elements(), right.elementsEnd(), elements(), no_allocator);
 	}
 #endif
 	/// Moves all elements from the given vector to this vector.
 	template <size_t RightCapacity>
 	static_array(static_array<value_type, RightCapacity> &right, consume_t)
-		: m_elementsEnd(elements())
 	{
-		move_construct(right.elements(), right.elementsEnd(), elements());
-		elementsEnd() += right.size();
+		LEAN_ASSERT(right.size() <= capacity);
+		elementsEnd() = containers::move_construct(right.elements(), right.elementsEnd(), elements(), no_allocator);
 	}
 	/// Copies all elements from the given range to this vector.
 	template <class Iterator>
 	static_array(Iterator begin, Iterator end)
-		: m_elementsEnd(elements())
-	{
-		elementsEnd() += copy_construct(begin, end, elements());
-	}
+		: m_elementsEnd( containers::copy_construct(begin, end, elements(), no_allocator) ) { }
 	/// Moves all elements from the given range to this vector.
 	template <class Iterator>
 	static_array(Iterator begin, Iterator end, consume_t)
-		: m_elementsEnd(elements())
-	{
-		elementsEnd() += move_construct(begin, end, elements());
-	}
+		: m_elementsEnd( containers::move_construct(begin, end, elements(), no_allocator) ) {  }
 	/// Destroys all elements in this vector.
 	~static_array()
 	{
-		destruct(elements(), elementsEnd());
+		containers::destruct(elements(), elementsEnd(), no_allocator);
 	}
 
 	/// Copies all elements of the given vector to this vector.
@@ -225,8 +121,8 @@ public:
 		if (&right != this)
 		{
 			clear();
-			copy_construct(right.elements(), right.elementsEnd(), elements());
-			elementsEnd() += right.size();
+			LEAN_ASSERT(right.size() <= capacity);
+			elementsEnd() = containers::copy_construct(right.elements(), right.elementsEnd(), elements(), no_allocator);
 		}
 	}
 	/// Moves all elements from the given vector to this vector.
@@ -236,18 +132,10 @@ public:
 		if (&right != this)
 		{
 			clear();
-			move_construct(right.elements(), right.elementsEnd(), elements());
-			elementsEnd() += right.size();
+			LEAN_ASSERT(right.size() <= capacity);
+			elementsEnd() = containers::move_construct(right.elements(), right.elementsEnd(), elements(), no_allocator);
 		}
 	}
-#ifndef LEAN0X_NO_RVALUE_REFERENCES
-	/// Moves all elements from the given vector to this vector.
-	template <size_t RightCapacity>
-	LEAN_INLINE void assign(static_array<value_type, RightCapacity> &&right)
-	{
-		assign(right, consume);
-	}
-#endif
 
 	/// Copies all elements of the given vector to this vector.
 	LEAN_INLINE static_array& operator =(const static_array &right)
@@ -262,6 +150,12 @@ public:
 		assign(right, consume);
 		return *this;
 	}
+	/// Moves all elements from the given vector to this vector.
+	template <size_t RightCapacity>
+	LEAN_INLINE void assign(static_array<value_type, RightCapacity> &&right)
+	{
+		assign(right, consume);
+	}
 #endif
 	
 	/// Copies all elements from the given range to this vector.
@@ -269,14 +163,14 @@ public:
 	void assign_disjoint(Iterator begin, Iterator end)
 	{
 		clear();
-		elementsEnd() += copy_construct(begin, end, elements());
+		elementsEnd() = containers::copy_construct(begin, end, elements(), no_allocator);
 	}
 	/// Moves all elements from the given range to this vector.
 	template <class Iterator>
 	void assign_disjoint(Iterator begin, Iterator end, consume_t)
 	{
 		clear();
-		elementsEnd() += move_construct(begin, end, elements());
+		elementsEnd() = containers::move_construct(begin, end, elements(), no_allocator);
 	}
 
 	/// Returns a pointer to the next non-constructed element.
@@ -308,28 +202,28 @@ public:
 	/// Appends a default-constructed element to this vector.
 	LEAN_INLINE reference push_back()
 	{
-		default_construct(elementsEnd());
+		containers::default_construct(elementsEnd(), no_allocator);
 		return *elementsEnd()++;
 	}
 	/// Appends a default-constructed element to this vector.
 	LEAN_INLINE pointer push_back_n(size_type count)
 	{
 		Element *firstElement = elementsEnd();
-		default_construct(firstElement, firstElement + count);
+		containers::default_construct(firstElement, firstElement + count, no_allocator);
 		elementsEnd() += count;
 		return firstElement;
 	}
 	/// Appends the given element to this vector.
 	LEAN_INLINE reference push_back(const value_type &value)
 	{
-		copy_construct(elementsEnd(), value);
+		containers::copy_construct(elementsEnd(), value, no_allocator);
 		return *elementsEnd()++;
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Appends the given element to this vector.
 	LEAN_INLINE reference push_back(value_type &&value)
 	{
-		move_construct(elementsEnd(), value);
+		containers::move_construct(elementsEnd(), value, no_allocator);
 		return *elementsEnd()++;
 	}
 #endif
@@ -338,7 +232,7 @@ public:
 	{
 		LEAN_ASSERT(!empty());
 
-		destruct(--elementsEnd());
+		containers::destruct(--elementsEnd(), no_allocator);
 	}
 
 	/// Clears all elements from this vector.
@@ -346,7 +240,7 @@ public:
 	{
 		Element *oldElementsEnd = elementsEnd();
 		elementsEnd() = elements();
-		destruct(elements(), oldElementsEnd);
+		containers::destruct(elements(), oldElementsEnd, no_allocator);
 	}
 	
 	/// Gets the first element in the vector, access violation on failure.
@@ -399,14 +293,15 @@ public:
 		}
 
 		swap(min, minEnd, max);
-		move(max + (minEnd - min), maxEnd, minEnd);
-		destruct(max + (minEnd - min), maxEnd);
-
+		containers::move_construct(max + (minEnd - min), maxEnd, minEnd, no_allocator);
+		
 		size_type leftSize = right.size();
 		size_type rightSize = size();
 
 		elementsEnd() = elements() + leftSize;
 		right.elementsEnd() = right.elements() + rightSize;
+
+		containers::destruct(max + (minEnd - min), maxEnd, no_allocator);
 	}
 };
 

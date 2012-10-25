@@ -2,6 +2,7 @@
 
 #define LEAN_CONTAINERS_TEST_INSTANTIATION
 #include "lean/containers/containers.h"
+#include "lean/containers/static_array.h"
 
 #include <vector>
 #include <map>
@@ -62,6 +63,8 @@ namespace containers
 	template const test_value& any_cast(const any&);
 	template volatile test_value& any_cast(volatile any&);
 	template const volatile test_value& any_cast(const volatile any&);
+
+	template class static_array<std::string, 17>;
 
 } // namespace
 } // namespace

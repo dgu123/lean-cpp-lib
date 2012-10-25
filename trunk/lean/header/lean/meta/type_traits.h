@@ -58,11 +58,26 @@ public:
 		sizeof(yes) );
 };
 
+/// True if Type is an empty class.
+template <class Type>
+struct is_empty
+{
+private:
+	// MONITOR: Make use of empty base class optimization
+	template <class T>
+	struct check : private T { int i; };
+
+public:
+	/// Specifies whether Type is empty.
+	static const bool value = (sizeof(check<Type>) == sizeof(int));
+};
+
 } // namespace
 
 using meta::is_equal;
 using meta::is_unsigned;
 using meta::is_derived;
+using meta::is_empty;
 
 /// True if Type defines the given type, false otherwise.
 #define LEAN_DEFINE_HAS_TYPE(TypeName)													\

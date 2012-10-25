@@ -7,6 +7,7 @@
 
 #include "../cpp0x.h"
 #include "../functional/variadic.h"
+#include "common.h"
 
 namespace lean
 {
@@ -80,11 +81,6 @@ public:
 	resource_ptr(Resource2 *resource)
 		: m_resource( acquire(resource) ) { };
 
-	/// Allows for the binding of existing COM object references on COM pointer construction.
-	enum bind_reference_t
-	{
-		bind_reference ///< Allows for the binding of existing COM object references on COM pointer construction.
-	};
 	/// Constructs a resource pointer from the given resource without incrementing its reference count.
 	resource_ptr(Resource *resource, bind_reference_t)
 		: m_resource(resource) { };

@@ -53,12 +53,6 @@ struct dynamic_array_base : public noncopyable
 		}
 	}
 
-	/// Allows for consuming construction from reference.
-	enum consume_t
-	{
-		consume		///< Consume the contents of the given array.
-	};
-
 	/// Constructs an empty vector.
 	LEAN_INLINE dynamic_array_base()
 		: m_elements(nullptr),
@@ -257,12 +251,6 @@ private:
 	}
 
 public:
-	/// Allows for consuming construction from reference.
-	enum consume_t
-	{
-		consume		///< Consume the contents of the given array.
-	};
-
 	/// Constructs an empty vector.
 	dynamic_array() { }
 	/// Constructs an empty vector.

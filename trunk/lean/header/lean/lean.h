@@ -222,6 +222,18 @@
 namespace lean
 {
 
+/// Allows for the construction of uninitialized data.
+enum uninitialized_t
+{
+	uninitialized ///< Do not initialize.
+};
+
+/// Allows for explicitly consuming construction (aka move).
+enum consume_t
+{
+	consume ///< Consume the contents of the given object.
+};
+
 /// Returns the address of the given reference.
 template <class Type>
 LEAN_INLINE Type* addressof(Type& value)

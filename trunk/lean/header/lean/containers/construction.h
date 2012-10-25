@@ -16,16 +16,24 @@ namespace containers
 struct nontrivial_construction_t { };
 struct trivial_construction_t { };
 
+struct no_allocator_t { };
+static const no_allocator_t no_allocator;
+
 template <class Tag>
 struct is_trivial_construction { static const bool value = false; };
 template <>
 struct is_trivial_construction<trivial_construction_t> { static const bool value = true; };
 
-/// Destructs the elements in the given range.
+/// Destructs the given element.
 template <class Element, class Allocator>
 LEAN_INLINE void destruct(Element *destr, Allocator &allocator, nontrivial_construction_t = nontrivial_construction_t())
 {
 	allocator.destroy(destr);
+}
+template <class Element>
+LEAN_INLINE void destruct(Element *destr, no_allocator_t, nontrivial_construction_t = nontrivial_construction_t())
+{
+	destr->~Element();
 }
 template <class Element, class Allocator>
 LEAN_INLINE void destruct(Element *destr, Allocator &allocator, trivial_construction_t) { }
@@ -44,6 +52,11 @@ template <class Element, class Allocator>
 LEAN_INLINE void default_construct(Element *dest, Allocator &allocator)
 {
 	allocator.construct(dest, Element());
+}
+template <class Element>
+LEAN_INLINE void default_construct(Element *dest, no_allocator_t)
+{
+	new (static_cast<void*>(dest)) Element();
 }
 /// Default constructs elements in the given range.
 template <class Element, class Allocator>
@@ -68,6 +81,11 @@ template <class Element, class Allocator>
 LEAN_INLINE void copy_construct(Element *dest, const Element &source, Allocator &allocator, nontrivial_construction_t = nontrivial_construction_t())
 {
 	allocator.construct(dest, source);
+}
+template <class Element>
+LEAN_INLINE void copy_construct(Element *dest, const Element &source, no_allocator_t, nontrivial_construction_t = nontrivial_construction_t())
+{
+	new (static_cast<void*>(dest)) Element(source);
 }
 template <class Element, class Allocator>
 LEAN_INLINE void copy_construct(Element *dest, const Element &source, Allocator &allocator, trivial_construction_t)
@@ -106,6 +124,11 @@ template <class Element, class Allocator>
 LEAN_INLINE void move_construct(Element *dest, Element &source, Allocator &allocator, nontrivial_construction_t = nontrivial_construction_t())
 {
 	allocator.construct(dest, LEAN_MOVE(source));
+}
+template <class Element>
+LEAN_INLINE void move_construct(Element *dest, const Element &source, no_allocator_t, nontrivial_construction_t = nontrivial_construction_t())
+{
+	new (static_cast<void*>(dest)) Element(LEAN_MOVE(source));
 }
 template <class Element, class Allocator>
 LEAN_INLINE void move_construct(Element *dest, Element &source, Allocator &allocator, trivial_construction_t)
@@ -178,7 +201,7 @@ inline Element* move_backwards(Iterator source, Iterator sourceEnd, Element *des
 template <class Iterator, class Element>
 LEAN_INLINE Element* move_backwards(Iterator source, Iterator sourceEnd, Element *dest, trivial_construction_t)
 {
-	size_t count = (sourceEnd - source);
+	size_t count = sourceEnd - source;
 	memmove(dest, addressof(*source), count * sizeof(Element));
 	return dest + count;
 }

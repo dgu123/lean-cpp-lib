@@ -105,8 +105,6 @@ private:
 	size_t m_count;
 
 public:
-	enum consume_t { consume };
-
 	/// Holds the given data & frees it according to the given policy on destruction.
 	LEAN_INLINE scoped_property_data(const class property_type &type, void *data, size_t count)
 		: m_type(&type),

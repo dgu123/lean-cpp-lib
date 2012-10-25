@@ -42,13 +42,6 @@ public:
 	/// Type of constant iterators to the elements contained by this vector.
 	typedef const_pointer const_iterator;
 
-	/// Allows for the construction of uninitialized arrays.
-	enum uninitialized_t
-	{
-		/// Allows for the construction of uninitialized arrays.
-		uninitialized
-	};
-
 private:
 	char m_data[sizeof(array_type)];
 

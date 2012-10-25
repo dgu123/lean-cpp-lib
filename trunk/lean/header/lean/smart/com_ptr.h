@@ -7,6 +7,7 @@
 
 #include "../lean.h"
 #include "../meta/dependent_false.h"
+#include "common.h"
 
 namespace lean
 {
@@ -63,11 +64,6 @@ public:
 	com_ptr(COMType2 *object)
 		: m_object( acquire(object) ) { };
 
-	/// Allows for the binding of existing COM object references on COM pointer construction.
-	enum bind_reference_t
-	{
-		bind_reference ///< Allows for the binding of existing COM object references on COM pointer construction.
-	};
 	/// Constructs a COM pointer from the given COM object without incrementing its reference count.
 	com_ptr(COMType *object, bind_reference_t)
 		: m_object(object) { };

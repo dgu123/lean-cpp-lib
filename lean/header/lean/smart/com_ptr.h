@@ -92,7 +92,7 @@ public:
 	/// Binds the given COM object reference to this COM pointer.
 	static LEAN_INLINE com_ptr<com_type, true> bind(com_type *object)
 	{
-		return com_ptr<com_type, true>(object, com_ptr<com_type, true>::bind_reference);
+		return com_ptr<com_type, true>(object, bind_reference);
 	}
 	/// Unbinds the COM object reference held by this COM pointer.
 	LEAN_INLINE com_type* unbind()
@@ -105,7 +105,7 @@ public:
 	LEAN_INLINE com_ptr<com_type, true> transfer()
 	{
 		// Visual C++ won't inline delegating function calls
-		return com_ptr<com_type, true>(unbind(), com_ptr<com_type, true>::bind_reference);
+		return com_ptr<com_type, true>(unbind(), bind_reference);
 	}
 
 	/// Replaces the stored COM object with the given object. <b>[ESA]</b>
@@ -196,7 +196,7 @@ template <class COMType>
 LEAN_INLINE com_ptr<COMType, true> bind_com(COMType *object)
 {
 	// Visual C++ won't inline delegating function calls
-	return com_ptr<COMType, true>(object, com_ptr<COMType, true>::bind_reference);
+	return com_ptr<COMType, true>(object, bind_reference);
 }
 
 } // namespace

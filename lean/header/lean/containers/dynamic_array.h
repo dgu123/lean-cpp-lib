@@ -270,7 +270,7 @@ public:
 #endif
 	/// Moves all elements from the given vector to this vector.
 	dynamic_array(dynamic_array &right, consume_t)
-		: base_type(right, base_type::consume) { }
+		: base_type(right, consume) { }
 	/// Copies all elements from the given range to this vector.
 	template <class Iterator>
 	dynamic_array(Iterator begin, Iterator end)
@@ -310,7 +310,7 @@ public:
 		if (&right != this)
 		{
 			clear();
-			this->base_type::assign(right, base_type::consume);
+			this->base_type::assign(right, consume);
 		}
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES

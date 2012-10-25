@@ -45,17 +45,9 @@ namespace containers
 	template class simple_hash_map<int, test_value, simple_hash_map_policies::podkey_semipod>;
 	template class simple_hash_map<int, test_value, simple_hash_map_policies::pod>;
 
-	// Accumulation vector
-	template class accumulation_vector< std::vector<test_value>, default_reallocation_policy< std::vector<test_value> > >;
-	template class accumulation_vector< std::vector<test_value>, move_reallocation_policy< std::vector<test_value> > >;
-
 	// Not fully supported
 //	template class accumulation_vector< simple_vector<test_value>, default_reallocation_policy< simple_vector<test_value> > >;
 //	template class accumulation_vector< simple_vector<test_value>, move_reallocation_policy< simple_vector<test_value> > >;
-
-	// Accumulation map
-	template class accumulation_map< std::map<int, test_value> >;
-	template class accumulation_map< std::map<int, test_value> >;
 
 	// Any
 	template class any_value<int>;

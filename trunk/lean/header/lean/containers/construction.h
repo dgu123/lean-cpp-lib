@@ -126,7 +126,7 @@ LEAN_INLINE void move_construct(Element *dest, Element &source, Allocator &alloc
 	allocator.construct(dest, LEAN_MOVE(source));
 }
 template <class Element>
-LEAN_INLINE void move_construct(Element *dest, const Element &source, no_allocator_t, nontrivial_construction_t = nontrivial_construction_t())
+LEAN_INLINE void move_construct(Element *dest, Element &source, no_allocator_t, nontrivial_construction_t = nontrivial_construction_t())
 {
 	new (static_cast<void*>(dest)) Element(LEAN_MOVE(source));
 }

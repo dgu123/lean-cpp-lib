@@ -34,6 +34,12 @@ struct default_lock_policy
 	}
 };
 
+/// Allows locked lockable objects to be adopted by a scoped lock object on construction.
+enum adopt_lock_t
+{
+	adopt_lock	///< Adopts a locked lockable object on scoped lock construction
+};
+
 /// Automatic lock management class that locks a given object on construction to be unlocked on destruction.
 template < class Lockable, class Policy = default_lock_policy<Lockable> >
 class scoped_lock : public noncopyable
@@ -46,12 +52,6 @@ public:
 	typedef Lockable lock_type;
 	/// Type of the locking policy used by this class.
 	typedef Policy policy_type;
-
-	/// Allows locked lockable objects to be adopted by a scoped lock object on construction.
-	enum adopt_lock_t
-	{
-		adopt_lock	///< Adopts a locked lockable object on scoped lock construction
-	};
 
 	/// Locks the given object, to be unlocked on destruction.
 	LEAN_INLINE explicit scoped_lock(lock_type &lock)

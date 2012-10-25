@@ -155,12 +155,6 @@ private:
 	}
 
 public:
-	/// Allows for consuming construction from reference.
-	enum consume_t
-	{
-		consume	 ///< Consume the contents of the given array.
-	};
-
 	/// Constructs an empty vector.
 	static_array()
 		: m_elementsEnd(elements()) { }

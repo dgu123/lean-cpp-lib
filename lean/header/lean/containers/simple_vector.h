@@ -61,85 +61,94 @@ private:
 	// Make sure size_type is unsigned
 	LEAN_STATIC_ASSERT(is_unsigned<size_type>::value);
 
-	/// Default constructs an element at the given location.
 	LEAN_INLINE void default_construct(Element *dest)
 	{
 		if (!Policy::no_construct)
 			containers::default_construct(dest, m_allocator);
 	}
-	/// Default constructs elements in the given range.
 	LEAN_INLINE void default_construct(Element *dest, Element *destEnd)
 	{
 		if (!Policy::no_construct)
 			containers::default_construct(dest, destEnd, m_allocator);
 	}
-	/// Copies the given source element to the given destination.
 	LEAN_INLINE void copy_construct(Element *dest, const Element &source)
 	{
 		containers::copy_construct(dest, source, m_allocator, typename Policy::copy_tag());
 	}
-	/// Copies elements from the given source range to the given destination.
 	template <class Iterator>
 	LEAN_INLINE void copy_construct(Iterator source, Iterator sourceEnd, Element *dest)
 	{
 		containers::copy_construct(source, sourceEnd, dest, m_allocator, typename Policy::copy_tag());
 	}
-	/// Moves the given source element to the given destination.
 	LEAN_INLINE void move_construct(Element *dest, Element &source)
 	{
 		// NOTE: Use copy tag, move tag only when no destruction takes place
 		containers::move_construct(dest, source, m_allocator, typename Policy::copy_tag());
 	}
-	/// Moves elements from the given source range to the given destination.
 	template <class Iterator>
 	LEAN_INLINE void move_construct(Iterator source, Iterator sourceEnd, Element *dest)
 	{
 		// NOTE: Use copy tag, move tag only when no destruction takes place
 		containers::move_construct(source, sourceEnd, dest, m_allocator, typename Policy::copy_tag());
 	}
-	/// Destructs the elements in the given range.
 	LEAN_INLINE void destruct(Element *destr)
 	{
 		containers::destruct(destr, m_allocator, typename Policy::destruct_tag());
 	}
-	/// Destructs the elements in the given range.
 	LEAN_INLINE void destruct(Element *destr, Element *destrEnd)
 	{
 		containers::destruct(destr, destrEnd, m_allocator, typename Policy::destruct_tag());
 	}
-
+	LEAN_INLINE void open_uninit(Element *where, Element *whereEnd)
+	{
+		containers::open_uninit(where, whereEnd, m_elementsEnd, m_allocator,
+			typename Policy::move_tag(), typename Policy::destruct_tag());
+	}
+	LEAN_INLINE void close_uninit(Element *where, Element *whereEnd)
+	{
+		containers::close_uninit(where, whereEnd, m_elementsEnd, m_allocator,
+			typename Policy::move_tag(), typename Policy::destruct_tag());
+	}
+	LEAN_INLINE void close(Element *where, Element *whereEnd)
+	{
+		containers::close(where, whereEnd, m_elementsEnd, m_allocator,
+			typename Policy::move_tag(), typename Policy::destruct_tag());
+	}
+	
 	/// Allocates space for the given number of elements.
 	void reallocate(size_type newCapacity)
 	{
 		Element *newElements = m_allocator.allocate(newCapacity);
 
-		if (!empty())
+		if (!Policy::raw_move)
 			try
 			{
-				if (Policy::raw_move)
-					memcpy(newElements, m_elements, size() * sizeof(Element));
-				else
-					move_construct(m_elements, m_elementsEnd, newElements);
+				move_construct(m_elements, m_elementsEnd, newElements);
 			}
 			catch(...)
 			{
 				m_allocator.deallocate(newElements, newCapacity);
 				throw;
 			}
+		else if (!empty())
+			// Raw move works by copying bitwise w/o destructing afterwards
+			// -> Works for all objects that are not "self-aware" (i.e. most objects)
+			memcpy(newElements, m_elements, size() * sizeof(Element));
 
 		Element *oldElements = m_elements;
 		Element *oldElementsEnd = m_elementsEnd;
 		size_type oldCapacity = capacity();
 		
-		// Mind the order, size() based on member variables!
+		// ORDER: IMPORTANT: Mind the order, size() based on member variables!
 		m_elementsEnd = newElements + size();
 		m_capacityEnd = newElements + newCapacity;
 		m_elements = newElements;
 
 		if (oldElements)
 		{
-			// Do nothing on exception, resources leaking anyways!
+			// IMPORTANT: Don't destruct on raw move!
 			if (!Policy::raw_move)
+				// Do nothing on exception, resources leaking anyways!
 				destruct(oldElements, oldElementsEnd);
 			m_allocator.deallocate(oldElements, oldCapacity);
 		}
@@ -427,7 +436,7 @@ public:
 			where = m_elements + whereIdx;
 		}
 
-		containers::open_uninit(where, where + 1, m_elementsEnd, m_allocator, typename Policy::move_tag(), typename Policy::destruct_tag());
+		open_uninit(where, where + 1);
 
 		try
 		{
@@ -435,7 +444,7 @@ public:
 		}
 		catch (...)
 		{
-			containers::close_uninit(where, where + 1, m_elementsEnd, m_allocator, typename Policy::move_tag(), typename Policy::destruct_tag());
+			close_uninit(where, where + 1);
 			throw;
 		}
 	}
@@ -455,7 +464,7 @@ public:
 			where = m_elements + whereIdx;
 		}
 
-		containers::open_uninit(where, where + 1, m_elementsEnd, m_allocator, typename Policy::move_tag(), typename Policy::destruct_tag());
+		open_uninit(where, where + 1);
 
 		try
 		{
@@ -463,7 +472,7 @@ public:
 		}
 		catch (...)
 		{
-			containers::close_uninit(where, where + 1, m_elementsEnd, m_allocator, typename Policy::move_tag(), typename Policy::destruct_tag());
+			close_uninit(where, where + 1);
 			throw;
 		}
 	}
@@ -475,21 +484,21 @@ public:
 		LEAN_ASSERT(m_elements <= where);
 		LEAN_ASSERT(where < m_elementsEnd);
 
-		containers::close(where, where + 1, m_elementsEnd, m_allocator, typename Policy::move_tag(), typename Policy::destruct_tag());
+		close(where, where + 1);
 	}
 	/// Erases the given range of elements.
-	LEAN_INLINE void erase(iterator where, iterator whereEnd)
+	void erase(iterator where, iterator whereEnd)
 	{
 		LEAN_ASSERT(m_elements <= where);
 		LEAN_ASSERT(whereEnd <= m_elementsEnd);
 		LEAN_ASSERT(where <= whereEnd);
 
 		if (where != whereEnd)
-			containers::close(where, whereEnd, m_elementsEnd, m_allocator, typename Policy::move_tag(), typename Policy::destruct_tag());
+			close(where, whereEnd);
 	}
 
 	/// Clears all elements from this vector.
-	LEAN_INLINE void clear()
+	void clear()
 	{
 		Element *oldElementsEnd = m_elementsEnd;
 		m_elementsEnd = m_elements;
@@ -497,7 +506,7 @@ public:
 	}
 
 	/// Reserves space for the predicted number of elements given.
-	LEAN_INLINE void reserve(size_type newCapacity)
+	void reserve(size_type newCapacity)
 	{
 		// Mind overflow
 		check_length(newCapacity);

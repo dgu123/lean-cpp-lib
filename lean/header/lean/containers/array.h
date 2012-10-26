@@ -7,6 +7,7 @@
 
 #include "../lean.h"
 #include "construction.h"
+#include "../functional/variadic.h"
 
 namespace lean 
 {
@@ -46,12 +47,30 @@ public:
 private:
 	char m_data[sizeof(array_type)];
 
-public:
-	/// Constructs an array.
-	array()
-	{
-		containers::default_construct(data(), data_end(), no_allocator);
-	}
+public:	
+#ifdef DOXYGEN_READ_THIS
+	/// Constructs an array by passing the given arguments to the constructor of every element.
+	explicit array(...);
+#else
+	#define LEAN_ARRAY_CONSTRUCT_METHOD_DECL \
+		explicit array
+	#define LEAN_ARRAY_CONSTRUCT_METHOD_BODY(call) \
+		{ \
+			pointer at = data(); \
+			\
+			try \
+			{ \
+				for (; at < data_end(); ++at) \
+					new (static_cast<void*>(at)) value_type##call; \
+			} \
+			catch (...) \
+			{ \
+				containers::destruct(data(), at, no_allocator); \
+				throw; \
+			} \
+		}
+	LEAN_VARIADIC_TEMPLATE(LEAN_COPY, LEAN_ARRAY_CONSTRUCT_METHOD_DECL, LEAN_NOTHING, LEAN_ARRAY_CONSTRUCT_METHOD_BODY)
+#endif
 	
 	/// Constructs an uninitialized array.
 	LEAN_INLINE array(uninitialized_t) { }
@@ -68,58 +87,6 @@ public:
 		containers::move_construct(right.data(), right.data_end(), data(), no_allocator);
 	}
 #endif
-
-	/// Constructs an array by passing the given arguments to the constructor of every element.
-	template <class V1>
-	explicit array(const V1 &v1)
-	{
-		pointer at = data();
-
-		try
-		{
-			for (; at < data_end(); ++at)
-				new (static_cast<void*>(at)) value_type(v1);
-		}
-		catch (...)
-		{
-			containers::destruct(data(), at, no_allocator);
-			throw;
-		}
-	}
-	/// Constructs an array by passing the given arguments to the constructor of every element.
-	template <class V1, class V2>
-	explicit array(const V1 &v1, const V2 &v2)
-	{
-		pointer at = data();
-
-		try
-		{
-			for (; at < data_end(); ++at)
-				new (static_cast<void*>(at)) value_type(v1, v2);
-		}
-		catch (...)
-		{
-			containers::destruct(data(), at, no_allocator);
-			throw;
-		}
-	}
-	/// Constructs an array by passing the given arguments to the constructor of every element.
-	template <class V1, class V2, class V3>
-	explicit array(const V1 &v1, const V2 &v2, const V3 &v3)
-	{
-		pointer at = data();
-
-		try
-		{
-			for (; at < data_end(); ++at)
-				new (static_cast<void*>(at)) value_type(v1, v2, v3);
-		}
-		catch (...)
-		{
-			containers::destruct(data(), at, no_allocator);
-			throw;
-		}
-	}
 
 	/// Destroys all elements in this array (even if uninitialized!).
 	~array()

@@ -18,9 +18,9 @@ struct multi_vector_base
 {
 	LEAN_INLINE multi_vector_base() { }
 	template <class T1>
-	LEAN_INLINE multi_vector_base(T1&&) { }
+	LEAN_INLINE multi_vector_base(T1 LEAN_FW_REF) { }
 	template <class T1, class T2>
-	LEAN_INLINE multi_vector_base(T1&&, T2&&) { }
+	LEAN_INLINE multi_vector_base(T1 LEAN_FW_REF, T2 LEAN_FW_REF) { }
 
 	LEAN_INLINE void push_back() { }
 	LEAN_INLINE void erase(size_t idx) { }
@@ -29,14 +29,28 @@ struct multi_vector_base
 	LEAN_INLINE void reserve(size_t size) { }
 };
 
-template < class Type, int ID, class Base = multi_vector_base, class Alloc = std::allocator<Type> >
+/// Default vector binder.
+template <template <class E, class A> class Vector, template <class T> class Allocator>
+struct vector_binder
+{
+	/// Constructs a vector type from the given element type.
+	template <class Type>
+	struct rebind
+	{
+		typedef Vector< Type, Allocator<Type> > type;
+	};
+};
+
+/// Manages several parallel vectors.
+template <class Type, int ID, class VectorBinder, class Base = multi_vector_base>
 class multi_vector : private Base
 {
-	template <class OtherType, int OtherID, class OtherBase, class OtherAlloc>
+	template <class OtherType, int OtherID, class OtherVectorBinder, class OtherBase>
 	friend class multi_vector;
 
 public:
-	typedef std::vector<Type, Alloc> vector_type;
+	typedef typename VectorBinder::template rebind<Type>::type vector_type;
+	typedef typename vector_type::allocator_type allocator_type;
 
 private:
 	vector_type v;
@@ -99,10 +113,10 @@ private:
 
 public:
 	LEAN_INLINE multi_vector() { }
-	LEAN_INLINE multi_vector(const Alloc &allocator)
+	LEAN_INLINE multi_vector(const allocator_type &allocator)
 		: Base(allocator),
 		v(allocator) { }
-	LEAN_INLINE multi_vector(size_t size, const Alloc &allocator = Alloc())
+	LEAN_INLINE multi_vector(size_t size, const allocator_type &allocator = allocator_type())
 		: Base(size, allocator),
 		v(size, allocator) { }
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
@@ -215,9 +229,69 @@ public:
 	LEAN_INLINE const Type& operator [](size_t idx) const { return v[idx]; }
 };
 
+template < class VectorBinder = vector_binder<std::vector, std::allocator> >
+struct multi_vector_t
+{
+	template <class Type1, int ID1,
+		class Type2 = void, int ID2 = -1,
+		class Type3 = void, int ID3 = -1,
+		class Type4 = void, int ID4 = -1,
+		class Type5 = void, int ID5 = -1,
+		class Type6 = void, int ID6 = -1,
+		class Type7 = void, int ID7 = -1,
+		class Type8 = void, int ID8 = -1,
+		class Type9 = void, int ID9 = -1>
+	struct make
+	{
+		typedef multi_vector<Type1, ID1, VectorBinder, typename multi_vector_t::template make<Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6, Type7, ID7, Type8, ID8, Type9, ID9>::type> type;
+	};
+
+	template <class Type1, int ID1>
+	struct make<Type1, ID1>
+	{
+		typedef multi_vector<Type1, ID1, VectorBinder> type;
+	};
+	template <class Type1, int ID1, class Type2, int ID2>
+	struct make<Type1, ID1, Type2, ID2>
+	{
+		typedef multi_vector<Type1, ID1, VectorBinder, typename multi_vector_t::template make<Type2, ID2>::type> type;
+	};
+	template <class Type1, int ID1, class Type2, int ID2, class Type3, int ID3>
+	struct make<Type1, ID1, Type2, ID2, Type3, ID3>
+	{
+		typedef multi_vector<Type1, ID1, VectorBinder, typename multi_vector_t::template make<Type2, ID2, Type3, ID3>::type> type;
+	};
+	template <class Type1, int ID1, class Type2, int ID2, class Type3, int ID3, class Type4, int ID4>
+	struct make<Type1, ID1, Type2, ID2, Type3, ID3, Type4, ID4>
+	{
+		typedef multi_vector<Type1, ID1, VectorBinder, typename multi_vector_t::template make<Type2, ID2, Type3, ID3, Type4, ID4>::type> type;
+	};
+	template <class Type1, int ID1, class Type2, int ID2, class Type3, int ID3, class Type4, int ID4, class Type5, int ID5>
+	struct make<Type1, ID1, Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5>
+	{
+		typedef multi_vector<Type1, ID1, VectorBinder, typename multi_vector_t::template make<Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5>::type> type;
+	};
+	template <class Type1, int ID1, class Type2, int ID2, class Type3, int ID3, class Type4, int ID4, class Type5, int ID5, class Type6, int ID6>
+	struct make<Type1, ID1, Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6>
+	{
+		typedef multi_vector<Type1, ID1, VectorBinder, typename multi_vector_t::template make<Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6>::type> type;
+	};
+	template <class Type1, int ID1, class Type2, int ID2, class Type3, int ID3, class Type4, int ID4, class Type5, int ID5, class Type6, int ID6, class Type7, int ID7>
+	struct make<Type1, ID1, Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6, Type7, ID7>
+	{
+		typedef multi_vector<Type1, ID1, VectorBinder, typename multi_vector_t::template make<Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6, Type7, ID7>::type> type;
+	};
+	template <class Type1, int ID1, class Type2, int ID2, class Type3, int ID3, class Type4, int ID4, class Type5, int ID5, class Type6, int ID6, class Type7, int ID7, class Type8, int ID8>
+	struct make<Type1, ID1, Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6, Type7, ID7, Type8, ID8>
+	{
+		typedef multi_vector<Type1, ID1, VectorBinder, typename multi_vector_t::template make<Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6, Type7, ID7, Type8, ID8>::type> type;
+	};
+};
+
 } // namespace
 
 using containers::multi_vector;
+using containers::multi_vector_t;
 
 } // namespace
 

@@ -2,6 +2,7 @@
 /* lean IO                      (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_IO_EDIANNESS
 #define LEAN_IO_EDIANNESS
 

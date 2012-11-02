@@ -2,6 +2,7 @@
 /* lean Meta                    (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_META_CONDITIONAL
 #define LEAN_META_CONDITIONAL
 

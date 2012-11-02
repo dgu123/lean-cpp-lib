@@ -2,6 +2,7 @@
 /* lean Smart                   (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_SMART_AUTO_RESTORE
 #define LEAN_SMART_AUTO_RESTORE
 

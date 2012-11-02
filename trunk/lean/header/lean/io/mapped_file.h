@@ -2,6 +2,7 @@
 /* lean I/O                     (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_LOGGING_IO_MAPPED_FILE
 #define LEAN_LOGGING_IO_MAPPED_FILE
 

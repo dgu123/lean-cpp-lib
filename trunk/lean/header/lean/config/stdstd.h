@@ -2,6 +2,7 @@
 /* lean Dependency Config       (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_CONFIG_STDSTD
 #define LEAN_CONFIG_STDSTD
 

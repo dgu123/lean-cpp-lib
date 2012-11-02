@@ -2,6 +2,7 @@
 /* lean Logging                 (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_LOGGING_WIN_ERRORS
 #define LEAN_LOGGING_WIN_ERRORS
 

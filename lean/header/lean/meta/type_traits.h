@@ -5,6 +5,8 @@
 #ifndef LEAN_META_TYPE_TRAITS
 #define LEAN_META_TYPE_TRAITS
 
+#include "strip.h"
+
 #ifndef LEAN0X_NO_STL
 #include <type_traits>
 #endif
@@ -118,6 +120,16 @@ namespace lean
 namespace meta
 {
 
+LEAN_DEFINE_HAS_TYPE(iterator_category);
+
+/// Checks if the given type is an iterator.
+template <class Type>
+struct is_iterator
+{
+	/// True if the given type is an iterator.
+	static const bool value = strip_pointer<Type>::stripped || has_type_iterator_category<Type>::value;
+};
+
 #ifdef _MSC_VER
 
 /// Checks if the given type is trivial.
@@ -153,6 +165,8 @@ using std::is_trivially_destructible;
 #endif
 
 } // namespace
+
+using meta::is_iterator;
 
 using meta::is_trivial;
 using meta::is_trivially_copyable;

@@ -519,6 +519,9 @@
     <ClInclude Include="header\lean\smart\common.h">
       <Filter>Header Files\smart</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\foreach.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

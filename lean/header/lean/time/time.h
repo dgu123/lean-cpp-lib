@@ -2,6 +2,7 @@
 /* lean Time                    (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_TIME_TIME
 #define LEAN_TIME_TIME
 

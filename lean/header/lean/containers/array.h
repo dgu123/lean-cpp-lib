@@ -2,6 +2,7 @@
 /* lean Containers              (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_CONTAINERS_ARRAY
 #define LEAN_CONTAINERS_ARRAY
 

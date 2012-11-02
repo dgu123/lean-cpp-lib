@@ -2,6 +2,7 @@
 /* lean                         (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN
 #define LEAN
 

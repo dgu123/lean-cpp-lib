@@ -2,6 +2,7 @@
 /* lean XML                     (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_XML_UTILITY
 #define LEAN_XML_UTILITY
 

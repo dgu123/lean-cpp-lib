@@ -2,6 +2,7 @@
 /* lean Tags                    (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_TAGS_TRANSITIVE_PTR
 #define LEAN_TAGS_TRANSITIVE_PTR
 

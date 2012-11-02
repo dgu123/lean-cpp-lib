@@ -2,6 +2,7 @@
 /* lean Concurrent              (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_CONCURRENT_EVENT
 #define LEAN_CONCURRENT_EVENT
 

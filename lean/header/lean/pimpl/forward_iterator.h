@@ -2,6 +2,7 @@
 /* lean PImpl                   (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_PIMPL_FORWARD_ITERATOR
 #define LEAN_PIMPL_FORWARD_ITERATOR
 

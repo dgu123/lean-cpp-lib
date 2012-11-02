@@ -2,6 +2,7 @@
 /* lean PImpl                   (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_PIMPL_SAFE_PIMPL_BASE
 #define LEAN_PIMPL_SAFE_PIMPL_BASE
 

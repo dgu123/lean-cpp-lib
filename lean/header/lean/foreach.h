@@ -2,6 +2,7 @@
 /* lean Macros                  (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_FOREACH_H
 #define LEAN_FOREACH_H
 

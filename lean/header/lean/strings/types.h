@@ -2,6 +2,7 @@
 /* lean Strings                 (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_STRINGS_TYPES
 #define LEAN_STRINGS_TYPES
 

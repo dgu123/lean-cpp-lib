@@ -2,6 +2,7 @@
 /* lean Memory                  (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_MEMORY_OBJECT_POOL
 #define LEAN_MEMORY_OBJECT_POOL
 

@@ -2,6 +2,7 @@
 /* lean built-in types          (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_TYPE_INFO
 #define LEAN_TYPE_INFO
 

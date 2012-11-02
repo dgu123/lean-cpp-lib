@@ -2,6 +2,7 @@
 /* lean PImpl                   (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_PIMPL_PIMPL_PTR
 #define LEAN_PIMPL_PIMPL_PTR
 

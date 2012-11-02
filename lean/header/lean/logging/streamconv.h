@@ -2,6 +2,7 @@
 /* lean Logging                 (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_LOGGING_STREAMCONV
 #define LEAN_LOGGING_STREAMCONV
 

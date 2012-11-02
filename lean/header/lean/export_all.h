@@ -2,6 +2,7 @@
 /* lean Export Header           (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_EXPORT_ALL
 #define LEAN_EXPORT_ALL
 

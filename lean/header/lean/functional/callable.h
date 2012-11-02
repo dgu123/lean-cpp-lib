@@ -2,6 +2,7 @@
 /* lean Functional              (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_FUNCTIONAL_CALLABLE
 #define LEAN_FUNCTIONAL_CALLABLE
 

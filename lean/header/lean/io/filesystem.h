@@ -2,6 +2,7 @@
 /* lean I/O                     (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_IO_FILESYSTEM
 #define LEAN_IO_FILESYSTEM
 

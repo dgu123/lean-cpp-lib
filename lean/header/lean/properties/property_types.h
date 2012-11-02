@@ -2,6 +2,7 @@
 /* lean Properties              (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_PROPERTIES_PROPERTY_TYPES
 #define LEAN_PROPERTIES_PROPERTY_TYPES
 

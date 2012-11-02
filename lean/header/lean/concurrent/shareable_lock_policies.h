@@ -2,6 +2,7 @@
 /* lean Concurrent              (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_CONCURRENT_SHAREABLE_LOCK_POLICIES
 #define LEAN_CONCURRENT_SHAREABLE_LOCK_POLICIES
 

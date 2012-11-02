@@ -2,6 +2,7 @@
 /* lean C++0x Config            (c) Tobias Zirr 2011 */
 /*****************************************************/
 
+#pragma once
 #ifndef LEAN_CPP0X
 #define LEAN_CPP0X
 

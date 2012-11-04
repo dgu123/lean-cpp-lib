@@ -158,6 +158,7 @@
     <ClInclude Include="header\lean\containers\simple_hash_map.h" />
     <ClInclude Include="header\lean\containers\simple_vector.h" />
     <ClInclude Include="header\lean\containers\static_array.h" />
+    <ClInclude Include="header\lean\containers\strided_ptr.h" />
     <ClInclude Include="header\lean\containers\vector_policies.h" />
     <ClInclude Include="header\lean\default.h" />
     <ClInclude Include="header\lean\export_all.h" />

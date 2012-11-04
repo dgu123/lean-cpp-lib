@@ -10,12 +10,40 @@
 #include "../meta/strip.h"
 #include "../meta/type_traits.h"
 #include "../meta/enable_if.h"
-#include <iterator>
+
+// NOTE: <iterator> includes loads of cruft
+namespace std { template<class Iterator> struct iterator_traits; }
 
 namespace lean
 {
 namespace strings
 {
+
+template <class Type>
+struct iterator_types
+{
+	typedef typename std::iterator_traits<Type>::value_type value_type;
+	typedef typename std::iterator_traits<Type>::difference_type difference_type;
+	typedef typename std::iterator_traits<Type>::pointer pointer;
+	typedef typename std::iterator_traits<Type>::reference reference;
+};
+
+template<class Type>
+struct iterator_types<Type*>
+{
+	typedef Type value_type;
+	typedef ptrdiff_t difference_type;
+	typedef Type* pointer;
+	typedef Type& reference;
+};
+template<class Type>
+struct iterator_types<const Type*>
+{
+	typedef Type value_type;
+	typedef ptrdiff_t difference_type;
+	typedef const Type* pointer;
+	typedef const Type& reference;
+};
 
 /// Iterator range.
 template <class Iterator>
@@ -60,7 +88,7 @@ public:
 	LEAN_INLINE iterator end() const { return m_end; }
 
 	/// Gets the n-th element.
-	LEAN_INLINE typename std::iterator_traits<iterator>::reference operator [](size_t n) const { return *(begin() + n); }
+	LEAN_INLINE typename iterator_types<iterator>::reference operator [](size_t n) const { return *(begin() + n); }
 };
 
 /// Casts the iterators of the given range into iterators of the given type.

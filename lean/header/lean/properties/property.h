@@ -12,6 +12,7 @@
 #include "../smart/cloneable_obj.h"
 #include "../tags/noncopyable.h"
 #include "../meta/conditional.h"
+#include <string>
 #include "../strings/types.h"
 #include "../type_info.h"
 

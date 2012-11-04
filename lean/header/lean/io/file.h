@@ -14,6 +14,7 @@
 #define LEAN_LOGGING_IO_FILE
 
 #include "../lean.h"
+#include <string>
 #include "../strings/types.h"
 #include "win_types.h"
 

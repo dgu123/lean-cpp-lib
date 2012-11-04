@@ -7,6 +7,7 @@
 #define LEAN_XML_UTILITY
 
 #include "../lean.h"
+#include <string>
 #include "../strings/types.h"
 #include "../rapidxml/rapidxml.hpp"
 

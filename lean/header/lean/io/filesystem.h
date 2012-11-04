@@ -7,6 +7,7 @@
 #define LEAN_IO_FILESYSTEM
 
 #include "../lean.h"
+#include <string>
 #include "../strings/types.h"
 #include "../strings/conversions.h"
 #include "../strings/string_traits.h"

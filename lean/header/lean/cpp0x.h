@@ -159,42 +159,6 @@
 		return v; \
 	}
 
-// Emulate next & prev if unavailable
-#ifdef LEAN0X_NO_STL
-
-namespace lean
-{
-
-/// Returns the next iterator.
-template <class Iterator>
-LEAN_INLINE Iterator next(Iterator iterator)
-{
-	return ++iterator;
-}
-
-/// Returns the previous iterator.
-template <class Iterator>
-LEAN_INLINE Iterator prev(Iterator iterator)
-{
-	return --iterator;
-}
-
-} // namespace
-
-#else
-
-#include <iterator>
-
-namespace lean
-{
-	using std::next;
-	using std::prev;
-
-} // namespace
-
-#endif
-
-
 /// @}
 
 #ifdef DOXYGEN_READ_THIS

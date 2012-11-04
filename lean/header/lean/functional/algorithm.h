@@ -83,7 +83,7 @@ template <class Iterator>
 inline Iterator insert_last(Iterator first, Iterator last)
 {
 	Iterator pos = std::upper_bound(first, last, *last);
-	std::rotate(pos, last, next(last));
+	std::rotate(pos, last, lean::next(last));
 	return pos;
 }
 
@@ -92,7 +92,7 @@ template <class Iterator, class Predicate>
 inline Iterator insert_last(Iterator first, Iterator last, Predicate predicate)
 {
 	Iterator pos = std::upper_bound(first, last, *last, predicate);
-	std::rotate(pos, last, next(last));
+	std::rotate(pos, last, lean::next(last));
 	return pos;
 }
 

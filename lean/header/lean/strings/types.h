@@ -11,7 +11,14 @@
 #include "nullterminated.h"
 #include "nullterminated_range.h"
 #include "range.h"
-#include <string>
+
+// NOTE: <string> includes loads of cruft
+namespace std
+{
+	template <class T> class allocator;
+	template <class C> struct char_traits;
+	template <class C, class T, class A> class basic_string;
+}
 
 namespace lean
 {
@@ -67,11 +74,11 @@ typedef nullterminated_range_implicit<char4> char4_ntri;
 typedef nullterminated_range<char4> char4_ntr;
 
 /// 1-byte-character string.
-typedef std::basic_string<char1> char1_string;
+typedef std::basic_string< char1, std::char_traits<char1>, std::allocator<char1> > char1_string;
 /// 2-byte-character string.
-typedef std::basic_string<char2> char2_string;
+typedef std::basic_string< char2, std::char_traits<char2>, std::allocator<char2> > char2_string;
 /// 4-byte-character string.
-typedef std::basic_string<char4> char4_string;
+typedef std::basic_string< char4, std::char_traits<char4>, std::allocator<char4> > char4_string;
 
 /// Implicit nullterminated utf8-character half-range.
 typedef nullterminated_implicit<utf8_t> utf8_nti;
@@ -101,11 +108,11 @@ typedef nullterminated_range_implicit<utf32_t> utf32_ntri;
 typedef nullterminated_range<utf32_t> utf32_ntr;
 
 /// UTF-8-character string.
-typedef std::basic_string<utf8_t> utf8_string;
+typedef std::basic_string< utf8_t, std::char_traits<utf8_t>, std::allocator<utf8_t> > utf8_string;
 /// UTF-16-character string.
-typedef std::basic_string<utf16_t> utf16_string;
+typedef std::basic_string< utf16_t, std::char_traits<utf16_t>, std::allocator<utf16_t> > utf16_string;
 /// UTF-32-character string.
-typedef std::basic_string<utf32_t> utf32_string;
+typedef std::basic_string< utf32_t, std::char_traits<utf32_t>, std::allocator<utf32_t> > utf32_string;
 
 } // namespace
 

@@ -20,44 +20,34 @@ namespace functional
 template <class Iterator1, class Iterator2>
 inline bool equal(Iterator1 begin1, Iterator1 end1, Iterator2 begin2, Iterator2 end2)
 {
-	Iterator1 it1 = begin1;
-	Iterator1 it2 = begin2;
-
-	bool ended1 = (it1 == end1);
-	bool ended2 = (it2 == end2);
-
-	while (!ended1 && !ended2)
+	while (true)
 	{
-		if (!(*it1 == *it2))
-			return false;
+		bool ended1 = (begin1 == end1);
+		bool ended2 = (begin2 == end2);
 
-		ended1 = (++it1 == end1);
-		ended2 = (++it2 == end2);
+		if (ended1 || ended2 || !(*begin1 == *begin2))
+			return ended1 && ended2;
+
+		++begin1;
+		++begin2;
 	}
-
-	return ended1 && ended2;
 }
 
 /// Compares the elements in the given ranges using the given predicate.
 template <class Iterator1, class Iterator2, class Pred>
 inline bool equal(Iterator1 begin1, Iterator1 end1, Iterator2 begin2, Iterator2 end2, Pred pred)
 {
-	Iterator1 it1 = begin1;
-	Iterator1 it2 = begin2;
-
-	bool ended1 = (it1 == end1);
-	bool ended2 = (it2 == end2);
-
-	while (!ended1 && !ended2)
+	while (true)
 	{
-		if (!pred(*it1, *it2))
-			return false;
+		bool ended1 = (begin1 == end1);
+		bool ended2 = (begin2 == end2);
 
-		ended1 = (++it1 == end1);
-		ended2 = (++it2 == end2);
+		if (ended1 || ended2 || !pred(*begin1, *begin2))
+			return ended1 && ended2;
+
+		++begin1;
+		++begin2;
 	}
-
-	return ended1 && ended2;
 }
 
 /// Compares the elements in the given ranges.
@@ -106,67 +96,33 @@ inline Iterator insert_last(Iterator first, Iterator last, Predicate predicate)
 	return pos;
 }
 
-#ifndef LEAN0X_NO_RVALUE_REFERENCES
-
 /// Pushes the given element onto the given vector.
 template <class Vector, class Value>
-inline typename Vector::iterator push_unique(Vector &vector, Value &&value)
+inline typename Vector::iterator push_unique(Vector &vector, Value LEAN_FW_REF value)
 {
 	typename Vector::iterator pos = std::find( vector.begin(), vector.end(), value );
 
 	if (pos == vector.end())
-		pos = vector.insert( pos, std::forward<Value>(value) );
+		pos = vector.insert( pos, LEAN_FORWARD(Value, value) );
 
 	return pos;
 }
 
 /// Pushes the given element into the given sorted vector.
 template <class Vector, class Value>
-inline typename Vector::iterator push_sorted(Vector &vector, Value &&value)
+inline typename Vector::iterator push_sorted(Vector &vector, Value LEAN_FW_REF value)
 {
 	typename Vector::iterator pos = std::upper_bound( vector.begin(), vector.end(), value );
-	return vector.insert( pos, std::forward<Value>(value) );
+	return vector.insert( pos, LEAN_FORWARD(Value, value) );
 }
 
 /// Pushes the given element into the given sorted vector.
 template <class Vector, class Value, class Predicate>
-inline typename Vector::iterator push_sorted(Vector &vector, Value &&value, Predicate &&predicate)
+inline typename Vector::iterator push_sorted(Vector &vector, Value LEAN_FW_REF value, Predicate LEAN_FW_REF predicate)
 {
-	typename Vector::iterator pos = std::upper_bound( vector.begin(), vector.end(), value, std::forward<Predicate>(predicate) );
-	return vector.insert( pos, std::forward<Value>(value) );
+	typename Vector::iterator pos = std::upper_bound( vector.begin(), vector.end(), value, LEAN_FORWARD(Predicate, predicate) );
+	return vector.insert( pos, LEAN_FORWARD(Value, value) );
 }
-
-#else
-
-/// Pushes the given element onto the given vector.
-template <class Vector, class Value>
-inline typename Vector::iterator push_unique(Vector &vector, const Value &value)
-{
-	typename Vector::iterator pos = std::find( vector.begin(), vector.end(), value );
-
-	if (pos == vector.end())
-		pos = vector.insert( pos, value );
-
-	return pos;
-}
-
-/// Pushes the given element into the given sorted vector.
-template <class Vector, class Value>
-inline typename Vector::iterator push_sorted(Vector &vector, const Value &value)
-{
-	typename Vector::iterator pos = std::upper_bound( vector.begin(), vector.end(), value );
-	return vector.insert( pos, value );
-}
-
-/// Pushes the given element into the given sorted vector.
-template <class Vector, class Value, class Predicate>
-inline typename Vector::iterator push_sorted(Vector &vector, const Value &value, Predicate predicate)
-{
-	typename Vector::iterator pos = std::upper_bound( vector.begin(), vector.end(), value, predicate );
-	return vector.insert( pos, value );
-}
-
-#endif
 
 /// Locates the position of the first occurence of the given element in the given sorted range.
 template <class Iterator, class Value>
@@ -196,36 +152,27 @@ inline Iterator find_sorted(Iterator begin, Iterator end, const Value &value, Or
 template <class Vector, class Value>
 inline bool remove(Vector &vector, const Value &value)
 {
-	bool bRemoved = false;
-
 	typename Vector::iterator newEnd = std::remove(vector.begin(), vector.end(), value);
-	bRemoved = (newEnd != vector.end());
-
+	bool bRemoved = (newEnd != vector.end());
 	vector.erase(newEnd, vector.end());
-
 	return bRemoved;
 }
 
 /// Removes the given element from the given vector.
 template <class Vector, class Value>
-inline bool remove_ordered(Vector &vector, const Value &value)
+inline bool remove_unordered(Vector &vector, const Value &value)
 {
-	bool bRemoved = false;
-
 	typename Vector::const_iterator it = vector.begin();
+	typename Vector::const_iterator newEnd = vector.end();
 
-	while (it != vector.end())
-	{
+	while (it != newEnd)
 		if (*it == value)
-		{
-			// Not quite optimal, assuming that elements mostly occur only once
-			it = vector.erase(it);
-			bRemoved = true;
-		}
+			*it = LEAN_MOVE(*--newEnd);
 		else
 			++it;
-	}
 
+	bool bRemoved = (newEnd != vector.end());
+	vector.erase(newEnd, vector.end());
 	return bRemoved;
 }
 
@@ -238,7 +185,7 @@ using functional::push_unique;
 using functional::push_sorted;
 using functional::find_sorted;
 using functional::remove;
-using functional::remove_ordered;
+using functional::remove_unordered;
 
 } // namespace
 

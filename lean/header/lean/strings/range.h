@@ -92,33 +92,33 @@ public:
 };
 
 /// Casts the iterators of the given range into iterators of the given type.
-template <class Iterator, class Range>
-LEAN_INLINE range<Iterator> const_range_cast(const Range &right)
+template <class DestRange, class Range>
+LEAN_INLINE DestRange const_range_cast(const Range &right)
 {
-	return range<Iterator>(
-			const_cast<Iterator>(right.begin()),
-			const_cast<Iterator>(right.end())
+	return DestRange(
+			const_cast<typename DestRange::iterator>(right.begin()),
+			const_cast<typename DestRange::iterator>(right.end())
 		);
 }
 
 /// Casts the iterators of the given range into iterators of the given type.
-template <class Iterator, class Range>
-LEAN_INLINE range<Iterator> reinterpret_range_cast(const Range &right)
+template <class DestRange, class Range>
+LEAN_INLINE DestRange reinterpret_range_cast(const Range &right)
 {
-	return range<Iterator>(
-			reinterpret_cast<Iterator>(right.begin()),
-			reinterpret_cast<Iterator>(right.end())
+	return DestRange(
+			reinterpret_cast<typename DestRange::iterator>(right.begin()),
+			reinterpret_cast<typename DestRange::iterator>(right.end())
 		);
 }
 
 /// Casts the iterators of the given range into iterators of the given type.
 /// WARNING: In most cases, this is effectively the same as reinterpret_cast!
-template <class Iterator, class Range>
-LEAN_INLINE range<Iterator> static_range_cast(const Range &right)
+template <class DestRange, class Range>
+LEAN_INLINE DestRange static_range_cast(const Range &right)
 {
-	return range<Iterator>(
-			static_cast<Iterator>(right.begin()),
-			static_cast<Iterator>(right.end())
+	return DestRange(
+			static_cast<typename DestRange::iterator>(right.begin()),
+			static_cast<typename DestRange::iterator>(right.end())
 		);
 }
 

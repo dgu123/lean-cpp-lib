@@ -525,6 +525,9 @@
     <ClInclude Include="header\lean\functional\bits.h">
       <Filter>Header Files\functional</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\containers\strided_ptr.h">
+      <Filter>Header Files\containers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

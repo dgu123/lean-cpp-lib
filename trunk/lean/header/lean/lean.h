@@ -250,6 +250,20 @@ LEAN_INLINE size_t arraylen(Type (&)[Size])
 	return Size;
 }
 
+/// Returns the next iterator.
+template <class Iterator>
+LEAN_INLINE Iterator next(Iterator iterator)
+{
+	return ++iterator;
+}
+
+/// Returns the previous iterator.
+template <class Iterator>
+LEAN_INLINE Iterator prev(Iterator iterator)
+{
+	return --iterator;
+}
+
 } // namespace
 
 /// @}

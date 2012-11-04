@@ -7,7 +7,6 @@
 #define LEAN_LOGGING_IO_RAW_FILE_INSERTER
 
 #include "../lean.h"
-#include "../strings/types.h"
 #include "../tags/noncopyable.h"
 #include "raw_file.h"
 

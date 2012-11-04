@@ -52,6 +52,16 @@
 /// Nothing.
 #define LEAN_NOTHING
 
+/// Asserts layout-compatibility of the given (struct) members.
+#define LEAN_LAYOUT_COMPATIBLE(s, m, t, n) LEAN_STATIC_ASSERT_MSG( \
+	offsetof(s, m) == offsetof(t, n) && sizeof(reinterpret_cast<s*>(0)->m) == sizeof(reinterpret_cast<t*>(0)->n), \
+	#s "::" #m " is not layout-compatible with " #t "::" #n)
+
+/// Asserts size-compatibility of the given (struct) types.
+#define LEAN_SIZE_COMPATIBLE(s, t) LEAN_STATIC_ASSERT_MSG( \
+	sizeof(s) == sizeof(t), \
+	#s " is not size-compatible with " #t)
+
 /// @}
 
 #endif

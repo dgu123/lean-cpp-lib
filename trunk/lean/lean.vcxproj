@@ -163,6 +163,7 @@
     <ClInclude Include="header\lean\export_all.h" />
     <ClInclude Include="header\lean\foreach.h" />
     <ClInclude Include="header\lean\functional\algorithm.h" />
+    <ClInclude Include="header\lean\functional\bits.h" />
     <ClInclude Include="header\lean\functional\callable.h" />
     <ClInclude Include="header\lean\functional\predicates.h" />
     <ClInclude Include="header\lean\functional\variadic.h" />

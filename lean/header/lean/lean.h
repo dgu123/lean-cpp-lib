@@ -270,6 +270,8 @@ LEAN_INLINE Iterator prev(Iterator iterator)
 
 #include "macros.h"
 #include "cpp0x.h"
+#include "meta/literal.h"
+#include "meta/type.h"
 
 namespace lean
 {

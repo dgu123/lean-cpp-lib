@@ -7,7 +7,6 @@
 #define LEAN_SMART_CLONEABLE_OBJ
 
 #include "../cpp0x.h"
-#include "../meta/conditional.h"
 
 namespace lean
 {

@@ -8,7 +8,6 @@
 
 #include "../lean.h"
 #include "../tags/noncopyable.h"
-#include "../meta/dependent_false.h"
 #include "../meta/strip.h"
 
 namespace lean

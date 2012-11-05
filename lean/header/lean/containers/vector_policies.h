@@ -7,7 +7,6 @@
 #define LEAN_CONTAINERS_VECTOR_POLICIES
 
 #include "../lean.h"
-#include "../meta/conditional.h"
 #include "construction.h"
 
 namespace lean 

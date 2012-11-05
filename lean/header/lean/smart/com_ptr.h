@@ -7,7 +7,6 @@
 #define LEAN_SMART_COM_PTR
 
 #include "../lean.h"
-#include "../meta/dependent_false.h"
 #include "common.h"
 
 namespace lean

@@ -9,7 +9,6 @@
 #include "../lean.h"
 #include "../meta/strip.h"
 #include "../meta/type_traits.h"
-#include "../meta/enable_if.h"
 #include "char_traits.h"
 
 namespace lean

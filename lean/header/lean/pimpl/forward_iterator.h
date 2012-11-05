@@ -8,7 +8,6 @@
 
 #include "../lean.h"
 #include "../meta/strip.h"
-#include "../meta/conditional.h"
 
 namespace lean
 {

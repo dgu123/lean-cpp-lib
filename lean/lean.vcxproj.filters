@@ -297,20 +297,11 @@
     <ClInclude Include="header\lean\strings\types.h">
       <Filter>Header Files\strings</Filter>
     </ClInclude>
-    <ClInclude Include="header\lean\meta\dependent_false.h">
-      <Filter>Header Files\meta</Filter>
-    </ClInclude>
     <ClInclude Include="header\lean\strings\nullterminated_range.h">
       <Filter>Header Files\strings</Filter>
     </ClInclude>
     <ClInclude Include="header\lean\strings\conversions.h">
       <Filter>Header Files\strings</Filter>
-    </ClInclude>
-    <ClInclude Include="header\lean\meta\enable_if.h">
-      <Filter>Header Files\meta</Filter>
-    </ClInclude>
-    <ClInclude Include="header\lean\meta\conditional.h">
-      <Filter>Header Files\meta</Filter>
     </ClInclude>
     <ClInclude Include="header\lean\meta\type_traits.h">
       <Filter>Header Files\meta</Filter>
@@ -365,9 +356,6 @@
     </ClInclude>
     <ClInclude Include="header\lean\xml\xml_file.h">
       <Filter>Header Files\xml</Filter>
-    </ClInclude>
-    <ClInclude Include="header\lean\meta\constexpr.h">
-      <Filter>Header Files\meta</Filter>
     </ClInclude>
     <ClInclude Include="header\lean\io\raw_file_inserter.h">
       <Filter>Header Files\io</Filter>
@@ -530,6 +518,12 @@
     </ClInclude>
     <ClInclude Include="header\lean\tags\forward_ref.h">
       <Filter>Header Files\tags</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\meta\literal.h">
+      <Filter>Header Files\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\meta\type.h">
+      <Filter>Header Files\meta</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

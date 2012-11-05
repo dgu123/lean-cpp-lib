@@ -7,7 +7,7 @@
 #define LEAN_CPP0X
 
 #include "macros.h"
-#include "meta/dependent_false.h"
+#include "meta/literal.h"
 
 /// @addtogroup CPP0X C++0x-related macros
 /// @see GlobalMacros

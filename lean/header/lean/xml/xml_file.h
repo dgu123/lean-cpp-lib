@@ -8,7 +8,7 @@
 
 #include "../lean.h"
 #include "../strings/types.h"
-#include "../meta/constexpr.h"
+#include "../meta/literal.h"
 #include "../io/raw_file.h"
 #include "../io/raw_file_inserter.h"
 #include "../rapidxml/rapidxml.hpp"
@@ -82,7 +82,7 @@ public:
 	}
 	/// Loads an xml document from the given file.
 	template <int ParseFlags>
-	LEAN_INLINE xml_file(const utf8_ntri &name, ce_int<ParseFlags>)
+	LEAN_INLINE xml_file(const utf8_ntri &name, literal_int<ParseFlags>)
 	{
 		load_xml_file<ParseFlags>(name, m_document);
 	}
@@ -94,7 +94,7 @@ public:
 	}
 	/// Saves this xml document to the given file.
 	template <int ParseFlags>
-	LEAN_INLINE void save(const utf8_ntri &name, ce_int<ParseFlags>) const
+	LEAN_INLINE void save(const utf8_ntri &name, literal_int<ParseFlags>) const
 	{
 		save_xml_file<PrintFlags>(name, m_document);
 	}

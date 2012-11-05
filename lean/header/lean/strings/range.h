@@ -9,7 +9,6 @@
 #include "../lean.h"
 #include "../meta/strip.h"
 #include "../meta/type_traits.h"
-#include "../meta/enable_if.h"
 
 // NOTE: <iterator> includes loads of cruft
 namespace std { template<class Iterator> struct iterator_traits; }

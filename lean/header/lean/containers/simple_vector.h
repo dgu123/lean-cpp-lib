@@ -447,12 +447,12 @@ public:
 		LEAN_ASSERT(m_elements <= where);
 		LEAN_ASSERT(where <= m_elementsEnd);
 
-		const value_type *safeVal = addressof(value);
+		const value_type *safeVal = lean::addressof(value);
 
 		if (m_elementsEnd == m_capacityEnd)
 		{
 			size_t whereIdx = where - m_elements;
-			safeVal = addressof(grow_and_relocate(const_cast<Element&>(value)));
+			safeVal = lean::addressof(grow_and_relocate(const_cast<Element&>(value)));
 			where = m_elements + whereIdx;
 		}
 
@@ -475,12 +475,12 @@ public:
 		LEAN_ASSERT(m_elements <= where);
 		LEAN_ASSERT(where <= m_elementsEnd);
 
-		value_type *safeVal = addressof(value);
+		value_type *safeVal = lean::addressof(value);
 
 		if (m_elementsEnd == m_capacityEnd)
 		{
 			size_t whereIdx = where - m_elements;
-			safeVal = addressof(grow_and_relocate(value));
+			safeVal = lean::addressof(grow_and_relocate(value));
 			where = m_elements + whereIdx;
 		}
 

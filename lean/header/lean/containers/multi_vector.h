@@ -24,10 +24,12 @@ struct multi_vector_base
 	LEAN_INLINE multi_vector_base(T1 LEAN_FW_REF, T2 LEAN_FW_REF) { }
 
 	LEAN_INLINE void push_back() { }
+	LEAN_INLINE void push_back_from(const multi_vector_base&, size_t) { }
 	LEAN_INLINE void erase(size_t idx) { }
 	LEAN_INLINE void clear() { }
 	LEAN_INLINE void resize(size_t size) { }
 	LEAN_INLINE void reserve(size_t size) { }
+	LEAN_INLINE void swap(multi_vector_base&) { }
 };
 
 /// Default vector binder.
@@ -180,6 +182,37 @@ public:
 	LEAN_VARIADIC_TEMPLATE_TP(LEAN_FORWARD, LEAN_PUSH_BACK_METHOD_DECL, LEAN_PUSH_BACK_METHOD_TPARAMS, LEAN_PUSH_BACK_METHOD_PARAMS,
 		LEAN_NOTHING, LEAN_PUSH_BACK_METHOD_BODY)
 
+	LEAN_INLINE void push_back_from(const multi_vector& src, size_t index)
+	{
+		v.push_back(src.v[index]);
+
+		try
+		{
+			this->Base::push_back_from(src, index);
+		}
+		catch (...)
+		{
+			pop_or_terminate();
+			throw;
+		}
+	}
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	LEAN_INLINE void push_back_from(multi_vector &&src, size_t index)
+	{
+		v.push_back(LEAN_MOVE(src.v[index]));
+
+		try
+		{
+			this->Base::push_back_from(LEAN_MOVE(src), index);
+		}
+		catch (...)
+		{
+			pop_or_terminate();
+			throw;
+		}
+	}
+#endif
+
 	void erase(size_t idx)
 	{
 		v.erase(v.begin() + idx);
@@ -228,7 +261,35 @@ public:
 
 	LEAN_INLINE Type& operator [](size_t idx) { return v[idx]; }
 	LEAN_INLINE const Type& operator [](size_t idx) const { return v[idx]; }
+
+	LEAN_INLINE vector_type& current() { return v; }
+	LEAN_INLINE const vector_type& current() const { return v; }
+	LEAN_INLINE Base& next() { return *this; }
+	LEAN_INLINE const Base& next() const { return *this; }
+
+	LEAN_INLINE void swap(multi_vector &right)
+	{
+		using std::swap;
+		swap(v, right.v);
+		this->Base::swap(right);
+	}
 };
+
+/// Swaps the given two multi_vectors.
+template <class Type, int ID, class VectorBinder, class Base>
+LEAN_INLINE void swap(multi_vector<Type, ID, VectorBinder, Base> &left, multi_vector<Type, ID, VectorBinder, Base> &right)
+{
+	left.swap(right);
+}
+
+/// Swizzles the given multi-vector using the given index array.
+template <class Type, int ID, class VectorBinder, class Base, class Source, class Iterator>
+LEAN_INLINE void append_swizzled(Source LEAN_FW_REF src, Iterator begin, Iterator end, multi_vector<Type, ID, VectorBinder, Base> &dest)
+{
+	dest.reserve(dest.size() + (end - begin));
+	while (begin < end)
+		dest.push_back_from(LEAN_FORWARD(Source, src), *begin++);
+}
 
 template < class VectorBinder = vector_binder<std::vector, std::allocator> >
 struct multi_vector_t
@@ -293,6 +354,8 @@ struct multi_vector_t
 
 using containers::multi_vector;
 using containers::multi_vector_t;
+using containers::append_swizzled;
+using containers::swap;
 
 } // namespace
 

@@ -7,7 +7,6 @@
 #define LEAN_TAGS_TRANSITIVE_PTR
 
 #include "../lean.h"
-#include "../meta/conditional.h"
 
 namespace lean
 {

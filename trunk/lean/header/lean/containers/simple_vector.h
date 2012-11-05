@@ -11,6 +11,7 @@
 #include "construction.h"
 #include "allocator_aware.h"
 #include "../meta/type_traits.h"
+#include "../memory/heap_allocator.h"
 #include <memory>
 #include <stdexcept>
 
@@ -23,7 +24,7 @@ namespace containers
 namespace simple_vector_policies = vector_policies;
 
 /// Simple and fast vector class, partially implementing the STL vector interface.
-template < class Element, class Policy = simple_vector_policies::nonpod, class Allocator = std::allocator<Element> >
+template < class Element, class Policy = simple_vector_policies::nonpod, class Allocator = heap_allocator<Element> >
 class simple_vector : protected allocator_aware_base<typename Allocator::template rebind<Element>::other>
 {
 private:

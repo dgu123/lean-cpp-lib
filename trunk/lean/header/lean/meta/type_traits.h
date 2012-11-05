@@ -114,6 +114,24 @@ using meta::is_empty;
 			sizeof(yes);																\
 	};
 
+/// True if Type defines the given type as X, false otherwise.
+#define LEAN_DEFINE_HAS_TYPE_AND_X(TypeName, X)											\
+	LEAN_DEFINE_HAS_TYPE(TypeName)														\
+	template <class Type, bool HasType = has_type_##TypeName<Type>::value>				\
+	struct has_type_and_##X##TypeName													\
+	{																					\
+		static const bool value = (Type::TypeName::value == X);							\
+	};																					\
+	template <class Type>																\
+	struct has_type_and_##X##TypeName<Type, false>										\
+	{																					\
+		static const bool value = false;												\
+	};
+/// True if Type defines the given type as true, false otherwise.
+#define LEAN_DEFINE_HAS_TYPE_AND_TRUE(TypeName) LEAN_DEFINE_HAS_TYPE_AND_X(TypeName, true)
+/// True if Type defines the given type as false, false otherwise.
+#define LEAN_DEFINE_HAS_TYPE_AND_FALSE(TypeName) LEAN_DEFINE_HAS_TYPE_AND_X(TypeName, false)
+		
 } // namespace
 
 namespace lean

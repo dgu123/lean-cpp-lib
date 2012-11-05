@@ -6,7 +6,7 @@
 #ifndef LEAN_META_MATH
 #define LEAN_META_MATH
 
-#include "conditional.h"
+#include "type.h"
 
 namespace lean
 {

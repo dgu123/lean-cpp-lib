@@ -12,12 +12,10 @@ namespace lean
 	namespace meta { }
 }
 
-#include "dependent_false.h"
+#include "literal.h"
+#include "type.h"
 #include "type_traits.h"
-#include "conditional.h"
 #include "strip.h"
 #include "dereference.h"
-#include "enable_if.h"
-#include "constexpr.h"
 
 #endif

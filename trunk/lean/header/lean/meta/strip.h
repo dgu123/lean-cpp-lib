@@ -310,14 +310,6 @@ struct rec_strip_modifiers
 	static const bool stripped = impl::do_rec_strip_modifiers<Type>::stripped;
 };
 
-/// Redefines the given type.
-template <class Type>
-struct identity
-{
-	/// Type.
-	typedef Type type;
-};
-
 } // namespace
 
 using meta::strip_array;
@@ -328,7 +320,6 @@ using meta::strip_volatile;
 using meta::strip_modifiers;
 using meta::strip_modref;
 using meta::rec_strip_modifiers;
-using meta::identity;
 
 using meta::inh_strip_pointer;
 using meta::inh_strip_array;

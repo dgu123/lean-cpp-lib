@@ -208,12 +208,10 @@
     <ClInclude Include="header\lean\memory\new_handler.h" />
     <ClInclude Include="header\lean\memory\object_pool.h" />
     <ClInclude Include="header\lean\memory\win_heap.h" />
-    <ClInclude Include="header\lean\meta\conditional.h" />
-    <ClInclude Include="header\lean\meta\constexpr.h" />
-    <ClInclude Include="header\lean\meta\dependent_false.h" />
     <ClInclude Include="header\lean\meta\dereference.h" />
-    <ClInclude Include="header\lean\meta\enable_if.h" />
+    <ClInclude Include="header\lean\meta\literal.h" />
     <ClInclude Include="header\lean\meta\math.h" />
+    <ClInclude Include="header\lean\meta\type.h" />
     <ClInclude Include="header\lean\meta\type_traits.h" />
     <ClInclude Include="header\lean\meta\meta.h" />
     <ClInclude Include="header\lean\meta\strip.h" />

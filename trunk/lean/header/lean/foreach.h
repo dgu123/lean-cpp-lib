@@ -33,7 +33,10 @@ namespace lean
 			typedef const int& reference;
 		};
 
-		struct foreach_iterator_base { };
+		struct foreach_iterator_base
+		{
+			LEAN_INLINE operator bool() const { return false; }
+		};
 
 		using std::begin;
 		using std::end;
@@ -45,6 +48,7 @@ namespace lean
 			iterator m_end;
 			mutable iterator it;
 
+			LEAN_INLINE foreach_iterator() { }
 			LEAN_INLINE foreach_iterator(Range &r)
 				: m_end(end(r)),
 				it(begin(r)) { }
@@ -54,13 +58,28 @@ namespace lean
 			LEAN_INLINE typename traits::pointer operator ->() const { return &*it; }
 			LEAN_INLINE operator iterator() const { return it; }
 		};
+		
+		template <class Range>
+		LEAN_INLINE Range* foreach_range_nullptr(Range &r) { return 0; }
+		template <class Range>
+		LEAN_INLINE const Range* foreach_range_nullptr(const Range &r) { return 0; }
+
+		template <class Range>
+		LEAN_INLINE foreach_iterator<Range> make_foreach_iterator(Range*)
+		{
+			return foreach_iterator<Range>();
+		}
 		template <class Range>
 		LEAN_INLINE foreach_iterator<Range> make_foreach_iterator(Range &r)
 		{
 			return foreach_iterator<Range>(r);
 		}
 		template <class Range>
-		LEAN_INLINE Range* foreach_range_nullptr(Range &r) { return 0; }
+		LEAN_INLINE foreach_iterator<const Range> make_foreach_iterator(const Range &r)
+		{
+			return foreach_iterator<const Range>(r);
+		}
+
 		template <class Range>
 		LEAN_INLINE bool check_foreach_iterator(const foreach_iterator_base &i, Range*)
 		{
@@ -79,8 +98,15 @@ namespace lean
 
 /// @addtogroup GlobalMacros
 /// @{
-
 /*
+/// Iterates over all elements in the given range.
+#define LEAN_FOREACH(iterator, range_type, range_var, range) \
+	if (const ::lean::impl::foreach_iterator_base &__lean__iterator__ = ::lean::impl::make_foreach_iterator(true ? 0 : ::lean::impl::foreach_range_nullptr(range))) { } else \
+		for (range_type range_var = range; \
+			::lean::impl::check_foreach_iterator(iterator, true ? 0 : ::lean::impl::foreach_range_nullptr(range)); \
+			::lean::impl::increment_foreach_iterator(iterator, true ? 0 : ::lean::impl::foreach_range_nullptr(range)))
+
+
 /// Iterates over all elements in the given range.
 #define LEAN_FOREACH(iterator, range) \
 	for (const ::lean::impl::foreach_iterator_base &iterator = ::lean::impl::make_foreach_iterator(range); \

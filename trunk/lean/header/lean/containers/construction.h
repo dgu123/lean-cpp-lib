@@ -91,7 +91,7 @@ LEAN_INLINE void copy_construct(Element *dest, const Element &source, no_allocat
 template <class Element, class Allocator>
 LEAN_INLINE void copy_construct(Element *dest, const Element &source, Allocator &allocator, trivial_construction_t)
 {
-	memcpy(dest, addressof(source), sizeof(Element));
+	memcpy(dest, lean::addressof(source), sizeof(Element));
 }
 /// Copies elements from the given source range to the given destination.
 template <class Iterator, class Element, class Allocator>
@@ -116,7 +116,7 @@ template <class Iterator, class Element, class Allocator>
 LEAN_INLINE Element* copy_construct(Iterator source, Iterator sourceEnd, Element *dest, Allocator &allocator, trivial_construction_t)
 {
 	size_t count = sourceEnd - source;
-	memcpy(dest, addressof(*source), count * sizeof(Element));
+	memcpy(dest, lean::addressof(*source), count * sizeof(Element));
 	return dest + count;
 }
 
@@ -170,7 +170,7 @@ LEAN_INLINE void move(Element *dest, Element &source, nontrivial_construction_t 
 template <class Element>
 LEAN_INLINE void move(Element *dest, Element &source, trivial_construction_t)
 {
-	memcpy(dest, addressof(source), sizeof(Element));
+	memcpy(dest, lean::addressof(source), sizeof(Element));
 }
 /// Moves elements from the given source range to the given destination.
 template <class Iterator, class Element>
@@ -185,7 +185,7 @@ template <class Iterator, class Element>
 LEAN_INLINE Element* move(Iterator source, Iterator sourceEnd, Element *dest, trivial_construction_t)
 {
 	size_t count = sourceEnd - source;
-	memmove(dest, addressof(*source), count * sizeof(Element));
+	memmove(dest, lean::addressof(*source), count * sizeof(Element));
 	return dest + count;
 }
 /// Moves elements from the given source range to the given destination.
@@ -203,7 +203,7 @@ template <class Iterator, class Element>
 LEAN_INLINE Element* move_backwards(Iterator source, Iterator sourceEnd, Element *dest, trivial_construction_t)
 {
 	size_t count = sourceEnd - source;
-	memmove(dest, addressof(*source), count * sizeof(Element));
+	memmove(dest, lean::addressof(*source), count * sizeof(Element));
 	return dest + count;
 }
 

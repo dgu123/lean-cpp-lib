@@ -18,7 +18,7 @@ namespace containers
 namespace vector_policies
 {
 	/// Simple vector element construction policy.
-	template <bool RawMove = false, bool RawCopy = false, bool NoDestruct = false, bool NoConstruct = false>
+	template <bool RawMove = false, bool RawCopy = false, bool NoDestruct = false, bool ZeroInit = false, bool NoInit = false>
 	struct policy
 	{
 		/// Specifies whether memory containing constructed elements may be moved as a whole, without invoking the contained elements' copy or move constructors.
@@ -27,8 +27,10 @@ namespace vector_policies
 		static const bool raw_copy = RawCopy;
 		/// Specifies whether memory containing constructed elements may be freed as a whole, without invoking the contained elements' destructors.
 		static const bool no_destruct = NoDestruct;
-		/// Specifies whether memory needs to be initialized by constructing elements.
-		static const bool no_construct = NoConstruct;
+		/// Specifies whether memory may be initialized with zeroes.
+		static const bool zero_init = ZeroInit;
+		/// Specifies whether memory needs to be initialized at all.
+		static const bool no_init = NoInit;
 
 		/// Move construction tag matching raw_move.
 		typedef typename conditional_type<raw_move, trivial_construction_t, nontrivial_construction_t>::type move_tag;
@@ -37,7 +39,7 @@ namespace vector_policies
 		/// Destruction tag matching no_destruct.
 		typedef typename conditional_type<no_destruct, trivial_construction_t, nontrivial_construction_t>::type destruct_tag;
 		/// Construction tag matching no_construct.
-		typedef typename conditional_type<no_construct, trivial_construction_t, nontrivial_construction_t>::type construct_tag;
+		typedef typename conditional_type<zero_init, trivial_construction_t, nontrivial_construction_t>::type construct_tag;
 	};
 
 	/// Default element construction policy.
@@ -46,8 +48,10 @@ namespace vector_policies
 	typedef policy<true> semipod;
 	/// Initialize-POD element construction policy (raw move, no destruction, yet properly constructed).
 	typedef policy<true, true, true> inipod;
-	/// POD element (no-)construction policy.
+	/// POD element zero initialization policy.
 	typedef policy<true, true, true, true> pod;
+	/// POD element no-construction policy.
+	typedef policy<true, true, true, true, true> uninipod;
 }
 
 } // namespace

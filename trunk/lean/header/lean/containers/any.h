@@ -67,6 +67,9 @@ public:
 	/// Constructor.
 	LEAN_INLINE any_value(value_type &&value)
 		: m_value(std::move(value)) { }
+	/// Constructor.
+	LEAN_INLINE any_value(any_value &&right)
+		: m_value(std::move(right.m_value)) { }
 #endif
 
 	/// Assignment.
@@ -80,6 +83,12 @@ public:
 	LEAN_INLINE any_value& operator =(value_type &&value)
 	{
 		m_value = std::move(value);
+		return *this;
+	}
+	/// Assignment.
+	LEAN_INLINE any_value& operator =(any_value &&right)
+	{
+		m_value = std::move(right.m_value);
 		return *this;
 	}
 #endif
@@ -101,6 +110,8 @@ public:
 
 	/// Clones this value.
 	LEAN_INLINE any_value* clone() const { return new any_value(*this); }
+	/// Moves the contents of this cloneable to a clone.
+	LEAN_INLINE any_value* clone_move() { return new any_value(LEAN_MOVE(*this)); }
 	/// Destroys a clone.
 	LEAN_INLINE void destroy() const { delete this; }
 };

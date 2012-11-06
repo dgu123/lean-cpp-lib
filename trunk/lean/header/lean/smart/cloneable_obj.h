@@ -7,24 +7,24 @@
 #define LEAN_SMART_CLONEABLE_OBJ
 
 #include "../cpp0x.h"
+#include "../meta/strip.h"
 
 namespace lean
 {
 namespace smart
 {
 
-/// Clones the given cloneable object by calling @code cloneable.clone()@endcode  (default policy implementation).
+/// Clones the given cloneable object by calling @code clone(cloneable)@endcode  (default policy implementation).
 template <class Cloneable>
-LEAN_INLINE Cloneable* clone_cloneable(const Cloneable &cloneable)
+LEAN_INLINE typename strip_modref<Cloneable>::type* clone_cloneable(Cloneable LEAN_FW_REF cloneable)
 {
-	return static_cast<Cloneable*>( cloneable.clone() );
+	return static_cast<typename strip_modref<Cloneable>::type*>( clone(LEAN_FORWARD(Cloneable, cloneable)) );
 }
-/// Destroys the given cloneable object by calling @code cloneable->destroy()@endcode  (default policy implementation).
+/// Destroys the given cloneable object by calling @code destroy(cloneable)@endcode  (default policy implementation).
 template <class Cloneable>
 LEAN_INLINE void destroy_cloneable(Cloneable *cloneable)
 {
-	if (cloneable)
-		cloneable->destroy();
+	destroy(cloneable);
 }
 
 namespace impl
@@ -35,23 +35,16 @@ template <class Type, bool Pointer>
 struct ptr_or_ref_to
 {
 	template <class T>
-	static LEAN_INLINE Type get(const T &p)
-	{
-		return p;
-	}
+	static LEAN_INLINE Type get(T *p) { return p; }
 };
-
 template <class Type>
 struct ptr_or_ref_to<Type, false>
 {
 	template <class T>
-	static LEAN_INLINE Type get(const T &p)
-	{
-		return *p;
-	}
+	static LEAN_INLINE Type get(T *p) { return *p; }
 };
 
-}
+} // namespace
 
 /// Cloneable object class that stores an automatic instance of the given cloneable type.
 template <class Cloneable, bool PointerSemantics = false>
@@ -73,9 +66,15 @@ private:
 	/// Acquires the given cloneable.
 	static Cloneable* acquire(const Cloneable &cloneable)
 	{
-		return static_cast<Cloneable*>( clone_cloneable(cloneable) );
+		return clone_cloneable(cloneable);
 	}
-
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Acquires the given cloneable.
+	static Cloneable* acquire(Cloneable &&cloneable)
+	{
+		return clone_cloneable(std::move(cloneable));
+	}
+#endif
 	/// Acquires the given cloneable.
 	static Cloneable* acquire(const Cloneable *cloneable)
 	{
@@ -106,9 +105,12 @@ public:
 			Construction_from_pointer_only_available_for_pointer_semantics);
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Constructs a cloneable object by cloning the given cloneable value.
+	cloneable_obj(value_type &&cloneable)
+		: m_cloneable( acquire(std::move(cloneable)) ) { };
 	/// Constructs a cloneable object by cloning the given cloneable object.
 	cloneable_obj(cloneable_obj &&right)
-		: m_cloneable(std::move(right.m_cloneable))
+		: m_cloneable( std::move(right.m_cloneable) )
 	{
 		// Warning: this "breaks" the other object
 		right.m_cloneable = nullptr;
@@ -166,6 +168,15 @@ public:
 		return *this;
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Replaces the stored cloneable value with a clone of the given cloneable value.
+	cloneable_obj& operator =(value_type &&cloneable)
+	{
+		Cloneable *prevCloneable = m_cloneable;
+		m_cloneable = acquire(std::move(cloneable));
+		release(prevCloneable);
+		
+		return *this;
+	}
 	/// Replaces the stored cloneable value with the value stored by the given cloneable object.
 	cloneable_obj& operator =(cloneable_obj &&right)
 	{

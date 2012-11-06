@@ -14,8 +14,9 @@ namespace lean
 namespace containers
 {
 
-struct nontrivial_construction_t { };
-struct trivial_construction_t { };
+struct construction_t { };
+struct nontrivial_construction_t : construction_t { };
+struct trivial_construction_t : construction_t { };
 
 struct no_allocator_t { };
 static const no_allocator_t no_allocator;

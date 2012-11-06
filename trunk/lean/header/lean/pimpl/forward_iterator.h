@@ -145,7 +145,7 @@ public:
 
 } // namespace
 
-using pimpl::forward_val;
+using pimpl::forward_iterator;
 
 } // namespace
 

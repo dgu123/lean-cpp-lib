@@ -202,6 +202,8 @@ struct range_char_type2<Char1*, Char2*> { typedef typename strip_modifiers<Char1
 
 } // namespace
 
+using strings::iterator_types;
+
 using strings::range;
 using strings::make_range;
 using strings::make_char_range;

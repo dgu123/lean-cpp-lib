@@ -67,18 +67,18 @@ private:
 
 	LEAN_INLINE void default_construct(Element *dest)
 	{
-		if (!Policy::no_construct)
+		if (!Policy::no_init)
 		{
 			base_type::allocator_ref allocRef(*this);
-			containers::default_construct(dest, allocRef.allocator);
+			containers::default_construct(dest, allocRef.allocator, typename Policy::construct_tag());
 		}
 	}
 	LEAN_INLINE void default_construct(Element *dest, Element *destEnd)
 	{
-		if (!Policy::no_construct)
+		if (!Policy::no_init)
 		{
 			base_type::allocator_ref allocRef(*this);
-			containers::default_construct(dest, destEnd, allocRef.allocator);
+			containers::default_construct(dest, destEnd, allocRef.allocator, typename Policy::construct_tag());
 		}
 	}
 	LEAN_INLINE void copy_construct(Element *dest, const Element &source)

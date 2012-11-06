@@ -27,6 +27,18 @@ template <class Type>
 struct enable_if<false, Type> { };
 #endif
 
+/// Redefines the given type if the given forward type is either an r-value-ref or a const ref of the given value type, empty otherwise.
+template <class Value, class Forward, class Type>
+struct enable_move { };
+#ifndef DOXYGEN_SKIP_THIS
+	template <class Value, class Type>
+	struct enable_move<Value, const Value&, Type> : identity<Type> { };
+	#ifndef LEAN0X_NO_RVALUE_REFERENCES
+		template <class Value, class Type>
+		struct enable_move<Value, Value&&, Type> : identity<Type> { };
+	#endif
+#endif
+
 /// Redefines TrueType if condition fulfilled, FalseType otherwise.
 template <bool Condition, class TrueType, class FalseType>
 struct conditional_type : identity<FalseType> { };
@@ -71,6 +83,7 @@ public:
 
 using meta::identity;
 using meta::enable_if;
+using meta::enable_move;
 
 using meta::conditional_type;
 using meta::first_non_void;

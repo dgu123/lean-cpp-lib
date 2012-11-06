@@ -50,18 +50,23 @@ LEAN_INLINE void destruct(Element *destr, Element *destrEnd, Allocator &allocato
 
 /// Default constructs an element at the given location.
 template <class Element, class Allocator>
-LEAN_INLINE void default_construct(Element *dest, Allocator &allocator)
+LEAN_INLINE void default_construct(Element *dest, Allocator &allocator, nontrivial_construction_t = nontrivial_construction_t())
 {
 	allocator.construct(dest, Element());
 }
 template <class Element>
-LEAN_INLINE void default_construct(Element *dest, no_allocator_t)
+LEAN_INLINE void default_construct(Element *dest, no_allocator_t, nontrivial_construction_t = nontrivial_construction_t())
 {
 	new (static_cast<void*>(dest)) Element();
 }
+template <class Element, class Allocator>
+LEAN_INLINE void default_construct(Element *dest, Allocator &allocator, trivial_construction_t)
+{
+	memset(dest, 0, sizeof(Element));
+}
 /// Default constructs elements in the given range.
 template <class Element, class Allocator>
-inline void default_construct(Element *dest, Element *destEnd, Allocator &allocator)
+inline void default_construct(Element *dest, Element *destEnd, Allocator &allocator, nontrivial_construction_t = nontrivial_construction_t())
 {
 	Element *destr = dest;
 
@@ -75,6 +80,12 @@ inline void default_construct(Element *dest, Element *destEnd, Allocator &alloca
 		destruct(destr, dest, allocator);
 		throw;
 	}
+}
+template <class Element, class Allocator>
+LEAN_INLINE void default_construct(Element *dest, Element *destEnd, Allocator &allocator, trivial_construction_t)
+{
+	size_t count = destEnd - dest;
+	memset(dest, 0, count * sizeof(Element));
 }
 
 /// Copies the given source element to the given destination.

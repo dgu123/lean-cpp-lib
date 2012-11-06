@@ -443,7 +443,7 @@ public:
 	}
 
 	/// Inserts the given element.
-	void insert(iterator where, const value_type &value)
+	iterator insert(iterator where, const value_type &value)
 	{
 		LEAN_ASSERT(m_elements <= where);
 		LEAN_ASSERT(where <= m_elementsEnd);
@@ -468,10 +468,12 @@ public:
 			close_uninit(where, where + 1);
 			throw;
 		}
+
+		return where;
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Inserts the given element.
-	void insert(iterator where, value_type &&value)
+	iterator insert(iterator where, value_type &&value)
 	{
 		LEAN_ASSERT(m_elements <= where);
 		LEAN_ASSERT(where <= m_elementsEnd);
@@ -496,6 +498,8 @@ public:
 			close_uninit(where, where + 1);
 			throw;
 		}
+
+		return where;
 	}
 #endif
 	

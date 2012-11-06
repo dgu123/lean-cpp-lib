@@ -8,6 +8,9 @@
 
 #include "../lean.h"
 #include "../tags/noncopyable.h"
+#include "../strings/range.h"
+#include "../containers/construction.h"
+#include "../meta/type_traits.h"
 #include <functional>
 #include <algorithm>
 
@@ -78,22 +81,53 @@ inline bool lexicographical_compare(const Range1 &range1, const Range2 &range2, 
 	return std::lexicographical_compare(range1.begin(), range1.end(), range2.begin(), range2.end(), pred);
 }
 
-/// Inserts the element pointed at by <code>last</code> into the given sorted range <code>[first, last)</code>.
+/// Moves the element at last to first.
 template <class Iterator>
-inline Iterator insert_last(Iterator first, Iterator last)
+inline void move_to_front(Iterator first, Iterator last, containers::nontrivial_construction_t = containers::nontrivial_construction_t())
 {
-	Iterator pos = std::upper_bound(first, last, *last);
-	std::rotate(pos, last, lean::next(last));
-	return pos;
+	typedef typename iterator_types<Iterator>::value_type value_type;
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	value_type temp( std::move(*last) );
+	std::move_backward(first, last, lean::next(last));
+	*first = std::move(temp);
+#else
+	std::rotate(first, last, lean::next(last));
+#endif
+}
+
+/// Moves the element at last to first.
+template <class Iterator>
+inline void move_to_front(Iterator first, Iterator last, containers::trivial_construction_t)
+{
+	char temp[sizeof(*last)];
+	memcpy(temp, lean::addressof(*last), sizeof(*last));
+	memmove(lean::addressof(*first), lean::addressof(*first) + 1, sizeof(*first) * (last - first));
+	memcpy(lean::addressof(*first), temp, sizeof(*first));
 }
 
 /// Inserts the element pointed at by <code>last</code> into the given sorted range <code>[first, last)</code>.
-template <class Iterator, class Predicate>
-inline Iterator insert_last(Iterator first, Iterator last, Predicate predicate)
+template <class Iterator, class MoveTag>
+inline typename enable_if<is_derived<MoveTag, containers::construction_t>::value, Iterator>::type insert_last(Iterator first, Iterator last, MoveTag moveTag)
+{
+	Iterator pos = std::upper_bound(first, last, *last);
+	move_to_front(pos, last, moveTag);
+	return pos;
+}
+template <class Iterator>
+LEAN_INLINE Iterator insert_last(Iterator first, Iterator last) { return insert_last(first, last, containers::nontrivial_construction_t()); }
+
+/// Inserts the element pointed at by <code>last</code> into the given sorted range <code>[first, last)</code>.
+template <class Iterator, class Predicate, class MoveTag>
+inline Iterator insert_last(Iterator first, Iterator last, Predicate predicate, MoveTag moveTag)
 {
 	Iterator pos = std::upper_bound(first, last, *last, predicate);
-	std::rotate(pos, last, lean::next(last));
+	move_to_front(pos, last, moveTag);
 	return pos;
+}
+template <class Iterator, class Predicate>
+LEAN_INLINE typename enable_if<!is_derived<Predicate, containers::construction_t>::value, Iterator>::type insert_last(Iterator first, Iterator last, Predicate predicate)
+{
+	return insert_last(first, last, predicate, containers::nontrivial_construction_t());
 }
 
 /// Pushes the given element onto the given vector.
@@ -167,7 +201,11 @@ inline bool remove_unordered(Vector &vector, const Value &value)
 
 	while (it != newEnd)
 		if (*it == value)
-			*it = LEAN_MOVE(*--newEnd);
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+			*it = std::move(*--newEnd);
+#else
+			swap(*it, *--newEnd);
+#endif
 		else
 			++it;
 

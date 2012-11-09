@@ -539,6 +539,16 @@ public:
 		if (newCapacity > capacity())
 			reallocate(newCapacity);
 	}
+	/// Shrinks this vector, removing elements from the back.
+	void shrink(size_type newCount)
+	{
+		if (newCount < size())
+		{
+			Element *oldElementsEnd = m_elementsEnd;
+			m_elementsEnd = m_elements + newCount;
+			destruct(m_elementsEnd, oldElementsEnd);
+		}
+	}
 	/// Resizes this vector, either appending empty elements to or removing elements from the back of this vector.
 	void resize(size_type newCount)
 	{
@@ -552,11 +562,26 @@ public:
 			m_elementsEnd = newElementsEnd;
 		}
 		else
+			shrink(newCount);
+	}
+	/// Resizes this vector, either appending empty elements to or removing elements from the back of this vector.
+	void resize(size_type newCount, const value_type &value)
+	{
+		if (newCount > size())
 		{
-			Element *oldElementsEnd = m_elementsEnd;
-			m_elementsEnd = m_elements + newCount;
-			destruct(m_elementsEnd, oldElementsEnd);
+			if (newCount > capacity())
+				growToHL(newCount);
+			
+			Element *newElementsEnd = m_elements + newCount;
+
+			while (m_elementsEnd != newElementsEnd)
+			{
+				copy_construct(m_elementsEnd, value);
+				++m_elementsEnd;
+			}
 		}
+		else
+			shrink(newCount);
 	}
 	
 	/// Gets an element by position, access violation on failure.

@@ -28,8 +28,24 @@ LEAN_INLINE void release_com(COMType *object)
 		object->Release();
 }
 
+/// Generic com pointer policy.
+template <class Type>
+struct generic_com_policy
+{
+	/// Calls @code acquire_com@endcode on the given object.
+	static LEAN_INLINE void acquire(Type &object)
+	{
+		acquire_com(object);
+	}
+	/// Calls @code release_com@endcode on the given object.
+	static LEAN_INLINE void release(Type *object)
+	{
+		release_com(object);
+	}
+};
+
 /// COM pointer class that performs reference counting on COM objects of the given type.
-template <class COMType, bool Critical = false>
+template < class COMType, bool Critical = false, class Policy = generic_com_policy<COMType> >
 class com_ptr
 {
 private:
@@ -39,7 +55,7 @@ private:
 	static COMType* acquire(COMType *object)
 	{
 		if (object)
-			acquire_com(*object);
+			Policy::acquire(*object);
 
 		return object;
 	}
@@ -47,7 +63,7 @@ private:
 	/// Releases the given object.
 	static void release(COMType *object)
 	{
-		release_com(object);
+		Policy::release(object);
 	}
 
 public:
@@ -72,14 +88,14 @@ public:
 	com_ptr(const com_ptr &right)
 		: m_object( acquire(right.m_object) ) { };
 	/// Constructs a COM pointer from the given COM pointer.
-	template <class COMType2, bool Critical2>
-	com_ptr(const com_ptr<COMType2, Critical2> &right)
+	template <class COMType2, bool Critical2, class Policy2>
+	com_ptr(const com_ptr<COMType2, Critical2, Policy2> &right)
 		: m_object( acquire(right.get()) ) { };
 
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs a COM pointer from the given COM pointer.
 	template <class COMType2, bool Critical2>
-	com_ptr(com_ptr<COMType2, Critical2> &&right)
+	com_ptr(com_ptr<COMType2, Critical2, Policy> &&right)
 		: m_object(right.unbind()) { }
 #endif
 	
@@ -127,8 +143,8 @@ public:
 		return (*this = right.m_object);
 	}
 	/// Replaces the stored COM object with one stored by the given COM pointer. <b>[ESA]</b>
-	template <class COMType2, bool Critical2>
-	com_ptr& operator =(const com_ptr<COMType2, Critical2> &right)
+	template <class COMType2, bool Critical2, class Policy2>
+	com_ptr& operator =(const com_ptr<COMType2, Critical2, Policy2> &right)
 	{
 		return (*this = right.get());
 	}
@@ -136,7 +152,7 @@ public:
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Replaces the stored COM object with the one stored by the given r-value COM pointer. <b>[ESA]</b>
 	template <class COMType2, bool Critical2>
-	com_ptr& operator =(com_ptr<COMType2, Critical2> &&right)
+	com_ptr& operator =(com_ptr<COMType2, Critical2, Policy> &&right)
 	{
 		// Self-assignment would be wrong
 		if (right.get() != m_object)
@@ -185,8 +201,8 @@ public:
 };
 
 /// Swaps the given pointers.
-template <class T, bool C>
-LEAN_INLINE void swap(com_ptr<T, C> &left, com_ptr<T, C> &right)
+template <class T, bool C, class P>
+LEAN_INLINE void swap(com_ptr<T, C, P> &left, com_ptr<T, C, P> &right)
 {
 	left.swap(right);
 }

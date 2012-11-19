@@ -525,6 +525,9 @@
     <ClInclude Include="header\lean\meta\type.h">
       <Filter>Header Files\meta</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\tags\handle.h">
+      <Filter>Header Files\tags</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

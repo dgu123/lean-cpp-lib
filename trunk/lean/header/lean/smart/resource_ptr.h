@@ -235,21 +235,37 @@ LEAN_INLINE resource_ptr<Resource, true> secure_resource(Resource *resource)
 #ifdef DOXYGEN_READ_THIS
 	/// Creates a new resource using operator new.
 	template <class Resource>
-	resource_ptr<Resource, true> new_resource(...);
+	resource_ptr<Resource, true> make_resource(...);
 #else
-	#define LEAN_NEW_RESOURCE_FUNCTION_TPARAMS class Resource
-	#define LEAN_NEW_RESOURCE_FUNCTION_DECL inline resource_ptr<Resource, true> new_resource
-	#define LEAN_NEW_RESOURCE_FUNCTION_BODY(call) { return resource_ptr<Resource, true>( new Resource##call, bind_reference ); }
-	LEAN_VARIADIC_TEMPLATE_T(LEAN_FORWARD, LEAN_NEW_RESOURCE_FUNCTION_DECL, LEAN_NEW_RESOURCE_FUNCTION_TPARAMS, LEAN_NOTHING, LEAN_NEW_RESOURCE_FUNCTION_BODY)
+	#define LEAN_MAKE_RESOURCE_FUNCTION_TPARAMS class Resource
+	#define LEAN_MAKE_RESOURCE_FUNCTION_DECL inline resource_ptr<Resource, true> make_resource
+	#define LEAN_MAKE_RESOURCE_FUNCTION_BODY(call) { return resource_ptr<Resource, true>( new Resource##call, bind_reference ); }
+	LEAN_VARIADIC_TEMPLATE_T(LEAN_FORWARD, LEAN_MAKE_RESOURCE_FUNCTION_DECL, LEAN_MAKE_RESOURCE_FUNCTION_TPARAMS, LEAN_NOTHING, LEAN_MAKE_RESOURCE_FUNCTION_BODY)
 #endif
+
+struct new_resource_ptr_t { };
+template <class T>
+LEAN_INLINE resource_ptr<T, true> operator *(new_resource_ptr_t, T *p) { return resource_ptr<T, true>(p, bind_reference); }
 
 } // namespace
 
 using smart::resource_ptr;
 using smart::bind_resource;
 using smart::secure_resource;
-using smart::new_resource;
+using smart::make_resource;
 
 } // namespace
+
+#ifndef LEAN_NO_RESOURCE_PTR_NEW
+
+/// @addtogroup ResourceMacros
+/// @{
+
+/// Modified operator new that returns a resource_ptr.
+#define new_resource ::lean::smart::new_resource_ptr_t() * new
+
+/// @}
+
+#endif
 
 #endif

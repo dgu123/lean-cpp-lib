@@ -19,18 +19,19 @@ namespace smart
 template <class Resource>
 class weak_resource_ptr
 {
-private:
-	Resource *m_resource;
-
-	typedef typename Resource::ref_counter_type ref_counter_type;
-	ref_counter_type m_refCounter;
-
 public:
 	/// Type of the resource stored by this resource pointer.
 	typedef Resource resource_type;
 	/// Type of the pointer stored by this resource pointer.
 	typedef Resource* value_type;
 
+private:
+	resource_type *m_resource;
+
+	typedef typename resource_type::ref_counter_type ref_counter_type;
+	ref_counter_type m_refCounter;
+
+public:
 	/// Constructs a resource pointer from the given resource.
 	weak_resource_ptr(resource_type *resource = nullptr)
 		: m_resource(resource),
@@ -65,36 +66,24 @@ public:
 	/// Replaces the stored resource with the given resource. <b>[ESA]</b>
 	weak_resource_ptr& operator =(resource_type *resource)
 	{
-		if (m_resource != resource)
-		{
-			m_resource = resource;
-			m_refCounter = (resource) ? resource->ref_counter() : ref_counter_type::null();
-		}
-
+		m_resource = resource;
+		m_refCounter = (resource) ? resource->ref_counter() : ref_counter_type::null();
 		return *this;
 	}
 	
 	/// Replaces the stored resource with one stored by the given resource pointer. <b>[ESA]</b>
 	weak_resource_ptr& operator =(const weak_resource_ptr &right)
 	{
-		if (m_resource != right.m_resource)
-		{
-			m_resource = right.m_resource;
-			m_refCounter = right.m_refCounter;
-		}
-
+		m_resource = right.m_resource;
+		m_refCounter = right.m_refCounter;
 		return *this;
 	}
 	/// Replaces the stored resource with one stored by the given resource pointer. <b>[ESA]</b>
 	template <class Resource2>
 	weak_resource_ptr& operator =(const weak_resource_ptr<Resource2> &right)
 	{
-		if (m_resource != right.m_resource)
-		{
-			m_resource = right.m_resource;
-			m_refCounter = right.m_refCounter;
-		}
-
+		m_resource = right.m_resource;
+		m_refCounter = right.m_refCounter;
 		return *this;
 	}
 
@@ -103,12 +92,13 @@ public:
 	template <class Resource2>
 	weak_resource_ptr& operator =(weak_resource_ptr<Resource2> &&right)
 	{
-		if (m_resource != right.m_resource)
+		// Self-assignment would be wrong
+		if ((void*) this != (void*) &right)
 		{
 			m_resource = right.m_resource;
 			right.m_resource = nullptr;
 
-			m_refCounter = ::std::move(right.m_refCounter);
+			m_refCounter = std::move(right.m_refCounter);
 		}
 
 		return *this;
@@ -121,7 +111,7 @@ public:
 		return (m_resource && m_refCounter.valid());
 	}
 	/// Gets the resource stored by this resource pointer or null, if the resource has been destroyed.
-	LEAN_INLINE resource_type* get(void) const
+	LEAN_INLINE resource_type* get() const
 	{
 		return (check()) ? m_resource : nullptr;
 	}
@@ -131,15 +121,15 @@ public:
 		return resource_ptr<resource_type>(m_resource, m_refCounter);
 	}
 	/// Gets the resource stored by this resource pointer.
-	LEAN_INLINE resource_type* get_unchecked(void) const { return m_resource; };
+	LEAN_INLINE resource_type* get_unchecked() const { return m_resource; };
 
 	/// Gets the resource stored by this resource pointer.
-	LEAN_INLINE resource_type& operator *() const { return *get_unchecked(); };
+	LEAN_INLINE resource_type& operator *() const { return *m_resource; };
 	/// Gets the resource stored by this resource pointer.
-	LEAN_INLINE resource_type* operator ->() const { return get_unchecked(); };
+	LEAN_INLINE resource_type* operator ->() const { return m_resource; };
 
 	/// Gets the resource stored by this resource pointer.
-	LEAN_INLINE operator resource_type*() const { return get_unchecked(); };
+	LEAN_INLINE operator resource_type*() const { return m_resource; };
 	// WARNING: Meaning unclear, should enforce explicit method calls
 	// However, this would require overloads for pointer comparison, ordering etc.
 

@@ -29,8 +29,8 @@ const bind_reference_t bind_reference = consume;
 /// Determines whether a reference is in a critical state.
 enum reference_state_t
 {
-	critical_reference,	/// Reference is critical, referenced object might accidentally get destroyed.
-	stable_reference	/// Reference is stable, referenced object cannot accidentally be destroyed.
+	stable_ref = false,		/// Reference is stable, referenced object cannot accidentally be destroyed.
+	critical_ref = true		/// Reference is critical, referenced object might accidentally get destroyed.
 };
 
 template <class Type>
@@ -47,8 +47,8 @@ struct move_ref
 using smart::bind_reference_t;
 using smart::bind_reference;
 
-using smart::critical_reference;
-using smart::stable_reference;
+using smart::stable_ref;
+using smart::critical_ref;
 
 } // namespace
 

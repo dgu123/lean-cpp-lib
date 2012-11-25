@@ -122,7 +122,8 @@ public:
 	LEAN_INLINE multi_vector(size_t size, const allocator_type &allocator = allocator_type())
 		: Base(size, allocator),
 		v(size, allocator) { }
-#ifndef LEAN0X_NO_RVALUE_REFERENCES
+
+#ifdef LEAN0X_NEED_EXPLICIT_MOVE
 	LEAN_INLINE multi_vector(multi_vector &&right)
 		: Base(std::move(right)),
 		v(std::move(right.v)) { }

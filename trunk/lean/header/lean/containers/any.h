@@ -21,18 +21,16 @@ namespace containers
 /// Any interface.
 class any : public cloneable
 {
+	LEAN_SHARED_INTERFACE_BEHAVIOR(any)
+
 	template <class Value>
 	friend Value* any_cast(any*);
 
 protected:
-	LEAN_INLINE any& operator =(const any&) { return *this; }
-
 	/// Gets a pointer to the stored value, if the given type matches the value stored by this object, nullptr otherwise.
 	virtual void* get_any_ptr(const std::type_info& type) = 0;
 
 public:
-	virtual ~any() { }
-	
 	/// Gets the type of the stored value.
 	virtual const std::type_info& type() const = 0;
 };

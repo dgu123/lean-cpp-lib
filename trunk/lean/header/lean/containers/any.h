@@ -67,6 +67,8 @@ public:
 	/// Constructor.
 	LEAN_INLINE any_value(value_type &&value)
 		: m_value(std::move(value)) { }
+#endif
+#ifdef LEAN0X_NEED_EXPLICIT_MOVE
 	/// Constructor.
 	LEAN_INLINE any_value(any_value &&right)
 		: m_value(std::move(right.m_value)) { }
@@ -85,6 +87,8 @@ public:
 		m_value = std::move(value);
 		return *this;
 	}
+#endif
+#ifdef LEAN0X_NEED_EXPLICIT_MOVE
 	/// Assignment.
 	LEAN_INLINE any_value& operator =(any_value &&right)
 	{
@@ -121,7 +125,7 @@ template <class Value>
 LEAN_INLINE Value* any_cast(any *pContainer)
 {
 	return static_cast<Value*>(
-		pContainer
+		(pContainer)
 			? pContainer->get_any_ptr(typeid(Value))
 			: nullptr );
 }
@@ -221,17 +225,16 @@ LEAN_INLINE Value any_cast(const volatile any &container)
 template <class Value>
 LEAN_INLINE Value any_cast_default(const any *container, const Value &defaultValue = Value())
 {
-	Value value;
 	const Value *pValue = any_cast<Value>(container);
-	value = (pValue) ? *pValue : defaultValue;
-	return value;
+	return (pValue) ? *pValue : defaultValue;
 }
 
 /// Gets a value of the given type, if the given value type matches the value stored by the given object, default otherwise.
 template <class Value>
 LEAN_INLINE Value any_cast_default(const any &container, const Value &defaultValue = Value())
 {
-	return any_cast_default<Value>(&container, defaultValue);
+	const Value *pValue = any_cast<Value>(&container);
+	return (pValue) ? *pValue : defaultValue;
 }
 
 } // namespace

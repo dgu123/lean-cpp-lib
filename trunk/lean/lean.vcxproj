@@ -219,7 +219,7 @@
     <ClInclude Include="header\lean\pimpl\forward_val.h" />
     <ClInclude Include="header\lean\pimpl\pimpl.h" />
     <ClInclude Include="header\lean\pimpl\opaque_val.h" />
-    <ClInclude Include="header\lean\pimpl\static_interface.h" />
+    <ClInclude Include="header\lean\pimpl\static_pimpl.h" />
     <ClInclude Include="header\lean\pimpl\unsafe_pimpl_base.h" />
     <ClInclude Include="header\lean\pimpl\safe_pimpl_base.h" />
     <ClInclude Include="header\lean\properties\properties.h" />

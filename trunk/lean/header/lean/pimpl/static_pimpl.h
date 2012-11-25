@@ -3,8 +3,8 @@
 /*****************************************************/
 
 #pragma once
-#ifndef LEAN_PIMPL_STATIC_INTERFACE
-#define LEAN_PIMPL_STATIC_INTERFACE
+#ifndef LEAN_PIMPL_STATIC_PIMPL
+#define LEAN_PIMPL_STATIC_PIMPL
 
 #include "../lean.h"
 
@@ -12,14 +12,14 @@
 /// @see lean::pimpl
 /// @{
 
-/// Makes the given class behave like a static interface.
-#define LEAN_STATIC_INTERFACE_BEHAVIOR(name) LEAN_INTERFACE_BEHAVIOR(name) \
+/// Makes the given class behave like an interface to a static private implementation.
+#define LEAN_SIMPL_INTERFACE_BEHAVIOR(name) LEAN_INTERFACE_BEHAVIOR(name) \
 		private: \
 			LEAN_INLINE name() throw() { } \
 			LEAN_INLINE name(const name&) throw() { }
 
-/// Makes the given class behave like a static interface supporting shared ownership.
-#define LEAN_SHARED_STATIC_INTERFACE_BEHAVIOR(name) LEAN_SHARED_INTERFACE_BEHAVIOR(name) \
+/// Makes the given class behave like an interface to a static private implementation, supporting shared ownership.
+#define LEAN_SHARED_SIMPL_INTERFACE_BEHAVIOR(name) LEAN_SHARED_INTERFACE_BEHAVIOR(name) \
 		private: \
 			LEAN_INLINE name() throw() { } \
 			LEAN_INLINE name(const name&) throw() { }

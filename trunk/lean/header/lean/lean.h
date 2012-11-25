@@ -170,6 +170,20 @@
 			protected: \
 				LEAN_INLINE name& operator =(const name&) throw() { return *this; } \
 			private:
+
+	/// Makes the given class behave like a static interface.
+	#define LEAN_STATIC_INTERFACE_BEHAVIOR(name) LEAN_INTERFACE_BEHAVIOR(name) \
+			protected: \
+				LEAN_INLINE name() throw() { } \
+				LEAN_INLINE name(const name&) throw() { } \
+			private:
+
+	/// Makes the given class behave like a static interface supporting shared ownership.
+	#define LEAN_SHARED_STATIC_INTERFACE_BEHAVIOR(name) LEAN_SHARED_INTERFACE_BEHAVIOR(name) \
+			protected: \
+				LEAN_INLINE name() throw() { } \
+				LEAN_INLINE name(const name&) throw() { } \
+			private:
 #endif
 
 #if !defined(LEAN_INTEGRATE_ONCE) && defined(LEAN_HEADER_ONLY) && !defined(LEAN_BUILD_LIB)

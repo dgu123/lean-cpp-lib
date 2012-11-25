@@ -44,7 +44,8 @@ public:
 	{
 		LEAN_STATIC_ASSERT_MSG_ALT(!is_opaque, "cannot construct value in opaque state", cannot_construct_value_in_opaque_state);
 	}
-#ifndef LEAN0X_NO_RVALUE_REFERENCES
+
+#ifdef LEAN0X_NEED_EXPLICIT_MOVE
 	/// Constructs an opaque value object from the given value.
 	opaque_val(opaque_val &&right) : m_value(std::move(right.m_value)) { }
 #endif
@@ -57,7 +58,8 @@ public:
 		m_value = value;
 		return *this;
 	}
-#ifndef LEAN0X_NO_RVALUE_REFERENCES
+
+#ifdef LEAN0X_NEED_EXPLICIT_MOVE
 	/// Replaces the stored value with the given new value.
 	opaque_val& operator =(opaque_val &&right)
 	{

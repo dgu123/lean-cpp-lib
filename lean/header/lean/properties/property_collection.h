@@ -41,7 +41,7 @@ public:
 	template <class Range>
 	property_collection(const Range &range)
 		: m_properties(range.begin(), range.end()) { }
-#ifndef LEAN0X_NO_RVALUE_REFERENCES
+#ifdef LEAN0X_NEED_EXPLICIT_MOVE
 	/// Moves the contents of the given collection to this collection.
 	property_collection(property_collection &&right)
 		: m_properties( std::move(right.m_properties) ) { }
@@ -99,7 +99,7 @@ public:
 		return inplace_builder<>(range);
 	}
 
-#ifndef LEAN0X_NO_RVALUE_REFERENCES
+#ifdef LEAN0X_NEED_EXPLICIT_MOVE
 	/// Moves the contents of the given collection to this collection.
 	LEAN_INLINE property_collection& operator =(property_collection &&right)
 	{

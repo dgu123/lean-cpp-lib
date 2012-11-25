@@ -18,11 +18,7 @@ namespace memory
 	template <class Heap = default_heap>
 	class heap_bound
 	{
-	protected:
-		LEAN_INLINE heap_bound() { };
-#ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
-		LEAN_INLINE ~heap_bound() throw() { };
-#endif
+		LEAN_STATIC_INTERFACE_BEHAVIOR(heap_bound)
 
 	public:
 		/// Allocates a block of memory of the given size.

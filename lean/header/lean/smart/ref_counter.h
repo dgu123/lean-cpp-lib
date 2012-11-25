@@ -9,6 +9,7 @@
 #include <memory>
 #include "../lean.h"
 #include "../concurrent/atomic.h"
+#include "../containers/allocator_aware.h"
 
 namespace lean
 {
@@ -20,43 +21,39 @@ template < class Counter = long, class Allocator = std::allocator<Counter> >
 class ref_counter
 {
 public:
+	/// Type of the counter used by this class.
+	typedef Counter counter_type;
+	
+private:
 	/// Reference counter structure.
-	class ref_counts
+	class ref_counts : private containers::allocator_aware_base<typename Allocator::template rebind<ref_counts>::other>
 	{
 	private:
-		// Allocator
-		typedef typename Allocator::template rebind<ref_counts>::other allocator_type_;
-		allocator_type_ m_allocator;
+		typedef containers::allocator_aware_base<typename Allocator::template rebind<ref_counts>::other> base_type;
+
+	public:
+		/// Allocator type.
+		typedef typename base_type::allocator_type allocator_type;
 
 	protected:
 		/// Constructor.
-		ref_counts(const allocator_type_& allocator, Counter references, Counter weakReferences)
-			: m_allocator(allocator),
+		ref_counts(const allocator_type& allocator, counter_type references, counter_type weakReferences)
+			: base_type(allocator),
 			references(references),
-			weakReferences(weakReferences) { };
-#ifndef LEAN0X_NO_RVALUE_REFERENCES
-		/// Constructor.
-		ref_counts(allocator_type_&& allocator, Counter references, Counter weakReferences)
-			: m_allocator(::std::move(allocator)),
-			references(references),
-			weakReferences(weakReferences) { };
-#endif
+			weakReferences(weakReferences) { }
 #ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
 		// Destructor.
-		~ref_counts() throw() { };
+		~ref_counts() throw() { }
 #endif
 	public:
-		/// Allocator type.
-		typedef allocator_type_ allocator_type;
-
 		/// Reference counter.
-		Counter references;
+		counter_type references;
 
 		/// Weak reference count.
-		Counter weakReferences;
+		counter_type weakReferences;
 
 		/// Allocates and constructs a new internal reference counting object from the given parameters.
-		static ref_counts* create(allocator_type allocator, Counter references, Counter weakReferences)
+		static ref_counts* create(allocator_type allocator, counter_type references, counter_type weakReferences)
 		{
 			ref_counts *counts = allocator.allocate(1);
 
@@ -78,16 +75,20 @@ public:
 		{
 			LEAN_ASSERT(counts);
 
-#ifndef LEAN0X_NO_RVALUE_REFERENCES
-			allocator_type allocator(::std::move(counts->m_allocator));
-#else
-			allocator_type allocator(counts->m_allocator);
-#endif
-			counts->~ref_counts();
-			allocator.deallocate(const_cast<ref_counts*>(counts), 1);
+			ref_counts *countsPtr = const_cast<ref_counts*>(counts);
+
+			allocator_type allocator( LEAN_MOVE(countsPtr->allocator()) );
+			countsPtr->~ref_counts();
+
+			allocator.deallocate(countsPtr, 1);
 		}
 	};
 
+public:
+	/// Type of the allocator used by this class.
+	typedef typename ref_counts::allocator_type allocator_type;
+
+private:
 	// Reference counts
 	ref_counts *m_counts;
 
@@ -113,19 +114,14 @@ public:
 		: m_counts(counts) { }
 
 public:
-	/// Type of the counter used by this class.
-	typedef Counter counter_type;
-	/// Type of the allocator used by this class.
-	typedef Allocator allocator_type;
-
 	/// Constructor.
 	explicit ref_counter(counter_type references = 1)
 		: m_counts( ref_counts::create(typename ref_counts::allocator_type(), references, 1) ) { }
 	/// Constructor.
-	explicit ref_counter(allocator_type allocator)
+	explicit ref_counter(const allocator_type &allocator)
 		: m_counts( ref_counts::create(allocator, 1, 1) ) { }
 	/// Constructor.
-	ref_counter(counter_type references, allocator_type allocator)
+	ref_counter(counter_type references, const allocator_type &allocator)
 		: m_counts( ref_counts::create(allocator, references, 1) ) { }
 	/// Copy constructor.
 	ref_counter(const ref_counter& refCounter)
@@ -192,7 +188,7 @@ public:
 
 		for (;;)
 		{
-			Counter references = (volatile Counter&)m_counts->references;
+			counter_type references = (volatile counter_type&)m_counts->references;
 			
 			// Make sure reference count has not become 0 yet
 			if (references < 1)
@@ -220,7 +216,7 @@ public:
 	}
 
 	/// Checks whether this reference counter is in a valid state.
-	LEAN_INLINE bool is_null() { return (m_counts == nullptr); }
+	LEAN_INLINE bool is_null() const { return (m_counts == nullptr); }
 
 	/// Gets the current reference count.
 	LEAN_INLINE counter_type count() const { LEAN_ASSERT(m_counts); return m_counts->references; };

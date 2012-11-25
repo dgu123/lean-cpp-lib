@@ -489,9 +489,6 @@
     <ClInclude Include="header\lean\memory\chunk_pool.h">
       <Filter>Header Files\memory</Filter>
     </ClInclude>
-    <ClInclude Include="header\lean\pimpl\static_interface.h">
-      <Filter>Header Files\pimpl</Filter>
-    </ClInclude>
     <ClInclude Include="header\lean\containers\multi_vector.h">
       <Filter>Header Files\containers</Filter>
     </ClInclude>
@@ -527,6 +524,9 @@
     </ClInclude>
     <ClInclude Include="header\lean\tags\handle.h">
       <Filter>Header Files\tags</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\pimpl\static_pimpl.h">
+      <Filter>Header Files\pimpl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

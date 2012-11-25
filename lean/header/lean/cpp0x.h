@@ -26,6 +26,8 @@
 	#define LEAN0X_NO_NULLPTR
 	/// Indicates that r-value references are not available.
 	#define LEAN0X_NO_RVALUE_REFERENCES
+	/// Indicates that implicit move constructors are not available.
+	#define LEAN0X_NO_IMPLICIT_MOVE
 	/// Indicates that built-in static_assert is not available.
 	#define LEAN0X_NO_STATIC_ASSERT
 	/// Indicates that built-in alignment modifiers are not available.
@@ -46,6 +48,11 @@
 		#undef LEAN0X_NO_RVALUE_REFERENCES
 		#undef LEAN0X_NO_STATIC_ASSERT
 		#undef LEAN0X_NO_STL
+	#endif
+
+	#if !defined(LEAN0X_NO_RVALUE_REFERENCES) && defined(LEAN0X_NO_IMPLICIT_MOVE)
+		/// Indicates that move constructors need to be defined explicitly.
+		#define LEAN0X_NEED_EXPLICIT_MOVE
 	#endif
 
 #endif

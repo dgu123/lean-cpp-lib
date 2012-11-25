@@ -44,11 +44,11 @@ protected:
 	/// Exeplicit allocator construction.
 	LEAN_INLINE explicit allocator_aware_base(const Allocator &allocator)
 		: m_allocator(allocator) { }
-#ifndef LEAN0X_NO_RVALUE_REFERENCES
+
+#ifdef LEAN0X_NEED_EXPLICIT_MOVE
 	/// Move construction.
 	LEAN_INLINE allocator_aware_base(allocator_aware_base &&right)
 		: m_allocator(std::move(right.m_allocator)) { }
-
 	/// Move assignment.
 	LEAN_INLINE allocator_aware_base& operator =(allocator_aware_base &&right)
 	{

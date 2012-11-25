@@ -32,6 +32,10 @@ LEAN_INLINE void release_com(COMType *object)
 template <class Type>
 struct generic_com_policy
 {
+	generic_com_policy() { }
+	template <class OtherType>
+	generic_com_policy(const generic_com_policy<OtherType>&) { }
+
 	/// Calls @code acquire_com@endcode on the given object.
 	static LEAN_INLINE void acquire(Type &object)
 	{
@@ -48,11 +52,17 @@ struct generic_com_policy
 template < class COMType, bool Critical = false, class Policy = generic_com_policy<COMType> >
 class com_ptr
 {
+public:
+	/// Type of the COM object stored by this COM pointer.
+	typedef COMType com_type;
+	/// Type of the pointer stored by this COM pointer.
+	typedef COMType* value_type;
+
 private:
-	COMType *m_object;
+	com_type *m_object;
 
 	/// Acquires the given object.
-	static COMType* acquire(COMType *object)
+	static com_type* acquire(com_type *object)
 	{
 		if (object)
 			Policy::acquire(*object);
@@ -61,17 +71,12 @@ private:
 	}
 
 	/// Releases the given object.
-	static void release(COMType *object)
+	static void release(com_type *object)
 	{
 		Policy::release(object);
 	}
 
 public:
-	/// Type of the COM object stored by this COM pointer.
-	typedef COMType com_type;
-	/// Type of the pointer stored by this COM pointer.
-	typedef COMType* value_type;
-
 	/// Constructs a COM pointer from the given COM object.
 	com_ptr(com_type *object = nullptr)
 		: m_object( acquire(object) ) { };
@@ -81,7 +86,7 @@ public:
 		: m_object( acquire(object) ) { };
 
 	/// Constructs a COM pointer from the given COM object without incrementing its reference count.
-	com_ptr(COMType *object, bind_reference_t)
+	com_ptr(com_type *object, bind_reference_t)
 		: m_object(object) { };
 
 	/// Constructs a COM pointer from the given COM pointer.
@@ -94,9 +99,13 @@ public:
 
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs a COM pointer from the given COM pointer.
-	template <class COMType2, bool Critical2>
-	com_ptr(com_ptr<COMType2, Critical2, Policy> &&right)
-		: m_object(right.unbind()) { }
+	template <class COMType2, bool Critical2, class Policy2>
+	com_ptr(com_ptr<COMType2, Critical2, Policy2> &&right)
+		: m_object(right.unbind())
+	{
+		Policy assertSameReleasePolicy((Policy2()));
+		(void) assertSameReleasePolicy;
+	}
 #endif
 	
 	/// Destroys the COM pointer.
@@ -108,14 +117,8 @@ public:
 	/// Binds the given COM object reference to this COM pointer.
 	static LEAN_INLINE com_ptr<com_type, true> bind(com_type *object)
 	{
+		// Visual C++ won't inline delegating function calls
 		return com_ptr<com_type, true>(object, bind_reference);
-	}
-	/// Unbinds the COM object reference held by this COM pointer.
-	LEAN_INLINE com_type* unbind()
-	{
-		COMType *preObject = m_object;
-		m_object = nullptr;
-		return preObject;
 	}
 	/// Transfers the COM object reference held by this COM pointer to a new COM pointer.
 	LEAN_INLINE com_ptr<com_type, true> transfer()
@@ -124,43 +127,65 @@ public:
 		return com_ptr<com_type, true>(unbind(), bind_reference);
 	}
 
-	/// Replaces the stored COM object with the given object. <b>[ESA]</b>
-	com_ptr& operator =(com_type *object)
+	/// Replaces the component reference held by this COM pointer by the given reference.
+	void rebind(com_type *object)
+	{
+		com_type *prevObject = m_object;
+		m_object = object;
+		release(prevObject);
+	}
+	/// Unbinds the component reference held by this COM pointer.
+	LEAN_INLINE com_type* unbind()
+	{
+		com_type *preObject = m_object;
+		m_object = nullptr;
+		return preObject;
+	}
+	/// Replaces the component reference held by this COM pointer by a new reference to the given component.
+	LEAN_INLINE void reset(com_type *object)
 	{
 		// Do not check for redundant assignment
 		// -> The code handles redundant assignment just fine
 		// -> Checking generates up to twice the code due to unfortunate compiler optimization application order
-		COMType *prevObject = m_object;
-		m_object = acquire(object);
-		release(prevObject);
-	
-		return *this;
+		rebind(acquire(object));
+	}
+	/// Releases the component reference held by this pointer.
+	LEAN_INLINE void release()
+	{
+		rebind(nullptr);
 	}
 
+	/// Replaces the stored COM object with the given object. <b>[ESA]</b>
+	com_ptr& operator =(com_type *object)
+	{
+		reset(object);
+		return *this;
+	}
 	/// Replaces the stored COM object with one stored by the given COM pointer. <b>[ESA]</b>
 	com_ptr& operator =(const com_ptr &right)
 	{
-		return (*this = right.m_object);
+		reset(right.m_object);
+		return *this;
 	}
 	/// Replaces the stored COM object with one stored by the given COM pointer. <b>[ESA]</b>
 	template <class COMType2, bool Critical2, class Policy2>
 	com_ptr& operator =(const com_ptr<COMType2, Critical2, Policy2> &right)
 	{
-		return (*this = right.get());
+		reset(right.get());
+		return *this;
 	}
 
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Replaces the stored COM object with the one stored by the given r-value COM pointer. <b>[ESA]</b>
-	template <class COMType2, bool Critical2>
-	com_ptr& operator =(com_ptr<COMType2, Critical2, Policy> &&right)
+	template <class COMType2, bool Critical2, class Policy2>
+	com_ptr& operator =(com_ptr<COMType2, Critical2, Policy2> &&right)
 	{
+		Policy assertSameReleasePolicy((Policy2()));
+		(void) assertSameReleasePolicy;
+
 		// Self-assignment would be wrong
-		if (right.get() != m_object)
-		{
-			COMType *prevObject = m_object;
-			m_object = right.unbind();
-			release(prevObject);
-		}
+		if ((void*) this != (void*) &right)
+			rebind(right.unbind());
 
 		return *this;
 	}
@@ -170,9 +195,9 @@ public:
 	LEAN_INLINE com_type*const& get(void) const { return m_object; };
 
 	/// Gets the COM object stored by this COM pointer.
-	LEAN_INLINE com_type& operator *() const { return *get(); };
+	LEAN_INLINE com_type& operator *() const { return *m_object; };
 	/// Gets the COM object stored by this COM pointer.
-	LEAN_INLINE com_type* operator ->() const { return get(); };
+	LEAN_INLINE com_type* operator ->() const { return m_object; };
 
 	/// Gets the COM object stored by this COM pointer.
 	LEAN_INLINE operator com_type*() const
@@ -180,14 +205,14 @@ public:
 		LEAN_STATIC_ASSERT_MSG_ALT(!Critical,
 			"Cannot implicitly cast critical reference, use unbind() for (insecure) storage.",
 			Cannot_implicitly_cast_critical_reference__use_unbind_for_insecure_storage);
-		return get();
+		return m_object;
 	};
 
 	/// Gets a double-pointer allowing for COM-style object retrieval. The pointer returned may
 	/// only ever be used until the next call to one of this COM pointer's methods.
 	LEAN_INLINE com_type** rebind()
 	{
-		*this = nullptr;
+		release();
 		return &m_object;
 	}
 

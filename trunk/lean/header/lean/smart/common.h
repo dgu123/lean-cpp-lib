@@ -26,11 +26,29 @@ typedef consume_t bind_reference_t;
 const bind_reference_t bind_reference = consume;
 #endif
 
+/// Determines whether a reference is in a critical state.
+enum reference_state_t
+{
+	critical_reference,	/// Reference is critical, referenced object might accidentally get destroyed.
+	stable_reference	/// Reference is stable, referenced object cannot accidentally be destroyed.
+};
+
+template <class Type>
+struct move_ref
+{
+	Type *const value;
+
+	move_ref(Type &v)
+		: value(addressof(v)) { }
+};
 
 } // namespace
 
 using smart::bind_reference_t;
 using smart::bind_reference;
+
+using smart::critical_reference;
+using smart::stable_reference;
 
 } // namespace
 

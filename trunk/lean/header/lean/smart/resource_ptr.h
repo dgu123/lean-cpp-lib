@@ -19,6 +19,9 @@ namespace smart
 template <class Counter, class Allocator>
 class ref_counter;
 
+template <class Type, class ReleasePolicy>
+class scoped_ptr;
+
 /// Destroys the given resource by calling @code delete resource@endcode  (default policy implementation).
 template <class Resource>
 LEAN_INLINE void destroy_resource(Resource *resource)
@@ -83,8 +86,15 @@ public:
 		: m_resource( acquire(resource) ) { };
 
 	/// Constructs a resource pointer from the given resource without incrementing its reference count.
-	resource_ptr(Resource *resource, bind_reference_t)
+	LEAN_INLINE resource_ptr(Resource *resource, bind_reference_t)
 		: m_resource(resource) { };
+
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Constructs a resource pointer from the given resource without incrementing its reference count.
+	template <class Type, class ReleasePolicy>
+	LEAN_INLINE resource_ptr(scoped_ptr<Type, ReleasePolicy> &&resource)
+		: m_resource(resource.detach()) { };
+#endif
 
 	/// Constructs a resource pointer from the given resource pointer.
 	resource_ptr(const resource_ptr &right)
@@ -164,6 +174,16 @@ public:
 			release(prevResource);
 		}
 
+		return *this;
+	}
+
+	/// Replaces the stored resource with the one stored by the given r-value scoped pointer. <b>[ESA]</b>
+	template <class Type, class ReleasePolicy>
+	resource_ptr& operator =(scoped_ptr<Type, ReleasePolicy> &&right)
+	{
+		Resource *prevResource = m_resource;
+		m_resource = right.detach();
+		release(prevResource);
 		return *this;
 	}
 #endif

@@ -96,6 +96,24 @@ inline LEAN_NORETURN void throw_invalid(const String1 &source, const String2 &re
 }
 
 
+/// Throws a nullptr runtime exception.
+template <class Value, class String1, class String2>
+LEAN_INLINE Value* throw_nullptr(Value *ptr, const String1 &source, const String2 &reason)
+{
+	if (!ptr)
+		throw_error(source, reason);
+	return ptr;
+}
+/// Throws a nullptr runtime exception.
+template <class Value, class String1, class String2, class String3>
+LEAN_INLINE Value* throw_nullptr_ex(Value *ptr, const String1 &source, const String2 &reason, const String3 &origin)
+{
+	if (!ptr)
+		throw_error_ex(source, reason, origin);
+	return ptr;
+}
+
+
 /// Logs an error.
 template <class String1>
 inline void log_error(const String1 &source)
@@ -194,6 +212,11 @@ using logging::log_error_ex;
 #define LEAN_THROW_INVALID_MSG(msg) ::lean::logging::throw_invalid(LEAN_SOURCE_STRING, msg)
 /// Throws an invalid_argument exception.
 #define LEAN_THROW_INVALID_ANY(msg) LEAN_THROW_INVALID_MSG(static_cast<::std::ostringstream&>(::std::ostringstream() << msg).str().c_str())
+
+/// Throws a nullptr exception.
+#define LEAN_THROW_NULL(value) ::lean::logging::throw_nullptr_ex((value), LEAN_SOURCE_STRING, #value " may not be nullptr", LEAN_SOURCE_FUNCTION)
+/// Throws a nullptr exception.
+#define LEAN_THROW_NULL_MSG(value, msg) ::lean::logging::throw_nullptr_ex((value), LEAN_SOURCE_STRING, msg, LEAN_SOURCE_FUNCTION)
 
 /// Throws a bad_alloc exception.
 #define LEAN_THROW_BAD_ALLOC() ::lean::logging::throw_bad_alloc(LEAN_SOURCE_STRING)

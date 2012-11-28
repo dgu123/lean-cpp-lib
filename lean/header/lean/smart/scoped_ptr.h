@@ -168,7 +168,7 @@ public:
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs a scoped pointer from the given scoped pointer.
 	template <class Type2, class ReleasePolicy2>
-	LEAN_INLINE scoped_ptr(scoped_ptr<Type2, ReleasePolicy2> &&right)
+	LEAN_INLINE scoped_ptr(scoped_ptr<Type2, ReleasePolicy2> &&right) noexcept
 		: m_object( right.detach() )
 	{
 		ReleasePolicy assertSameReleasePolicy((ReleasePolicy2()));
@@ -177,8 +177,8 @@ public:
 #endif
 	/// Constructs a scoped pointer from the given scoped pointer.
 	template <class Type2, class ReleasePolicy2>
-	LEAN_INLINE scoped_ptr(move_ref< scoped_ptr<Type2, ReleasePolicy2> > right)
-		: m_object( right.value->detach() )
+	LEAN_INLINE scoped_ptr(move_ref< scoped_ptr<Type2, ReleasePolicy2> > right) noexcept
+		: m_object( right.moved().detach() )
 	{
 		ReleasePolicy assertSameReleasePolicy((ReleasePolicy2()));
 		(void) assertSameReleasePolicy;
@@ -231,7 +231,7 @@ public:
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Replaces the stored object with the one stored by the given r-value scoped pointer. <b>[ESA]</b>
 	template <class Type2, class ReleasePolicy2>
-	LEAN_INLINE scoped_ptr& operator =(scoped_ptr<Type2, ReleasePolicy2> &&right)
+	LEAN_INLINE scoped_ptr& operator =(scoped_ptr<Type2, ReleasePolicy2> &&right) noexcept
 	{
 		ReleasePolicy assertSameReleasePolicy((ReleasePolicy2()));
 		(void) assertSameReleasePolicy;
@@ -239,6 +239,15 @@ public:
 		return *this;
 	}
 #endif
+	/// Replaces the stored object with the one stored by the given r-value scoped pointer. <b>[ESA]</b>
+	template <class Type2, class ReleasePolicy2>
+	LEAN_INLINE scoped_ptr& operator =(move_ref< scoped_ptr<Type2, ReleasePolicy2> > right) noexcept
+	{
+		ReleasePolicy assertSameReleasePolicy((ReleasePolicy2()));
+		(void) assertSameReleasePolicy;
+		reset(right.moved().detach());
+		return *this;
+	}
 
 	/// Gets the object stored by this scoped pointer.
 	LEAN_INLINE object_type*const& get() const { return m_object; }
@@ -268,7 +277,7 @@ public:
 	}
 
 	/// Swaps the given pointers.
-	void swap(scoped_ptr& right)
+	void swap(scoped_ptr& right) noexcept
 	{
 		value_type prevObject = m_object;
 		m_object = right.m_object;
@@ -278,7 +287,7 @@ public:
 
 /// Swaps the given pointers.
 template <class T, class R>
-LEAN_INLINE void swap(scoped_ptr<T, R> &left, scoped_ptr<T, R> &right)
+LEAN_INLINE void swap(scoped_ptr<T, R> &left, scoped_ptr<T, R> &right) noexcept
 {
 	left.swap(right);
 }

@@ -109,7 +109,7 @@ public:
 	cloneable_obj(value_type &&cloneable)
 		: m_cloneable( acquire(std::move(cloneable)) ) { };
 	/// Constructs a cloneable object by cloning the given cloneable object.
-	cloneable_obj(cloneable_obj &&right)
+	cloneable_obj(cloneable_obj &&right) noexcept
 		: m_cloneable( std::move(right.m_cloneable) )
 	{
 		// Warning: this "breaks" the other object
@@ -117,7 +117,7 @@ public:
 	}
 #endif
 	/// Destroys the cloneable object.
-	~cloneable_obj() throw()
+	~cloneable_obj()
 	{
 		release(m_cloneable);
 	}
@@ -178,7 +178,7 @@ public:
 		return *this;
 	}
 	/// Replaces the stored cloneable value with the value stored by the given cloneable object.
-	cloneable_obj& operator =(cloneable_obj &&right)
+	cloneable_obj& operator =(cloneable_obj &&right) noexcept
 	{
 		if (m_cloneable != right.m_cloneable)
 		{

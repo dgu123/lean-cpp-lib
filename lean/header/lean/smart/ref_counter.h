@@ -43,7 +43,7 @@ private:
 			weakReferences(weakReferences) { }
 #ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
 		// Destructor.
-		~ref_counts() throw() { }
+		~ref_counts() noexcept { }
 #endif
 	public:
 		/// Reference counter.
@@ -128,7 +128,7 @@ public:
 		: m_counts( acquire(refCounter.m_counts) ) { }
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Move constructor.
-	ref_counter(ref_counter&& refCounter)
+	ref_counter(ref_counter&& refCounter) noexcept
 		: m_counts(std::move(refCounter.m_counts))
 	{
 		// Warning: this effectively "breaks" the other object
@@ -136,7 +136,7 @@ public:
 	}
 #endif
 	/// Destructor.
-	~ref_counter() throw()
+	~ref_counter()
 	{
 		release(m_counts);
 	}
@@ -163,7 +163,7 @@ public:
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Move assignment operator. [ESA]
-	ref_counter& operator =(ref_counter&& refCounter)
+	ref_counter& operator =(ref_counter&& refCounter) noexcept
 	{
 		// Don't re-assign the same
 		if(m_counts != refCounter.m_counts)

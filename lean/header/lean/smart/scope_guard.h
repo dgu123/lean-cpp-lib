@@ -31,7 +31,7 @@ protected:
 	{
 		right.m_valid = false;
 	}
-	LEAN_INLINE ~scope_annex_base() throw() { }
+	LEAN_INLINE ~scope_annex_base() { }
 
 	/// Gets whether this instance is still valid.
 	LEAN_INLINE bool valid() const { return m_valid; }
@@ -96,7 +96,7 @@ protected:
 	{
 		right.disarm();
 	}
-	LEAN_INLINE ~scope_guard_base() throw() { }
+	LEAN_INLINE ~scope_guard_base() { }
 
 public:
 	/// Sets whether the scope guard is currently armed.

@@ -9,17 +9,17 @@
 /// @addtogroup GlobalMacros
 /// @{
 
-#define LEAN_NOP_COPY(type) type(const type&) throw() { }
-#define LEAN_NOP_COPY_DECL(modifiers, type) modifiers type(const type&) throw();
-#define LEAN_NOP_COPY_DEF(type) type::type(const type&) throw() { }
+#define LEAN_NOP_COPY(type) type(const type&) noexcept { }
+#define LEAN_NOP_COPY_DECL(modifiers, type) modifiers type(const type&) noexcept;
+#define LEAN_NOP_COPY_DEF(type) type::type(const type&) noexcept { }
 
-#define LEAN_NOP_ASSIGN(type) type& operator =(const type&) throw() { return *this; }
-#define LEAN_NOP_ASSIGN_DECL(modifiers, type) modifiers type& operator =(const type&) throw();
-#define LEAN_NOP_ASSIGN_DEF(type) type& type::operator =(const type&) throw() { return *this; }
+#define LEAN_NOP_ASSIGN(type) type& operator =(const type&) noexcept { return *this; }
+#define LEAN_NOP_ASSIGN_DECL(modifiers, type) modifiers type& operator =(const type&) noexcept;
+#define LEAN_NOP_ASSIGN_DEF(type) type& type::operator =(const type&) noexcept { return *this; }
 
-#define LEAN_DEFAULT_DTOR(type) ~type() { }
-#define LEAN_DEFAULT_DTOR_DECL(modifiers, type) modifiers ~type();
-#define LEAN_DEFAULT_DTOR_DEF(type) type::~type() { }
+#define LEAN_DEFAULT_DTOR(type) ~type() noexcept { }
+#define LEAN_DEFAULT_DTOR_DECL(modifiers, type) modifiers ~type() noexcept;
+#define LEAN_DEFAULT_DTOR_DEF(type) type::~type() noexcept { }
 
 #ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
 	#define LEAN_OPT_DEFAULT_DTOR(type) LEAN_DEFAULT_DTOR(type)

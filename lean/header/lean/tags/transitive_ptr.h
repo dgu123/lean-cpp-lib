@@ -30,26 +30,26 @@ private:
 
 public:
 	/// Constructs a transitive pointer from the given pointer.
-	LEAN_INLINE transitive_ptr(object_type *object = nullptr)
+	LEAN_INLINE transitive_ptr(object_type *object = nullptr) noexcept
 		: m_object( object ) { };
 	/// Constructs a transitive pointer from the given pointer.
 	template <class Type2>
-	LEAN_INLINE transitive_ptr(Type2 *object)
+	LEAN_INLINE transitive_ptr(Type2 *object) noexcept
 		: m_object( object ) { };
 	/// Constructs a transitive pointer from the given pointer.
 	template <class Type2>
-	LEAN_INLINE transitive_ptr(const transitive_ptr<Type2> &right)
+	LEAN_INLINE transitive_ptr(const transitive_ptr<Type2> &right) noexcept
 		: m_object( right.get() ) { };
 	
 	/// Replaces the stored pointer with the given pointer.
-	transitive_ptr& operator =(object_type *object)
+	transitive_ptr& operator =(object_type *object) noexcept
 	{
 		m_object = object;
 		return *this;
 	}
 	/// Replaces the stored pointer with the given pointer.
 	template <class Type2>
-	transitive_ptr& operator =(const transitive_ptr<Type2> &right)
+	transitive_ptr& operator =(const transitive_ptr<Type2> &right) noexcept
 	{
 		return (*this = right.get());
 	}

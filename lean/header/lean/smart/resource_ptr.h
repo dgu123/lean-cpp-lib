@@ -85,18 +85,7 @@ public:
 	template <class Resource2>
 	resource_ptr(Resource2 *resource)
 		: m_resource( acquire(resource) ) { };
-
-	/// Constructs a resource pointer from the given resource without incrementing its reference count.
-	LEAN_INLINE resource_ptr(resource_type *resource, bind_reference_t)
-		: m_resource(resource) { };
-
-#ifndef LEAN0X_NO_RVALUE_REFERENCES
-	/// Constructs a resource pointer from the given resource without incrementing its reference count.
-	template <class Type, class ReleasePolicy>
-	LEAN_INLINE resource_ptr(scoped_ptr<Type, ReleasePolicy> &&resource)
-		: m_resource(resource.detach()) { };
-#endif
-
+	
 	/// Constructs a resource pointer from the given resource pointer.
 	resource_ptr(const resource_ptr &right)
 		: m_resource( acquire(right.m_resource) ) { };
@@ -104,16 +93,31 @@ public:
 	template <class Resource2, bool Critical2>
 	resource_ptr(const resource_ptr<Resource2, Critical2> &right)
 		: m_resource( acquire(right.get()) ) { };
-
+	
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs a resource pointer from the given r-value resource pointer.
 	template <class Resource2, bool Critical2>
-	resource_ptr(resource_ptr<Resource2, Critical2> &&right)
+	resource_ptr(resource_ptr<Resource2, Critical2> &&right) noexcept
 		: m_resource(right.unbind()) { }
 #endif
 
+	/// Constructs a resource pointer from the given resource without incrementing its reference count.
+	LEAN_INLINE resource_ptr(resource_type *resource, bind_reference_t) noexcept
+		: m_resource(resource) { };
+
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Constructs a resource pointer from the given resource without incrementing its reference count.
+	template <class Type, class ReleasePolicy>
+	LEAN_INLINE resource_ptr(scoped_ptr<Type, ReleasePolicy> &&resource) noexcept
+		: m_resource(resource.detach()) { };
+#endif
+	/// Constructs a resource pointer from the given resource without incrementing its reference count.
+	template <class Type, class ReleasePolicy>
+	LEAN_INLINE resource_ptr(move_ref< scoped_ptr<Type, ReleasePolicy> > resource) noexcept
+		: m_resource(resource.moved().detach()) { };
+
 	/// Destroys the resource pointer.
-	~resource_ptr() throw()
+	~resource_ptr()
 	{
 		release(m_resource);
 	}
@@ -182,7 +186,7 @@ public:
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Replaces the stored resource with the one stored by the given r-value resource pointer. <b>[ESA]</b>
 	template <class Resource2, bool Critical2>
-	resource_ptr& operator =(resource_ptr<Resource2, Critical2> &&right)
+	resource_ptr& operator =(resource_ptr<Resource2, Critical2> &&right) noexcept
 	{
 		// Self-assignment would be wrong
 		if ((void*) this != (void*) &right)
@@ -191,12 +195,19 @@ public:
 	}
 	/// Replaces the stored resource with the one stored by the given r-value scoped pointer. <b>[ESA]</b>
 	template <class Type, class ReleasePolicy>
-	resource_ptr& operator =(scoped_ptr<Type, ReleasePolicy> &&right)
+	resource_ptr& operator =(scoped_ptr<Type, ReleasePolicy> &&right) noexcept
 	{
 		rebind(right.detach());
 		return *this;
 	}
 #endif
+	/// Replaces the stored resource with the one stored by the given r-value scoped pointer. <b>[ESA]</b>
+	template <class Type, class ReleasePolicy>
+	resource_ptr& operator =(move_ref< scoped_ptr<Type, ReleasePolicy> > right) noexcept
+	{
+		rebind(right.moved().detach());
+		return *this;
+	}
 
 	/// Gets the resource stored by this resource pointer.
 	LEAN_INLINE resource_type *const & get(void) const { return m_resource; };

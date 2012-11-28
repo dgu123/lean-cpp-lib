@@ -85,10 +85,6 @@ public:
 	com_ptr(COMType2 *object)
 		: m_object( acquire(object) ) { };
 
-	/// Constructs a COM pointer from the given COM object without incrementing its reference count.
-	com_ptr(com_type *object, bind_reference_t)
-		: m_object(object) { };
-
 	/// Constructs a COM pointer from the given COM pointer.
 	com_ptr(const com_ptr &right)
 		: m_object( acquire(right.m_object) ) { };
@@ -100,7 +96,7 @@ public:
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs a COM pointer from the given COM pointer.
 	template <class COMType2, bool Critical2, class Policy2>
-	com_ptr(com_ptr<COMType2, Critical2, Policy2> &&right)
+	com_ptr(com_ptr<COMType2, Critical2, Policy2> &&right) noexcept
 		: m_object(right.unbind())
 	{
 		Policy assertSameReleasePolicy((Policy2()));
@@ -108,8 +104,12 @@ public:
 	}
 #endif
 	
+	/// Constructs a COM pointer from the given COM object without incrementing its reference count.
+	com_ptr(com_type *object, bind_reference_t) noexcept
+		: m_object(object) { };
+
 	/// Destroys the COM pointer.
-	~com_ptr() throw()
+	~com_ptr()
 	{
 		release(m_object);
 	}
@@ -178,7 +178,7 @@ public:
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Replaces the stored COM object with the one stored by the given r-value COM pointer. <b>[ESA]</b>
 	template <class COMType2, bool Critical2, class Policy2>
-	com_ptr& operator =(com_ptr<COMType2, Critical2, Policy2> &&right)
+	com_ptr& operator =(com_ptr<COMType2, Critical2, Policy2> &&right) noexcept
 	{
 		Policy assertSameReleasePolicy((Policy2()));
 		(void) assertSameReleasePolicy;

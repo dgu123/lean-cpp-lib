@@ -19,8 +19,7 @@ namespace io
 /// Value serializer.
 class serializer
 {
-protected:
-	~serializer() throw() { }
+	LEAN_INTERFACE_BEHAVIOR(serializer)
 
 public:
 	/// Gets the maximum length of the given number of values when serialized. Zero if unpredictable.

@@ -58,16 +58,18 @@ public:
 	typedef ImplementationBase base_type;
 
 	/// Constructs a pimpl pointer from the given implementation.
-	LEAN_INLINE pimpl_ptr(Implementation *impl)
+	LEAN_INLINE pimpl_ptr(Implementation *impl) noexcept
 		: m_impl(impl) { }
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves the implementation managed by the given pimpl pointer to this pimpl pointer.
-	LEAN_INLINE pimpl_ptr(pimpl_ptr &&right)
+	LEAN_INLINE pimpl_ptr(pimpl_ptr &&right) noexcept
 		: m_impl(right.m_impl)
 	{
 		right.m_impl = nullptr;
 	}
+#endif
 	/// Destructs this pimpl pointer, deleting any implementation stored.
-	LEAN_INLINE ~pimpl_ptr() throw()
+	LEAN_INLINE ~pimpl_ptr()
 	{
 		delete_impl(m_impl);
 	}
@@ -84,8 +86,9 @@ public:
 
 		return *this;
 	}
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves the implementation managed by the given pimpl pointer to this pimpl pointer.
-	pimpl_ptr& operator =(pimpl_ptr &&right)
+	pimpl_ptr& operator =(pimpl_ptr &&right) noexcept
 	{
 		if (right.m_impl != m_impl)
 		{
@@ -98,6 +101,7 @@ public:
 		}
 		return *this;
 	}
+#endif
 
 	/// Retrieves the implementation stored, clearing this pimpl pointer to nullptr.
 	Implementation* unbind()

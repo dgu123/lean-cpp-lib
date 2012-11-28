@@ -24,6 +24,8 @@
 #if (201100L > __cplusplus) || defined(LEAN0X_DISABLE)
 	/// Indicates that built-in nullptr is not available.
 	#define LEAN0X_NO_NULLPTR
+	/// Indicates that built-in noexcept is not available.
+	#define LEAN0X_NO_NOEXCEPT
 	/// Indicates that r-value references are not available.
 	#define LEAN0X_NO_RVALUE_REFERENCES
 	/// Indicates that implicit move constructors are not available.
@@ -38,6 +40,8 @@
 	#define LEAN0X_NO_STL
 	/// Indicates that attributes are not available.
 	#define LEAN0X_NO_ATTRIBUTES
+	/// Indicates that decltype is not available.
+	#define LEAN0X_NO_DECLTYPE
 #endif
 
 #ifndef LEAN0X_DISABLE
@@ -48,6 +52,7 @@
 		#undef LEAN0X_NO_RVALUE_REFERENCES
 		#undef LEAN0X_NO_STATIC_ASSERT
 		#undef LEAN0X_NO_STL
+		#undef LEAN0X_NO_DECLTYPE
 	#endif
 
 	#if !defined(LEAN0X_NO_RVALUE_REFERENCES) && defined(LEAN0X_NO_IMPLICIT_MOVE)
@@ -60,6 +65,11 @@
 // Fix missing nullptr
 #if defined(LEAN0X_NO_NULLPTR) && !defined(nullptr)
 	#define nullptr 0
+#endif
+
+// Fix missing noexcept
+#if defined(LEAN0X_NO_NOEXCEPT) && !defined(noexcept)
+	#define noexcept throw()
 #endif
 
 // Emulate static_assert

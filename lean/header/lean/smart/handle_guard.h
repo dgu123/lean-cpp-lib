@@ -82,7 +82,7 @@ public:
 		: m_handle(handle) { }
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Releases the given handle on destruction.
-	handle_guard(handle_guard<value_type, ReleasePolicy> &&right)
+	handle_guard(handle_guard<value_type, ReleasePolicy> &&right) noexcept
 		: m_handle( right.detach() ) { }
 #endif
 	/// Releases the stored handle.
@@ -114,7 +114,7 @@ public:
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Replaces the stored handle with the one stored by the given r-value guard. <b>[ESA]</b>
-	handle_guard& operator =(handle_guard<value_type, ReleasePolicy> &&right)
+	handle_guard& operator =(handle_guard<value_type, ReleasePolicy> &&right) noexcept
 	{
 		// Self-assignment would be wrong
 		if (addressof(right) != this)

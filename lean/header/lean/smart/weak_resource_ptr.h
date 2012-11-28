@@ -55,7 +55,7 @@ public:
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs a resource pointer from the given r-value resource pointer.
 	template <class Resource2>
-	weak_resource_ptr(weak_resource_ptr<Resource2> &&right)
+	weak_resource_ptr(weak_resource_ptr<Resource2> &&right) noexcept
 		: m_resource(right.m_resource),
 		m_refCounter(::std::move(right.m_refCounter))
 	{
@@ -90,7 +90,7 @@ public:
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Replaces the stored resource with the given resource. <b>[ESA]</b>
 	template <class Resource2>
-	weak_resource_ptr& operator =(weak_resource_ptr<Resource2> &&right)
+	weak_resource_ptr& operator =(weak_resource_ptr<Resource2> &&right) noexcept
 	{
 		// Self-assignment would be wrong
 		if ((void*) this != (void*) &right)

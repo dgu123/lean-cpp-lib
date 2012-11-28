@@ -23,7 +23,7 @@ private:
 	~nonconstructible() = delete;
 #else
 	nonconstructible();
-	~nonconstructible() throw();
+	~nonconstructible();
 #endif
 };
 

@@ -33,13 +33,45 @@ enum reference_state_t
 	critical_ref = true		/// Reference is critical, referenced object might accidentally get destroyed.
 };
 
+#ifndef LEAN0X_NO_DECLTYPE
+namespace impl
+{
+	template <class Type>
+	struct move_ref_deref_helper
+	{
+		template <class T>
+		static auto maybe_type(T *v) -> decltype(**v);
+		static void maybe_type(...);
+
+		typedef decltype(maybe_type(static_cast<Type*>(nullptr))) type;
+	};
+}
+#endif
+
+/// Move reference wrapper.
 template <class Type>
 struct move_ref
 {
-	Type *const value;
+	/// Moved object type.
+	typedef Type value_type;
+	/// Pointer to the object to be moved.
+	value_type *const move_ptr;
 
-	move_ref(Type &v)
-		: value(addressof(v)) { }
+	/// Constructs a move reference object for the given value.
+	move_ref(value_type &v)
+		: move_ptr(addressof(v)) { }
+
+#ifndef LEAN0X_NO_DECLTYPE
+	/// Dereference type.
+	typedef typename impl::move_ref_deref_helper<Type>::type dereference_type;
+	/// Dereferences the object to be moved.
+	dereference_type operator *() const { return **move_ptr; }
+#endif
+	/// Dereferences the object to be moved.
+	value_type& operator ->() const { return *move_ptr; }
+
+	/// Gets a reference to the object to be moved.
+	value_type& moved() const { return *move_ptr; }
 };
 
 } // namespace
@@ -49,6 +81,8 @@ using smart::bind_reference;
 
 using smart::stable_ref;
 using smart::critical_ref;
+
+using smart::move_ref;
 
 } // namespace
 

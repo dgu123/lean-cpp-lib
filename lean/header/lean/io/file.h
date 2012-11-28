@@ -17,6 +17,7 @@
 #include <string>
 #include "../strings/types.h"
 #include "win_types.h"
+#include "../tags/noncopyable.h"
 
 namespace lean
 {
@@ -24,7 +25,7 @@ namespace io
 {
 
 /// File class that provides managed access to a given file.
-class file
+class file : public noncopyable
 {
 private:
 	utf8_string m_name;

@@ -17,14 +17,14 @@ namespace pimpl
 class safe_pimpl_base
 {
 protected:
-	LEAN_INLINE safe_pimpl_base() { }
-	LEAN_INLINE safe_pimpl_base(const safe_pimpl_base&) { }
-	LEAN_INLINE safe_pimpl_base& operator =(const safe_pimpl_base&) {  return *this;}
+	LEAN_INLINE safe_pimpl_base() noexcept { }
+	LEAN_INLINE safe_pimpl_base(const safe_pimpl_base&) noexcept { }
+	LEAN_INLINE safe_pimpl_base& operator =(const safe_pimpl_base&) noexcept { return *this;}
 
 public:
 	/// Virtual destructor guarantees correct destruction,
 	/// even where the actual pimpl class is unknown.
-	virtual ~safe_pimpl_base() throw() { };
+	virtual ~safe_pimpl_base() noexcept { };
 };
 
 } // namespace

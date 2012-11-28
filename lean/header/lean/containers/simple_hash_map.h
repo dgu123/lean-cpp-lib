@@ -429,7 +429,7 @@ protected:
 		m_maxLoadFactor(right.m_maxLoadFactor) { }
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Initializes the this hash map base.
-	LEAN_INLINE simple_hash_map_base(simple_hash_map_base &&right)
+	LEAN_INLINE simple_hash_map_base(simple_hash_map_base &&right) noexcept
 		: m_allocator(std::move(right.m_allocator)),
 		m_elements(std::move(right.m_elements)),
 		m_elementsEnd(std::move(right.m_elementsEnd)),
@@ -442,14 +442,14 @@ protected:
 	LEAN_INLINE simple_hash_map_base& operator =(const simple_hash_map_base&) { return *this; }
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Does nothing.
-	LEAN_INLINE simple_hash_map_base& operator =(simple_hash_map_base&&) { return *this; }
+	LEAN_INLINE simple_hash_map_base& operator =(simple_hash_map_base&&) noexcept { return *this; }
 #endif
 
 	/// Returns true if the given key is valid.
 	LEAN_INLINE static bool key_valid(const Key &key) { return KeyValues::is_valid(key); }
 
 	/// Swaps the contents of this hash map base and the given hash map base.
-	LEAN_INLINE void swap(simple_hash_map_base &right) throw()
+	LEAN_INLINE void swap(simple_hash_map_base &right) noexcept
 	{
 		using std::swap;
 
@@ -893,7 +893,7 @@ public:
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given hash map to this hash map.
-	simple_hash_map(simple_hash_map &&right)
+	simple_hash_map(simple_hash_map &&right) noexcept
 		: base_type(std::move(right)),
 		m_hasher(std::move(right.m_hasher)),
 		m_keyEqual(std::move(right.m_keyEqual))
@@ -930,7 +930,7 @@ public:
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given hash map to this hash map.
-	simple_hash_map& operator =(simple_hash_map &&right)
+	simple_hash_map& operator =(simple_hash_map &&right) noexcept
 	{
 		if (&right != this)
 		{
@@ -1158,7 +1158,7 @@ public:
 	}
 
 	/// Swaps the contents of this hash map and the given hash map.
-	LEAN_INLINE void swap(simple_hash_map &right) throw()
+	LEAN_INLINE void swap(simple_hash_map &right) noexcept
 	{
 		using std::swap;
 
@@ -1175,7 +1175,7 @@ public:
 
 /// Swaps the contents of the given hash maps.
 template <class Element, class Policy, class Allocator>
-LEAN_INLINE void swap(simple_hash_map<Element, Policy, Allocator> &left, simple_hash_map<Element, Policy, Allocator> &right)
+LEAN_INLINE void swap(simple_hash_map<Element, Policy, Allocator> &left, simple_hash_map<Element, Policy, Allocator> &right) noexcept
 {
 	left.swap(right);
 }

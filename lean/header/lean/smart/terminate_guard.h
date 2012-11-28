@@ -35,12 +35,12 @@ public:
 		right.disarm();
 	}
 	/// Terminates the application, if not disarmed.
-	LEAN_INLINE ~terminate_guard() throw()
+	LEAN_INLINE ~terminate_guard()
 	{
 		if (armed())
 		{
 			LEAN_ASSERT_DEBUG(false);
-			std::unexpected();
+			std::terminate();
 		}
 	}
 

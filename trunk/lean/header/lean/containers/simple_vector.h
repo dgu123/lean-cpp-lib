@@ -297,7 +297,7 @@ public:
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given vector to this vector.
-	simple_vector(simple_vector &&right)
+	simple_vector(simple_vector &&right) noexcept
 		: base_type(std::move(right)),
 		m_elements(std::move(right.m_elements)),
 		m_elementsEnd(std::move(right.m_elementsEnd)),
@@ -323,7 +323,7 @@ public:
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given vector to this vector.
-	simple_vector& operator =(simple_vector &&right)
+	simple_vector& operator =(simple_vector &&right) noexcept
 	{
 		if (&right != this)
 		{
@@ -655,7 +655,7 @@ public:
 	}
 
 	/// Swaps the contents of this vector and the given vector.
-	LEAN_INLINE void swap(simple_vector &right) throw()
+	LEAN_INLINE void swap(simple_vector &right) noexcept
 	{
 		using std::swap;
 
@@ -668,7 +668,7 @@ public:
 
 /// Swaps the contents of the given vectors.
 template <class Element, class Policy, class Allocator>
-LEAN_INLINE void swap(simple_vector<Element, Policy, Allocator> &left, simple_vector<Element, Policy, Allocator> &right)
+LEAN_INLINE void swap(simple_vector<Element, Policy, Allocator> &left, simple_vector<Element, Policy, Allocator> &right) noexcept
 {
 	left.swap(right);
 }

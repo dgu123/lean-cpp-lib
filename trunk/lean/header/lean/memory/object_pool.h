@@ -80,18 +80,18 @@ public:
 	}
 
 	/// Allocates a new element in the object pool. Object MUST BE CONSTRUCTED, WILL BE DESTRUCTED.
-	LEAN_INLINE void* allocate() throw()
+	LEAN_INLINE void* allocate()
 	{
 		return m_heap.allocate<Alignment>( sizeof(Element) );
 	}
 	/// Places the given value into this object pool. Copy construction MAY NOT THROW, object WILL BE DESTRUCTED.
-	LEAN_INLINE Element* place(const Element &value) throw()
+	LEAN_INLINE Element* place(const Element &value) noexcept
 	{
 		return new( m_heap.allocate<Alignment>( sizeof(Element) ) ) Element(value);
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Places the given value into this object pool. Move construction MAY NOT THROW, object WILL BE DESTRUCTED.
-	LEAN_INLINE Element* place(Element &&value) throw()
+	LEAN_INLINE Element* place(Element &&value) noexcept
 	{
 		return new( m_heap.allocate<Alignment>( sizeof(Element) ) ) Element( std::move(value) );
 	}

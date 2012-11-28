@@ -47,10 +47,10 @@ protected:
 
 #ifdef LEAN0X_NEED_EXPLICIT_MOVE
 	/// Move construction.
-	LEAN_INLINE allocator_aware_base(allocator_aware_base &&right)
+	LEAN_INLINE allocator_aware_base(allocator_aware_base &&right) noexcept
 		: m_allocator(std::move(right.m_allocator)) { }
 	/// Move assignment.
-	LEAN_INLINE allocator_aware_base& operator =(allocator_aware_base &&right)
+	LEAN_INLINE allocator_aware_base& operator =(allocator_aware_base &&right) noexcept
 	{
 		m_allocator = std::move(right.m_allocator);
 		return *this;
@@ -58,7 +58,7 @@ protected:
 #endif
 
 	/// Swaps the allocators of this allocator-aware object and the given allocator-aware object.
-	LEAN_INLINE void swap(allocator_aware_base &right)
+	LEAN_INLINE void swap(allocator_aware_base &right) noexcept
 	{
 		using std::swap;
 
@@ -86,12 +86,12 @@ protected:
 	};
 
 	/// Default allocator.
-	LEAN_INLINE allocator_aware_base() { }
+	LEAN_INLINE allocator_aware_base() noexcept { }
 	/// Exeplicit allocator construction.
-	LEAN_INLINE explicit allocator_aware_base(const Allocator &allocator) { }
+	LEAN_INLINE explicit allocator_aware_base(const Allocator &allocator) noexcept { }
 
 	/// Swaps the allocators of this allocator-aware object and the given allocator-aware object.
-	LEAN_INLINE void swap(allocator_aware_base &right) { }
+	LEAN_INLINE void swap(allocator_aware_base &right) noexcept { }
 };
 
 } // namespace

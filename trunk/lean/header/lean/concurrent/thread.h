@@ -92,7 +92,7 @@ public:
 	thread(Callable &&callable)
 		: m_handle( run_thread( new Callable(std::move(callable)) ) ) { }
 	/// Moves the thread managed by the given thread object to this thread object.
-	thread(thread &&right)
+	thread(thread &&right) noexcept
 		: m_handle(right.m_handle)
 	{
 		right.m_handle = NULL;
@@ -107,7 +107,7 @@ public:
 
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves the thread managed by the given thread object to this thread object.
-	thread& operator =(thread &&right)
+	thread& operator =(thread &&right) noexcept
 	{
 		if (m_handle != right.m_handle)
 		{

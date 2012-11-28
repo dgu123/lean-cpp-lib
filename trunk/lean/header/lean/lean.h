@@ -156,33 +156,41 @@
 #endif
 
 #ifndef LEAN_INTERFACE_BEHAVIOR
+
+#ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
 	/// Makes the given class behave like an interface.
 	#define LEAN_INTERFACE_BEHAVIOR(name) \
 			protected: \
-				LEAN_INLINE name& operator =(const name&) throw() { return *this; } \
-				LEAN_INLINE ~name() throw() { } \
+				LEAN_INLINE name& operator =(const name&) noexcept { return *this; } \
+				LEAN_INLINE ~name() noexcept { } \
 			private:
+#else
+	#define LEAN_INTERFACE_BEHAVIOR(name) \
+			protected: \
+				LEAN_INLINE name& operator =(const name&) noexcept { return *this; } \
+			private:
+#endif
 
 	/// Makes the given class behave like an interface supporting shared ownership.
 	#define LEAN_SHARED_INTERFACE_BEHAVIOR(name) \
 			public: \
-				virtual ~name() throw() { } \
+				virtual ~name() noexcept { } \
 			protected: \
-				LEAN_INLINE name& operator =(const name&) throw() { return *this; } \
+				LEAN_INLINE name& operator =(const name&) noexcept { return *this; } \
 			private:
 
 	/// Makes the given class behave like a static interface.
 	#define LEAN_STATIC_INTERFACE_BEHAVIOR(name) LEAN_INTERFACE_BEHAVIOR(name) \
 			protected: \
-				LEAN_INLINE name() throw() { } \
-				LEAN_INLINE name(const name&) throw() { } \
+				LEAN_INLINE name() noexcept { } \
+				LEAN_INLINE name(const name&) noexcept { } \
 			private:
 
 	/// Makes the given class behave like a static interface supporting shared ownership.
 	#define LEAN_SHARED_STATIC_INTERFACE_BEHAVIOR(name) LEAN_SHARED_INTERFACE_BEHAVIOR(name) \
 			protected: \
-				LEAN_INLINE name() throw() { } \
-				LEAN_INLINE name(const name&) throw() { } \
+				LEAN_INLINE name() noexcept { } \
+				LEAN_INLINE name(const name&) noexcept { } \
 			private:
 #endif
 

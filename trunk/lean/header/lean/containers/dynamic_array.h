@@ -183,7 +183,7 @@ public:
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given vector to this vector.
-	dynamic_array(dynamic_array &&right)
+	dynamic_array(dynamic_array &&right) noexcept
 		: base_type(std::move(right)) { }
 #endif
 	/// Moves all elements from the given vector to this vector.
@@ -243,7 +243,7 @@ public:
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Moves all elements from the given vector to this vector.
-	LEAN_INLINE dynamic_array& operator =(dynamic_array &&right)
+	LEAN_INLINE dynamic_array& operator =(dynamic_array &&right) noexcept
 	{
 		assign(right, consume);
 		return *this;
@@ -376,7 +376,7 @@ public:
 	LEAN_INLINE size_type size(void) const { return m_elementsEnd - m_elements; };
 
 	/// Swaps the contents of this vector and the given vector.
-	LEAN_INLINE void swap(dynamic_array &right) throw()
+	LEAN_INLINE void swap(dynamic_array &right) noexcept
 	{
 		static_cast<base_type&>(*this).swap(right);
 	}
@@ -384,7 +384,7 @@ public:
 
 /// Swaps the contents of the given vectors.
 template <class Element, class Heap>
-LEAN_INLINE void swap(dynamic_array<Element, Heap> &left, dynamic_array<Element, Heap> &right)
+LEAN_INLINE void swap(dynamic_array<Element, Heap> &left, dynamic_array<Element, Heap> &right) noexcept
 {
 	left.swap(right);
 }

@@ -27,9 +27,9 @@ private:
 #endif
 
 protected:
-	noncopyable_chain() { }
+	noncopyable_chain() noexcept { }
 #ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
-	~noncopyable_chain() throw() { }
+	~noncopyable_chain() noexcept { }
 #endif
 };
 
@@ -46,9 +46,9 @@ private:
 #endif
 
 protected:
-	noncopyable() { }
+	noncopyable() noexcept { }
 #ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
-	~noncopyable() throw() { }
+	~noncopyable() noexcept { }
 #endif
 };
 
@@ -64,10 +64,10 @@ private:
 #endif
 
 protected:
-	nonassignable_chain() { }
-	nonassignable_chain(const nonassignable_chain&) { }
+	nonassignable_chain() noexcept { }
+	nonassignable_chain(const nonassignable_chain&) noexcept { }
 #ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
-	~nonassignable_chain() throw() { }
+	~nonassignable_chain() noexcept { }
 #endif
 };
 
@@ -82,10 +82,10 @@ private:
 #endif
 
 protected:
-	nonassignable() { }
-	nonassignable(const nonassignable&) { }
+	nonassignable() noexcept { }
+	nonassignable(const nonassignable&) noexcept { }
 #ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
-	~nonassignable() throw() { }
+	~nonassignable() noexcept { }
 #endif
 };
 
@@ -101,10 +101,10 @@ private:
 #endif
 
 protected:
-	noncopyable_assignable_chain() { }
-	noncopyable_assignable_chain& operator =(const noncopyable_assignable_chain&) { return *this; }
+	noncopyable_assignable_chain() noexcept { }
+	noncopyable_assignable_chain& operator =(const noncopyable_assignable_chain&) noexcept { return *this; }
 #ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
-	~noncopyable_assignable_chain() throw() { }
+	~noncopyable_assignable_chain() noexcept { }
 #endif
 };
 
@@ -119,10 +119,10 @@ private:
 #endif
 
 protected:
-	noncopyable_assignable() { }
-	noncopyable_assignable& operator =(const noncopyable_assignable&) { return *this; };
+	noncopyable_assignable() noexcept { }
+	noncopyable_assignable& operator =(const noncopyable_assignable&) noexcept { return *this; };
 #ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
-	~noncopyable_assignable() throw() { }
+	~noncopyable_assignable() noexcept { }
 #endif
 };
 

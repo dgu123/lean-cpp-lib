@@ -21,6 +21,8 @@ namespace memory
 	template <size_t Alignment, class Heap = default_heap>
 	class aligned : public stack_aligned<Alignment>
 	{
+		LEAN_STATIC_INTERFACE_BEHAVIOR(aligned)
+
 	private:
 #ifndef LEAN0X_NO_DELETE_METHODS
 		/// Cannot be aligned properly, therefore disabled.
@@ -32,12 +34,6 @@ namespace memory
 		LEAN_INLINE void* operator new[](size_t size);
 		/// Cannot be aligned properly, therefore disabled.
 		LEAN_INLINE void operator delete[](void *memory);
-#endif
-
-	protected:
-		LEAN_INLINE aligned() { };
-#ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
-		LEAN_INLINE ~aligned() throw() { };
 #endif
 
 	public:

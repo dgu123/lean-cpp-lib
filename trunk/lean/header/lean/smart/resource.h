@@ -70,12 +70,12 @@ protected:
 	resource(const typename ref_counter_type::allocator_type& allocator)
 		: m_refCounter(allocator) { }
 	/// Copy constructor.
-	LEAN_INLINE resource(const resource& right) { }
+	LEAN_INLINE resource(const resource& right) noexcept { }
 	/// Assignment operator.
-	LEAN_INLINE resource& operator =(const resource& right) { return *this; }
+	LEAN_INLINE resource& operator =(const resource& right) noexcept { return *this; }
 #ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
 	/// Destructor.
-	LEAN_INLINE ~resource() throw() { }
+	LEAN_INLINE ~resource() noexcept { }
 #endif
 
 	/// Returns the reference counter of this resource.

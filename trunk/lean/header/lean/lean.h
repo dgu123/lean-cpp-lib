@@ -392,6 +392,8 @@ LEAN_INLINE const Type& max(const Type &a, const Type &b)
 #define LEAN_ASSERT_NOT_NULL(expr) ::lean::assert_not_null(expr)
 /// Asserts that the given expression is never null, returning the expression.
 #define LEAN_ASSERT_NOT_NULL_DEBUG(expr) ::lean::assert_not_null_debug(expr)
+/// Asserts that no unhandled exceptions escape the preceding try block.
+#define LEAN_ASSERT_NOEXCEPT catch (...) { LEAN_ASSERT(false); }
 
 /// @}
 

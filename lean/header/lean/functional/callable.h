@@ -104,12 +104,75 @@ LEAN_INLINE callable_memfun<Class, Signature> make_callable(Class *obj, Signatur
 	return callable_memfun<Class, Signature>(obj, fun);
 }
 
+/// Stores a pointer to a polymorphic method to be called on invokation of operator ().
+class vcallable
+{
+public:
+	/// Polymorphic function pointer type.
+	typedef void (*fun_ptr)(vcallable&);
+	
+private:
+	fun_ptr m_fun;
+
+protected:
+	/// Stores the given polymorphic method to be called by operator().
+	LEAN_INLINE vcallable(fun_ptr fun) noexcept
+		: m_fun(fun)
+	{
+		LEAN_ASSERT(m_fun);
+	}
+	
+	LEAN_INLINE vcallable(const vcallable &right) noexcept
+		: m_fun(right.m_fun) { }
+	
+	LEAN_INLINE vcallable& operator =(const vcallable &right) noexcept
+	{
+		m_fun = right.m_fun;
+		return *this;
+	}
+
+public:
+	/// Calls the function stored by this callable object.
+	LEAN_INLINE void operator ()()
+	{
+		(*m_fun)(*this);
+	}
+};
+
+/// Stores a pointer to a method to be called on invokation of operator ().
+template <class Derived>
+class vcallable_base : public vcallable
+{
+private:
+	static void call(vcallable &self)
+	{
+		static_cast<Derived&>(self)();
+	}
+
+protected:
+	/// Stores the given object and method to be called by operator().
+	LEAN_INLINE vcallable_base() noexcept
+		: vcallable(&call) { }
+
+	LEAN_INLINE vcallable_base(const vcallable_base &right) noexcept
+		: vcallable(right) { }
+	
+	LEAN_INLINE vcallable_base& operator =(const vcallable_base &right) noexcept
+	{
+		vcallable::operator =(right);
+		return *this;
+	}
+};
+
 } // namespace
 
 using functional::callable_fun;
 using functional::callable_memfun;
 
 using functional::make_callable;
+
+using functional::vcallable;
+using functional::vcallable_base;
 
 } // namespace
 

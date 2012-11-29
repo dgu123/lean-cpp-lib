@@ -8,6 +8,7 @@
 
 #include "../lean.h"
 #include "../tags/noncopyable.h"
+#include "../tags/move_ptr.h"
 #include "../meta/strip.h"
 #include "../functional/variadic.h"
 #include "common.h"
@@ -214,6 +215,14 @@ public:
 	LEAN_INLINE move_ref<scoped_ptr> transfer()
 	{
 		return move_ref<scoped_ptr>(*this);
+	}
+
+	// NOTE: Workaround, MSVC++ misses elaborate template type specifiers
+	typedef move_ptr<object_type> move_ptr_t;
+	/// Gets a move pointer to this pointer.
+	LEAN_INLINE move_ptr_t move_ptr()
+	{
+		return move_ptr_t(m_object);
 	}
 
 	/// Destroys the stored object.

@@ -17,7 +17,7 @@ namespace tags
 template <class Type>
 class move_ptr
 {
-	Type *ptr;
+	Type* *const ptr;
 
 public:
 #ifndef LEAN0X_NO_NULLPTR
@@ -30,42 +30,32 @@ public:
 		: ptr(nullptr) { }
 #endif
 	/// Wraps the given pointer whose ownership is to be transferred.
-	LEAN_INLINE explicit move_ptr(Type *ptr = nullptr)
-		: ptr(ptr) { }
+	LEAN_INLINE explicit move_ptr(Type *&ptr)
+		: ptr(&ptr) { }
 
 	/// Detaches the stored pointer.
 	LEAN_INLINE Type* transfer()
 	{
-		Type *p = ptr;
-		ptr = nullptr;
-		return p;
+		if (ptr)
+		{
+			Type *p = *ptr;
+			*ptr = nullptr;
+			return p;
+		}
+		else
+			return nullptr;
 	}
 
 	/// Peeks at the stored pointer.
 	LEAN_INLINE Type* peek() const
 	{
-		return ptr;
+		return (ptr) ? *ptr : nullptr;
 	}
 };
-
-/// Wraps the given reference to a pointer in a move pointer reference.
-template <class Type>
-LEAN_INLINE move_ptr<Type>& make_move_ptr(Type *&ptr) { return reinterpret_cast<move_ptr<Type>&>(ptr); }
-
-/// Wraps the given pointer in a move pointer.
-template <class Type>
-LEAN_INLINE move_ptr<Type> ptr_move(Type *ptr) { return move_ptr<Type>(ptr); }
-#ifndef LEAN0X_NO_NULLPTR
-nullptr_t ptr_move(nullptr_t) { return nullptr; }
-#else
-int ptr_move(int) { return 0; }
-#endif
 
 } // namespace
 
 using tags::move_ptr;
-
-using tags::ptr_move;
 
 } // namespace
 

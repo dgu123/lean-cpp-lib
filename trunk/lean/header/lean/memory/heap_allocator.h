@@ -17,7 +17,7 @@ namespace memory
 {
 
 /// STL allocator heap adapter.
-template<class Element, class Heap = default_heap, size_t Alignment = alignof(Element)>
+template <class Element, class Heap = default_heap, size_t Alignment = alignof(Element)>
 class heap_allocator
 {
 public:
@@ -42,7 +42,7 @@ public:
 	typedef ptrdiff_t difference_type;
 
 	/// Allows for the creation of differently-typed equivalent allocators.
-	template<class Other>
+	template <class Other>
 	struct rebind
 	{
 		/// Equivalent allocator allocating elements of type Other.
@@ -52,10 +52,10 @@ public:
 	/// Default constructor.
 	LEAN_INLINE heap_allocator() { }
 	/// Copy constructor.
-	template<class Other>
+	template <class Other>
 	LEAN_INLINE heap_allocator(const heap_allocator<Other, Heap, Alignment> &right) { }
 	/// Assignment operator.
-	template<class Other>
+	template <class Other>
 	LEAN_INLINE heap_allocator& operator=(const heap_allocator<Other, Heap, Alignment> &right) { return *this; }
 	
 	/// Allocates the given number of elements.
@@ -80,7 +80,7 @@ public:
 		new(reinterpret_cast<void*>(ptr)) Element(value);
 	}
 	/// Constructs a new element from the given value at the given pointer.
-	template<class Other>
+	template <class Other>
 	LEAN_INLINE void construct(pointer ptr, const Other& value)
 	{
 		new(reinterpret_cast<void*>(ptr)) Element(value);
@@ -92,7 +92,7 @@ public:
 		new(reinterpret_cast<void*>(ptr)) Element(std::move(value));
 	}
 	/// Constructs a new element from the given value at the given pointer.
-	template<class Other>
+	template <class Other>
 	LEAN_INLINE void construct(pointer ptr, Other&& value)
 	{
 		new(reinterpret_cast<void*>(ptr)) Element(std::forward<Other>(value));
@@ -126,7 +126,7 @@ public:
 #ifndef DOXYGEN_SKIP_THIS
 
 /// STL allocator heap adapter.
-template<class Heap, size_t Alignment>
+template <class Heap, size_t Alignment>
 class heap_allocator<void, Heap, Alignment>
 {
 public:
@@ -137,9 +137,9 @@ public:
 	typedef void value_type;
 
 	/// Pointer type.
-	typedef typename value_type* pointer;
+	typedef value_type* pointer;
 	/// Pointer type.
-	typedef typename const value_type* const_pointer;
+	typedef const value_type* const_pointer;
 
 	/// Size type.
 	typedef typename heap_type::size_type size_type;

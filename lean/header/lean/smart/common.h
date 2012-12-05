@@ -55,23 +55,14 @@ struct move_ref
 	/// Moved object type.
 	typedef Type value_type;
 	/// Pointer to the object to be moved.
-	value_type *const move_ptr;
+	value_type *const moved_ptr;
 
 	/// Constructs a move reference object for the given value.
 	move_ref(value_type &v)
-		: move_ptr(addressof(v)) { }
-
-#ifndef LEAN0X_NO_DECLTYPE
-	/// Dereference type.
-	typedef typename impl::move_ref_deref_helper<Type>::type dereference_type;
-	/// Dereferences the object to be moved.
-	dereference_type operator *() const { return **move_ptr; }
-#endif
-	/// Dereferences the object to be moved.
-	value_type& operator ->() const { return *move_ptr; }
+		: moved_ptr(addressof(v)) { }
 
 	/// Gets a reference to the object to be moved.
-	value_type& moved() const { return *move_ptr; }
+	value_type& moved() const { return *moved_ptr; }
 };
 
 } // namespace
@@ -79,6 +70,7 @@ struct move_ref
 using smart::bind_reference_t;
 using smart::bind_reference;
 
+using smart::reference_state_t;
 using smart::stable_ref;
 using smart::critical_ref;
 

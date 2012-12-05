@@ -135,7 +135,7 @@ template <class Type>
 struct release_ptr_policy<Type[]>;
 
 /// Scoped pointer class that releases the object pointed to on destruction.
-template < class Type, class ReleasePolicy = generic_ptr_policy<Type> >
+template < class Type, reference_state_t RefState = stable_ref, class ReleasePolicy = generic_ptr_policy<Type> >
 class scoped_ptr : public noncopyable
 {
 public:
@@ -168,17 +168,30 @@ public:
 	
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs a scoped pointer from the given scoped pointer.
-	template <class Type2, class ReleasePolicy2>
-	LEAN_INLINE scoped_ptr(scoped_ptr<Type2, ReleasePolicy2> &&right) noexcept
+	template <class Type2, reference_state_t RefState2, class ReleasePolicy2>
+	LEAN_INLINE scoped_ptr(scoped_ptr<Type2, RefState2, ReleasePolicy2> &&right) noexcept
 		: m_object( right.detach() )
 	{
 		ReleasePolicy assertSameReleasePolicy((ReleasePolicy2()));
 		(void) assertSameReleasePolicy;
 	}
+#else
+	/// Constructs a scoped pointer by stealing from the given scoped pointer.
+	template <class Type2, class ReleasePolicy2>
+	LEAN_INLINE scoped_ptr(scoped_ptr<Type2, critical_ref, ReleasePolicy2> &right) noexcept
+		: m_object( right.detach() )
+	{
+		ReleasePolicy assertSameReleasePolicy((ReleasePolicy2()));
+		(void) assertSameReleasePolicy;
+
+		LEAN_STATIC_ASSERT_MSG_ALT(RefState == critical_ref,
+			"Stealing copy only supported for backwards compatibility, requires critical pointers.",
+			Stealing_copy_only_supported_for_backwards_compatibility__requires_critical_pointers);
+	}
 #endif
 	/// Constructs a scoped pointer from the given scoped pointer.
-	template <class Type2, class ReleasePolicy2>
-	LEAN_INLINE scoped_ptr(move_ref< scoped_ptr<Type2, ReleasePolicy2> > right) noexcept
+	template <class Type2, reference_state_t RefState2, class ReleasePolicy2>
+	LEAN_INLINE scoped_ptr(move_ref< scoped_ptr<Type2, RefState2, ReleasePolicy2> > right) noexcept
 		: m_object( right.moved().detach() )
 	{
 		ReleasePolicy assertSameReleasePolicy((ReleasePolicy2()));
@@ -239,8 +252,8 @@ public:
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Replaces the stored object with the one stored by the given r-value scoped pointer. <b>[ESA]</b>
-	template <class Type2, class ReleasePolicy2>
-	LEAN_INLINE scoped_ptr& operator =(scoped_ptr<Type2, ReleasePolicy2> &&right) noexcept
+	template <class Type2, reference_state_t RefState2, class ReleasePolicy2>
+	LEAN_INLINE scoped_ptr& operator =(scoped_ptr<Type2, RefState2, ReleasePolicy2> &&right) noexcept
 	{
 		ReleasePolicy assertSameReleasePolicy((ReleasePolicy2()));
 		(void) assertSameReleasePolicy;
@@ -249,8 +262,8 @@ public:
 	}
 #endif
 	/// Replaces the stored object with the one stored by the given r-value scoped pointer. <b>[ESA]</b>
-	template <class Type2, class ReleasePolicy2>
-	LEAN_INLINE scoped_ptr& operator =(move_ref< scoped_ptr<Type2, ReleasePolicy2> > right) noexcept
+	template <class Type2, reference_state_t RefState2, class ReleasePolicy2>
+	LEAN_INLINE scoped_ptr& operator =(move_ref< scoped_ptr<Type2, RefState2, ReleasePolicy2> > right) noexcept
 	{
 		ReleasePolicy assertSameReleasePolicy((ReleasePolicy2()));
 		(void) assertSameReleasePolicy;
@@ -269,9 +282,15 @@ public:
 	/// Gets the n-th element.
 	LEAN_INLINE object_type& operator [](ptrdiff_t n) const { return m_object[n]; }
 
-#ifdef LEAN_SCOPED_PTR_IMPLICIT_CONVERSION
+#ifndef LEAN_SCOPED_PTR_NO_IMPLICIT_CONVERSION
 	/// Gets the object stored by this scoped pointer.
-	LEAN_INLINE operator object_type*() const { return m_object; }
+	LEAN_INLINE operator object_type*() const
+	{
+		LEAN_STATIC_ASSERT_MSG_ALT(RefState != critical_ref,
+			"Cannot implicitly cast critical pointer, use detach() for (insecure) storage.",
+			Cannot_implicitly_cast_critical_pointer__use_detach_for_insecure_storage);
+		return m_object;
+	}
 #else
 	/// Gets the object stored by this scoped pointer.
 	LEAN_INLINE operator bool() const { return (m_object != nullptr); }
@@ -295,10 +314,17 @@ public:
 };
 
 /// Swaps the given pointers.
-template <class T, class R>
-LEAN_INLINE void swap(scoped_ptr<T, R> &left, scoped_ptr<T, R> &right) noexcept
+template <class T, reference_state_t RS, class R>
+LEAN_INLINE void swap(scoped_ptr<T, RS, R> &left, scoped_ptr<T, RS, R> &right) noexcept
 {
 	left.swap(right);
+}
+
+/// Constructs a scoped pointer.
+template <class T>
+LEAN_INLINE scoped_ptr<T, critical_ref> make_scoped_ptr(T *p)
+{
+	return scoped_ptr<T, critical_ref>(p);
 }
 
 #ifdef DOXYGEN_READ_THIS
@@ -307,8 +333,8 @@ LEAN_INLINE void swap(scoped_ptr<T, R> &left, scoped_ptr<T, R> &right) noexcept
 	scoped_ptr<Object> make_scoped(...);
 #else
 	#define LEAN_MAKE_SCOPED_FUNCTION_TPARAMS class Object
-	#define LEAN_MAKE_SCOPED_FUNCTION_DECL inline scoped_ptr<Object> make_scoped
-	#define LEAN_MAKE_SCOPED_FUNCTION_BODY(call) { return scoped_ptr<Object>( new Object##call ); }
+	#define LEAN_MAKE_SCOPED_FUNCTION_DECL inline scoped_ptr<Object, critical_ref> make_scoped
+	#define LEAN_MAKE_SCOPED_FUNCTION_BODY(call) { return scoped_ptr<Object, critical_ref>( new Object##call ); }
 	LEAN_VARIADIC_TEMPLATE_T(LEAN_FORWARD, LEAN_MAKE_SCOPED_FUNCTION_DECL, LEAN_MAKE_SCOPED_FUNCTION_TPARAMS, LEAN_NOTHING, LEAN_MAKE_SCOPED_FUNCTION_BODY)
 #endif
 
@@ -316,13 +342,14 @@ struct new_scoped_ptr_t { };
 struct new_scoped_array_t { };
 
 template <class T>
-LEAN_INLINE scoped_ptr<T> operator *(new_scoped_ptr_t, T *p) { return scoped_ptr<T>(p); }
+LEAN_INLINE scoped_ptr<T, critical_ref> operator *(new_scoped_ptr_t, T *p) { return scoped_ptr<T, critical_ref>(p); }
 template <class T>
-LEAN_INLINE scoped_ptr<T[]> operator *(new_scoped_array_t, T *p) { return scoped_ptr<T[]>(p); }
+LEAN_INLINE scoped_ptr<T[], critical_ref> operator *(new_scoped_array_t, T *p) { return scoped_ptr<T[], critical_ref>(p); }
 
 } // namespace
 
 using smart::make_scoped;
+using smart::make_scoped_ptr;
 
 using smart::scoped_ptr;
 

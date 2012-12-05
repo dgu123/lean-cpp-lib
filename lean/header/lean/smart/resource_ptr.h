@@ -19,7 +19,7 @@ namespace smart
 template <class Counter, class Allocator>
 class ref_counter;
 
-template <class Type, class ReleasePolicy>
+template <class Type, reference_state_t RefState, class ReleasePolicy>
 class scoped_ptr;
 
 /// Destroys the given resource by calling @code delete resource@endcode  (default policy implementation).
@@ -107,13 +107,13 @@ public:
 
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	/// Constructs a resource pointer from the given resource without incrementing its reference count.
-	template <class Type, class ReleasePolicy>
-	LEAN_INLINE resource_ptr(scoped_ptr<Type, ReleasePolicy> &&resource) noexcept
+	template <class Type, reference_state_t RefState, class ReleasePolicy>
+	LEAN_INLINE resource_ptr(scoped_ptr<Type, RefState, ReleasePolicy> &&resource) noexcept
 		: m_resource(resource.detach()) { };
 #endif
 	/// Constructs a resource pointer from the given resource without incrementing its reference count.
-	template <class Type, class ReleasePolicy>
-	LEAN_INLINE resource_ptr(move_ref< scoped_ptr<Type, ReleasePolicy> > resource) noexcept
+	template <class Type, reference_state_t RefState, class ReleasePolicy>
+	LEAN_INLINE resource_ptr(move_ref< scoped_ptr<Type, RefState, ReleasePolicy> > resource) noexcept
 		: m_resource(resource.moved().detach()) { };
 
 	/// Destroys the resource pointer.
@@ -194,16 +194,16 @@ public:
 		return *this;
 	}
 	/// Replaces the stored resource with the one stored by the given r-value scoped pointer. <b>[ESA]</b>
-	template <class Type, class ReleasePolicy>
-	resource_ptr& operator =(scoped_ptr<Type, ReleasePolicy> &&right) noexcept
+	template <class Type, reference_state_t RefState, class ReleasePolicy>
+	resource_ptr& operator =(scoped_ptr<Type, RefState, ReleasePolicy> &&right) noexcept
 	{
 		rebind(right.detach());
 		return *this;
 	}
 #endif
 	/// Replaces the stored resource with the one stored by the given r-value scoped pointer. <b>[ESA]</b>
-	template <class Type, class ReleasePolicy>
-	resource_ptr& operator =(move_ref< scoped_ptr<Type, ReleasePolicy> > right) noexcept
+	template <class Type, reference_state_t RefState, class ReleasePolicy>
+	resource_ptr& operator =(move_ref< scoped_ptr<Type, RefState, ReleasePolicy> > right) noexcept
 	{
 		rebind(right.moved().detach());
 		return *this;

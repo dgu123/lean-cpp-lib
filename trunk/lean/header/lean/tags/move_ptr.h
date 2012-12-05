@@ -53,9 +53,18 @@ public:
 	}
 };
 
+/// Constructs a move pointer for the given pointer.
+template <class Type>
+LEAN_INLINE move_ptr<Type> do_move_ptr(Type *&ptr)
+{
+	return move_ptr<Type>(ptr);
+}
+
 } // namespace
 
 using tags::move_ptr;
+
+using tags::do_move_ptr;
 
 } // namespace
 

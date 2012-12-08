@@ -8,7 +8,7 @@
 
 #include "../lean.h"
 #include "../functional/variadic.h"
-#include <vector>
+#include "vector_policies.h"
 
 namespace lean 
 {
@@ -34,25 +34,10 @@ struct multi_vector_base
 	LEAN_INLINE void swap(multi_vector_base&) { }
 };
 
-/// Default vector binder.
-template <template <class E, class A> class Vector, template <class T> class Allocator>
-struct vector_binder
-{
-	/// Constructs a vector type from the given element type.
-	template <class Type>
-	struct rebind
-	{
-		typedef Vector< Type, Allocator<Type> > type;
-	};
-};
-
 /// Manages several parallel vectors.
 template <class Type, class Tag, class VectorBinder, class Base = multi_vector_base>
 class multi_vector : private Base
 {
-	template <class OtherType, class OtherTag, class OtherVectorBinder, class OtherBase>
-	friend class multi_vector;
-
 public:
 	typedef typename VectorBinder::template rebind<Type>::type vector_type;
 	typedef typename vector_type::allocator_type allocator_type;
@@ -100,7 +85,7 @@ public:
 		: Base(std::move(right)),
 		v(std::move(right.v)) { }
 
-	multi_vector& operator =(multi_vector &&right)
+	LEAN_INLINE multi_vector& operator =(multi_vector &&right)
 	{
 		this->Base::operator =(std::move(right));
 		v = std::move(right.v);
@@ -131,13 +116,13 @@ public:
 		}
 	}
 	
-	#define LEAN_PUSH_BACK_METHOD_TPARAMS \
+	#define LEAN_MULTI_VECTOR_PUSH_BACK_METHOD_TPARAMS \
 		class T
-	#define LEAN_PUSH_BACK_METHOD_DECL \
+	#define LEAN_MULTI_VECTOR_PUSH_BACK_METHOD_DECL \
 		void push_back
-	#define LEAN_PUSH_BACK_METHOD_PARAMS \
+	#define LEAN_MULTI_VECTOR_PUSH_BACK_METHOD_PARAMS \
 		T LEAN_FW_REF val
-	#define LEAN_PUSH_BACK_METHOD_BODY(call) \
+	#define LEAN_MULTI_VECTOR_PUSH_BACK_METHOD_BODY(call) \
 		{ \
 			v.push_back( LEAN_FORWARD(T, val) ); \
 			try \
@@ -150,8 +135,8 @@ public:
 				throw; \
 			} \
 		}
-	LEAN_VARIADIC_TEMPLATE_TP(LEAN_FORWARD, LEAN_PUSH_BACK_METHOD_DECL, LEAN_PUSH_BACK_METHOD_TPARAMS, LEAN_PUSH_BACK_METHOD_PARAMS,
-		LEAN_NOTHING, LEAN_PUSH_BACK_METHOD_BODY)
+	LEAN_VARIADIC_TEMPLATE_TP(LEAN_FORWARD, LEAN_MULTI_VECTOR_PUSH_BACK_METHOD_DECL, LEAN_MULTI_VECTOR_PUSH_BACK_METHOD_TPARAMS,
+		LEAN_MULTI_VECTOR_PUSH_BACK_METHOD_PARAMS, LEAN_NOTHING, LEAN_MULTI_VECTOR_PUSH_BACK_METHOD_BODY)
 
 	LEAN_INLINE void push_back_from(const multi_vector& src, size_t index)
 	{

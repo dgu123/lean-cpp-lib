@@ -531,6 +531,12 @@
     <ClInclude Include="header\lean\tags\move_ptr.h">
       <Filter>Header Files\tags</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\config\fastlean.h">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="header\lean\containers\parallel_vector.h">
+      <Filter>Header Files\containers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

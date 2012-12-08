@@ -707,7 +707,8 @@ struct simple_vector_binder
 	struct rebind
 	{
 		typedef heap_allocator<Type> allocator_type;
-		typedef simple_vector<Type, Policy, allocator_type> type;
+		typedef Policy policy;
+		typedef simple_vector<Type, policy, allocator_type> type;
 	};
 };
 

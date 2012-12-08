@@ -63,6 +63,7 @@ struct vector_binder
 	struct rebind
 	{
 		typedef Allocator<Type> allocator_type;
+		typedef vector_policies::nonpod policy;
 		typedef Vector<Type, allocator_type> type;
 	};
 };
@@ -76,7 +77,8 @@ struct policy_vector_binder
 	struct rebind
 	{
 		typedef Allocator<Type> allocator_type;
-		typedef Vector<Type, Policy, allocator_type> type;
+		typedef Policy policy;
+		typedef Vector<Type, policy, allocator_type> type;
 	};
 };
 

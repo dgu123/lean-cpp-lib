@@ -42,6 +42,7 @@ class parallel_vector_array : private Base
 public:
 	typedef Type value_type;
 	typedef value_type* pointer;
+	typedef typename VectorBinder::template rebind<Type>::policy policy;
 	typedef typename VectorBinder::template rebind<Type>::allocator_type allocator_type;
 	typedef typename allocator_type::size_type size_type;
 
@@ -90,9 +91,10 @@ public:
 		
 		if (sourceP)
 		{
-			try { move_construct(sourceP, sourceP + size, p, no_allocator); } LEAN_ASSERT_NOEXCEPT
+			try { move_construct(sourceP, sourceP + size, p, no_allocator, typename policy::move_tag()); } LEAN_ASSERT_NOEXCEPT
 			
-			destruct(sourceP, sourceP + size, no_allocator);
+			if (!policy::raw_move)
+				destruct(sourceP, sourceP + size, no_allocator, typename policy::destruct_tag());
 			allocator.deallocate(sourceP);
 		}
 	}
@@ -102,7 +104,7 @@ public:
 
 		if (p)
 		{
-			destruct(p, p + size, no_allocator);
+			destruct(p, p + size, no_allocator, typename policy::destruct_tag());
 			allocator.deallocate(p);
 			p = nullptr;
 		}
@@ -147,13 +149,15 @@ public:
 	{
 		this->Base::erase(idx);
 		p[idx].~value_type();
-		move(p + idx + 1, p + oldSize, p, no_allocator);
+		value_type *where = p + idx;
+		value_type *end = p + oldSize;
+		close(where, where + 1, end, no_allocator, typename policy::move_tag(), typename policy::destruct_tag());
 	}
 	
 	void clear(size_t size) noexcept
 	{
 		this->Base::clear();
-		destruct(p, p + size, no_allocator);
+		destruct(p, p + size, no_allocator, typename policy::destruct_tag());
 	}
 
 	void resize(size_t newSize, size_t oldSize) noexcept
@@ -161,9 +165,9 @@ public:
 		this->Base::resize(newSize, oldSize);
 
 		if (oldSize < newSize)
-			default_construct(p + oldSize, p + newSize, no_allocator);
+			default_construct(p + oldSize, p + newSize, no_allocator, typename policy::construct_tag());
 		else if (oldSize > newSize)
-			destruct(p + newSize, p + oldSize, no_allocator);
+			destruct(p + newSize, p + oldSize, no_allocator, typename policy::destruct_tag());
 	}
 
 	LEAN_INLINE value_type& operator [](size_t idx) { return p[idx]; }

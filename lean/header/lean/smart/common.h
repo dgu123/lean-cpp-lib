@@ -74,8 +74,6 @@ using smart::reference_state_t;
 using smart::stable_ref;
 using smart::critical_ref;
 
-using smart::move_ref;
-
 } // namespace
 
 #endif

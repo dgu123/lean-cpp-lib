@@ -7,9 +7,17 @@
 #define LEAN_TAGS_MOVE_PTR
 
 #include "../lean.h"
+#include "../smart/common.h"
 
 namespace lean
 {
+
+namespace smart
+{
+	template <class T, reference_state_t RS, class R>
+	class scoped_ptr;
+}
+
 namespace tags
 {
 
@@ -51,6 +59,16 @@ public:
 	{
 		return (ptr) ? *ptr : nullptr;
 	}
+
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	// NOTE: This should actually be implemented as implicit r-value conversion
+	// operator, however, r-value methods are not yet supported by the MSVC familiy
+	
+	/// Wraps the given pointer whose ownership is to be transferred.
+	template <reference_state_t RS, class R>
+	LEAN_INLINE move_ptr(smart::scoped_ptr<Type, RS, R> &&ptr)
+		: ptr(ptr.move_ptr().ptr) { }
+#endif
 };
 
 /// Constructs a move pointer for the given pointer.

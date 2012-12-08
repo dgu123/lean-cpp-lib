@@ -200,9 +200,12 @@ private:
 	{
 		size_type oldSize = size();
 
+#ifndef LEAN_OPTIMIZE_NO_OVERFLOW_CHECKS
 		// Mind overflow
 		if (count > max_size() || max_size() - count < oldSize)
 			length_exceeded();
+#endif
+		LEAN_ASSERT(count <= max_size() && max_size() - count >= oldSize);
 
 		growTo(oldSize + count, false);
 	}
@@ -262,8 +265,11 @@ private:
 	/// Checks the given length.
 	LEAN_INLINE void check_length(size_type count)
 	{
+#ifndef LEAN_OPTIMIZE_NO_OVERFLOW
 		if (count > max_size())
 			length_exceeded();
+#endif
+		LEAN_ASSERT(count <= max_size());
 	}
 
 public:
@@ -538,6 +544,18 @@ public:
 
 		if (newCapacity > capacity())
 			reallocate(newCapacity);
+	}
+	/// Reserves space for at least the given predicted number of elements.
+	void reserve_grow_to(size_type newCapacity)
+	{
+		if (newCapacity > capacity())
+			growTo(newCapacity);
+	}
+	/// Reserves space for at least the given predicted number of _additional_ elements.
+	void reserve_grow_by(size_type newElements)
+	{
+		if (newElements > static_cast<size_t>(m_capacityEnd - m_elementsEnd))
+			grow(newElements);
 	}
 	/// Shrinks this vector, removing elements from the back.
 	void shrink(size_type newCount)

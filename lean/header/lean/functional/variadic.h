@@ -229,6 +229,10 @@
 #define LEAN_COPY(type, arg) arg
 
 /// Defines variadic perfect-forwarding function including additional template & function parameters.
+#define LEAN_VARIADIC_TEMPLATE_TPA(fwdop, fun, tparams, params, modifiers, body, args) \
+	LEAN_VARIADIC_TEMPLATE_XXL(fwdop, fun, tparams, LEAN_VARIADIC_HAS_PARAMS, params, LEAN_VARIADIC_HAS_PARAMS, modifiers, body, args, LEAN_VARIADIC_HAS_PARAMS)
+
+/// Defines variadic perfect-forwarding function including additional template & function parameters.
 #define LEAN_VARIADIC_TEMPLATE_TP(fwdop, fun, tparams, params, modifiers, body) \
 	LEAN_VARIADIC_TEMPLATE_XXL(fwdop, fun, tparams, LEAN_VARIADIC_HAS_PARAMS, params, LEAN_VARIADIC_HAS_PARAMS, modifiers, body, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS)
 

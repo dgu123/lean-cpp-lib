@@ -54,6 +54,19 @@ namespace vector_policies
 	typedef policy<true, true, true, true, true> uninipod;
 }
 
+/// Default vector binder.
+template <template <class E, class A> class Vector, template <class T> class Allocator>
+struct vector_binder
+{
+	/// Constructs a vector type from the given element type.
+	template <class Type>
+	struct rebind
+	{
+		typedef Allocator<Type> allocator_type;
+		typedef Vector<Type, allocator_type> type;
+	};
+};
+
 } // namespace
 
 namespace vector_policies = containers::vector_policies;

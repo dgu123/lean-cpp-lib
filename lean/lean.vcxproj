@@ -146,6 +146,7 @@
     <ClInclude Include="header\lean\concurrent\shareable_spin_lock.h" />
     <ClInclude Include="header\lean\concurrent\spin_lock.h" />
     <ClInclude Include="header\lean\concurrent\thread.h" />
+    <ClInclude Include="header\lean\config\fastlean.h" />
     <ClInclude Include="header\lean\config\faststl.h" />
     <ClInclude Include="header\lean\config\stdstd.h" />
     <ClInclude Include="header\lean\config\windows.h" />
@@ -155,6 +156,7 @@
     <ClInclude Include="header\lean\containers\construction.h" />
     <ClInclude Include="header\lean\containers\dynamic_array.h" />
     <ClInclude Include="header\lean\containers\multi_vector.h" />
+    <ClInclude Include="header\lean\containers\parallel_vector.h" />
     <ClInclude Include="header\lean\containers\simple_hash_map.h" />
     <ClInclude Include="header\lean\containers\simple_vector.h" />
     <ClInclude Include="header\lean\containers\static_array.h" />

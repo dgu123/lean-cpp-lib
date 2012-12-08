@@ -42,7 +42,7 @@ class parallel_vector_array : private Base
 public:
 	typedef Type value_type;
 	typedef value_type* pointer;
-	typedef typename vector_type::allocator_type allocator_type;
+	typedef typename VectorBinder::template rebind<Type>::allocator_type allocator_type;
 	typedef typename allocator_type::size_type size_type;
 
 private:
@@ -136,7 +136,7 @@ public:
 		new(static_cast<void*>(p + pos)) value_type(src.p[index]);
 	}
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
-	LEAN_INLINE void place_back_from(size_t pos, multi_vector &&src, size_t index) noexcept
+	LEAN_INLINE void place_back_from(size_t pos, parallel_vector_array &&src, size_t index) noexcept
 	{
 		this->Base::place_back_from(pos, LEAN_MOVE(src), index);
 		new(static_cast<void*>(p + pos)) value_type(LEAN_MOVE(src.p[index]));
@@ -187,7 +187,7 @@ template <class Type, class Tag, class VectorBinder, class Base = parallel_vecto
 class parallel_vector : private Base
 {
 public:
-	typedef typename VectorBinder<Type>::type vector_type;
+	typedef typename VectorBinder::template rebind<Type>::type vector_type;
 	typedef typename vector_type::value_type value_type;
 	typedef typename vector_type::allocator_type allocator_type;
 	typedef typename allocator_type::size_type size_type;
@@ -342,7 +342,7 @@ LEAN_INLINE void append_swizzled(Source LEAN_FW_REF src, Iterator begin, Iterato
 		dest.push_back_from(LEAN_FORWARD(Source, src), *begin++);
 }
 
-template < class VectorBinder = vector_binder<std::vector, std::allocator> >
+template <class VectorBinder>
 struct parallel_vector_t
 {
 	template <class Type1, class ID1,

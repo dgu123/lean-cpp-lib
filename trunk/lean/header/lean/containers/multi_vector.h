@@ -247,7 +247,7 @@ LEAN_INLINE void append_swizzled(Source LEAN_FW_REF src, Iterator begin, Iterato
 		dest.push_back_from(LEAN_FORWARD(Source, src), *begin++);
 }
 
-template < class VectorBinder = vector_binder<std::vector, std::allocator> >
+template <class VectorBinder>
 struct multi_vector_t
 {
 	template <class Type1, class ID1,

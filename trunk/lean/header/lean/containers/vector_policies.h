@@ -67,6 +67,19 @@ struct vector_binder
 	};
 };
 
+/// Default vector binder.
+template <template <class E, class P, class A> class Vector, class Policy, template <class T> class Allocator>
+struct policy_vector_binder
+{
+	/// Constructs a vector type from the given element type.
+	template <class Type>
+	struct rebind
+	{
+		typedef Allocator<Type> allocator_type;
+		typedef Vector<Type, Policy, allocator_type> type;
+	};
+};
+
 } // namespace
 
 namespace vector_policies = containers::vector_policies;

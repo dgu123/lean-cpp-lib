@@ -620,6 +620,13 @@ public:
 	/// Gets an element by position, access violation on failure.
 	LEAN_INLINE const_reference operator [](size_type pos) const { return m_elements[pos]; };
 
+	/// Gets a raw data pointer.
+	LEAN_INLINE pointer data() { return m_elements; };
+	/// Gets a raw data pointer.
+	LEAN_INLINE const_pointer data() const { return m_elements; };
+	/// Gets a raw data pointer.
+	LEAN_INLINE const_pointer cdata() const { return m_elements; };
+
 	/// Returns an iterator to the first element contained by this vector.
 	LEAN_INLINE iterator begin(void) { return m_elements; };
 	/// Returns a constant iterator to the first element contained by this vector.
@@ -691,10 +698,25 @@ LEAN_INLINE void swap(simple_vector<Element, Policy, Allocator> &left, simple_ve
 	left.swap(right);
 }
 
+/// Default vector binder.
+template <class Policy = vector_policies::nonpod>
+struct simple_vector_binder
+{
+	/// Constructs a vector type from the given element type.
+	template <class Type>
+	struct rebind
+	{
+		typedef heap_allocator<Type> allocator_type;
+		typedef simple_vector<Type, Policy, allocator_type> type;
+	};
+};
+
 } // namespace
 
 namespace simple_vector_policies = containers::simple_vector_policies;
 using containers::simple_vector;
+
+using containers::simple_vector_binder;
 
 } // namespace
 

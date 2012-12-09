@@ -16,24 +16,25 @@ namespace lean
 namespace containers
 {
 
+template <class VectorBinder>
 struct parallel_vector_base
 {
-	template <class Alloc>
-	LEAN_INLINE void reallocate(size_t size, size_t capacity, Alloc) { }
-	template <class Alloc>
-	LEAN_INLINE void deallocate(size_t size, Alloc) { }
+	typedef typename VectorBinder::template rebind<void>::allocator_type allocator_type; 
+
+	LEAN_INLINE void reallocate(size_t capacity, allocator_type, size_t size, size_t oldCapacity) { }
+	LEAN_INLINE void deallocate(allocator_type, size_t size, size_t capacity) { }
 	LEAN_INLINE void operator ()(struct ignore&) const { }
 	LEAN_INLINE void get(struct ignore&) const { }
-	LEAN_INLINE void place_back() { }
-	LEAN_INLINE void place_back_from(const parallel_vector_base&, size_t) { }
-	LEAN_INLINE void erase(size_t idx) { }
-	LEAN_INLINE void clear() { }
-	LEAN_INLINE void resize(size_t size) { }
+	LEAN_INLINE void place_back(size_t) { }
+	LEAN_INLINE void place_back_from(size_t, const parallel_vector_base&, size_t) { }
+	LEAN_INLINE void erase(size_t idx, size_t size) { }
+	LEAN_INLINE void clear(size_t size) { }
+	LEAN_INLINE void resize(size_t newSize, size_t oldSize) { }
 	LEAN_INLINE void reserve(size_t size) { }
 	LEAN_INLINE void swap(parallel_vector_base&) { }
 };
 
-template <class Type, class Tag, class VectorBinder, class Base = parallel_vector_base>
+template < class Type, class Tag, class VectorBinder, class Base = parallel_vector_base<VectorBinder> >
 class parallel_vector_array : private Base
 {
 	template <class OtherType, class OtherTag, class VectorBinder, class OtherBase>
@@ -82,9 +83,9 @@ public:
 	LEAN_INLINE value_type* operator ()(Tag) { return p; }
 	LEAN_INLINE const value_type* operator ()(Tag) const { return p; }
 	
-	void reallocate(size_t capacity, allocator_type allocator, size_t size)
+	void reallocate(size_t capacity, allocator_type allocator, size_t size, size_t oldCapacity)
 	{
-		this->Base::reallocate(capacity, allocator, size);
+		this->Base::reallocate(capacity, allocator, size, oldCapacity);
 
 		value_type *sourceP = p;
 		p = allocator.allocate(capacity);
@@ -95,17 +96,17 @@ public:
 			
 			if (!policy::raw_move)
 				destruct(sourceP, sourceP + size, no_allocator, typename policy::destruct_tag());
-			allocator.deallocate(sourceP);
+			allocator.deallocate(sourceP, oldCapacity);
 		}
 	}
-	void deallocate(allocator_type allocator, size_t size)
+	void deallocate(allocator_type allocator, size_t size, size_t capacity)
 	{
-		this->Base::deallocate(allocator, size);
+		this->Base::deallocate(allocator, size, capacity);
 
 		if (p)
 		{
 			destruct(p, p + size, no_allocator, typename policy::destruct_tag());
-			allocator.deallocate(p);
+			allocator.deallocate(p, capacity);
 			p = nullptr;
 		}
 	}
@@ -186,13 +187,14 @@ public:
 	}
 };
 
-
-template <class Type, class Tag, class VectorBinder, class Base = parallel_vector_base>
+template < class Type, class Tag, class VectorBinder, class Base = parallel_vector_base<VectorBinder> >
 class parallel_vector : private Base
 {
 public:
 	typedef typename VectorBinder::template rebind<Type>::type vector_type;
 	typedef typename vector_type::value_type value_type;
+	typedef typename vector_type::iterator iterator;
+	typedef typename vector_type::const_iterator const_iterator;
 	typedef typename vector_type::allocator_type allocator_type;
 	typedef typename allocator_type::size_type size_type;
 
@@ -206,7 +208,7 @@ private:
 		size_type newCapacity = v.capacity();
 
 		if (newCapacity > oldCapacity)
-			this->Base::reallocate(newCapacity, v.get_allocator(), v.size());
+			this->Base::reallocate(newCapacity, v.get_allocator(), v.size(), v.capacity());
 	}
 
 public:
@@ -215,12 +217,14 @@ public:
 		: v(allocator) { }
 	LEAN_INLINE ~parallel_vector()
 	{
-		this->Base::deallocate(v.get_allocator(), v.size());
+		this->Base::deallocate(v.get_allocator(), v.size(), v.capacity());
 	}
 
+	using Base::get;
 	LEAN_INLINE vector_type& get(Tag) { return v; }
 	LEAN_INLINE const vector_type& get(Tag) const { return v; }
 
+	using Base::operator ();
 	LEAN_INLINE vector_type& operator ()(Tag) { return v; }
 	LEAN_INLINE const vector_type& operator ()(Tag) const { return v; }
 
@@ -247,7 +251,7 @@ public:
 			/* NOTE: noexcept */ \
 			this->Base::place_back##call; \
 		}
-	#define LEAN_PARALLEL_VECTOR_PUSH_BACK_METHOD_ARGS(call) \
+	#define LEAN_PARALLEL_VECTOR_PUSH_BACK_METHOD_ARGS \
 		at
 	LEAN_VARIADIC_TEMPLATE_TPA(LEAN_FORWARD, LEAN_PARALLEL_VECTOR_PUSH_BACK_METHOD_DECL, LEAN_PARALLEL_VECTOR_PUSH_BACK_METHOD_TPARAMS,
 		LEAN_PARALLEL_VECTOR_PUSH_BACK_METHOD_PARAMS, LEAN_NOTHING, LEAN_PARALLEL_VECTOR_PUSH_BACK_METHOD_BODY, LEAN_PARALLEL_VECTOR_PUSH_BACK_METHOD_ARGS)
@@ -294,7 +298,7 @@ public:
 		size_type newCapacity = v.capacity();
 
 		if (newCapacity > oldCapacity)
-			this->Base::reallocate(newCapacity, v.get_allocator(), v.size());
+			this->Base::reallocate(newCapacity, v.get_allocator(), v.size(), v.capacity());
 
 		size_type oldSize = v.size();
 		v.resize(size);
@@ -308,10 +312,17 @@ public:
 		size_type newCapacity = v.capacity();
 
 		if (newCapacity > oldCapacity)
-			this->Base::reallocate(newCapacity, v.get_allocator(), v.size());
+			this->Base::reallocate(newCapacity, v.get_allocator(), v.size(), v.capacity());
 	}
 
 	LEAN_INLINE size_type size() const { return v.size(); }
+
+	LEAN_INLINE iterator begin() { return v.begin(); }
+	LEAN_INLINE iterator end() { return v.end(); }
+	LEAN_INLINE const_iterator begin() const { return v.begin(); }
+	LEAN_INLINE const_iterator end() const { return v.end(); }
+	LEAN_INLINE const_iterator cbegin() const { return v.begin(); }
+	LEAN_INLINE const_iterator cend() const { return v.end(); }
 
 	LEAN_INLINE value_type& operator [](size_type idx) { return v[idx]; }
 	LEAN_INLINE const value_type& operator [](size_type idx) const { return v[idx]; }
@@ -346,9 +357,11 @@ LEAN_INLINE void append_swizzled(Source LEAN_FW_REF src, Iterator begin, Iterato
 		dest.push_back_from(LEAN_FORWARD(Source, src), *begin++);
 }
 
-template <class VectorBinder>
-struct parallel_vector_t
+template <class VectorBinder, template <class, class, class, class> class Outer, template <class, class, class, class> class Inner>
+struct parallel_vector_factory_t
 {
+	typedef parallel_vector_factory_t<VectorBinder, Inner, Inner> inner_factory;
+
 	template <class Type1, class ID1,
 		class Type2 = void, class ID2 = void,
 		class Type3 = void, class ID3 = void,
@@ -360,50 +373,53 @@ struct parallel_vector_t
 		class Type9 = void, class ID9 = void>
 	struct make
 	{
-		typedef parallel_vector<Type1, ID1, VectorBinder, typename parallel_vector_t::template make<Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6, Type7, ID7, Type8, ID8, Type9, ID9>::type> type;
+		typedef Outer<Type1, ID1, VectorBinder, typename inner_factory::template make<Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6, Type7, ID7, Type8, ID8, Type9, ID9>::type> type;
 	};
 
 	template <class Type1, class ID1>
 	struct make<Type1, ID1>
 	{
-		typedef parallel_vector<Type1, ID1, VectorBinder> type;
+		typedef Outer< Type1, ID1, VectorBinder, parallel_vector_base<VectorBinder> > type;
 	};
 	template <class Type1, class ID1, class Type2, class ID2>
 	struct make<Type1, ID1, Type2, ID2>
 	{
-		typedef parallel_vector<Type1, ID1, VectorBinder, typename parallel_vector_t::template make<Type2, ID2>::type> type;
+		typedef Outer<Type1, ID1, VectorBinder, typename inner_factory::template make<Type2, ID2>::type> type;
 	};
 	template <class Type1, class ID1, class Type2, class ID2, class Type3, class ID3>
 	struct make<Type1, ID1, Type2, ID2, Type3, ID3>
 	{
-		typedef parallel_vector<Type1, ID1, VectorBinder, typename parallel_vector_t::template make<Type2, ID2, Type3, ID3>::type> type;
+		typedef Outer<Type1, ID1, VectorBinder, typename inner_factory::template make<Type2, ID2, Type3, ID3>::type> type;
 	};
 	template <class Type1, class ID1, class Type2, class ID2, class Type3, class ID3, class Type4, class ID4>
 	struct make<Type1, ID1, Type2, ID2, Type3, ID3, Type4, ID4>
 	{
-		typedef parallel_vector<Type1, ID1, VectorBinder, typename parallel_vector_t::template make<Type2, ID2, Type3, ID3, Type4, ID4>::type> type;
+		typedef Outer<Type1, ID1, VectorBinder, typename inner_factory::template make<Type2, ID2, Type3, ID3, Type4, ID4>::type> type;
 	};
 	template <class Type1, class ID1, class Type2, class ID2, class Type3, class ID3, class Type4, class ID4, class Type5, class ID5>
 	struct make<Type1, ID1, Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5>
 	{
-		typedef parallel_vector<Type1, ID1, VectorBinder, typename parallel_vector_t::template make<Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5>::type> type;
+		typedef Outer<Type1, ID1, VectorBinder, typename inner_factory::template make<Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5>::type> type;
 	};
 	template <class Type1, class ID1, class Type2, class ID2, class Type3, class ID3, class Type4, class ID4, class Type5, class ID5, class Type6, class ID6>
 	struct make<Type1, ID1, Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6>
 	{
-		typedef parallel_vector<Type1, ID1, VectorBinder, typename parallel_vector_t::template make<Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6>::type> type;
+		typedef Outer<Type1, ID1, VectorBinder, typename inner_factory::template make<Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6>::type> type;
 	};
 	template <class Type1, class ID1, class Type2, class ID2, class Type3, class ID3, class Type4, class ID4, class Type5, class ID5, class Type6, class ID6, class Type7, class ID7>
 	struct make<Type1, ID1, Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6, Type7, ID7>
 	{
-		typedef parallel_vector<Type1, ID1, VectorBinder, typename parallel_vector_t::template make<Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6, Type7, ID7>::type> type;
+		typedef Outer<Type1, ID1, VectorBinder, typename inner_factory::template make<Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6, Type7, ID7>::type> type;
 	};
 	template <class Type1, class ID1, class Type2, class ID2, class Type3, class ID3, class Type4, class ID4, class Type5, class ID5, class Type6, class ID6, class Type7, class ID7, class Type8, class ID8>
 	struct make<Type1, ID1, Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6, Type7, ID7, Type8, ID8>
 	{
-		typedef parallel_vector<Type1, ID1, VectorBinder, typename parallel_vector_t::template make<Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6, Type7, ID7, Type8, ID8>::type> type;
+		typedef Outer<Type1, ID1, VectorBinder, typename inner_factory::template make<Type2, ID2, Type3, ID3, Type4, ID4, Type5, ID5, Type6, ID6, Type7, ID7, Type8, ID8>::type> type;
 	};
 };
+
+template <class VectorBinder>
+struct parallel_vector_t : parallel_vector_factory_t<VectorBinder, parallel_vector, parallel_vector_array> { };
 
 } // namespace
 

@@ -17,10 +17,17 @@ namespace memory
 {
 
 /// STL allocator heap adapter.
-template <class Element, class Heap = default_heap, size_t Alignment = alignof(Element)>
+template <class Element, class Heap = default_heap, size_t AlignmentOrZero = 0>
 class heap_allocator
 {
 public:
+	/// Alignment.
+	struct alignment
+	{
+		/// Alignment.
+		static const size_t value = (AlignmentOrZero) ? AlignmentOrZero : alignof(Element);
+	};
+
 	/// Heap adapted by this heap allocator.
 	typedef Heap heap_type;
 
@@ -46,22 +53,22 @@ public:
 	struct rebind
 	{
 		/// Equivalent allocator allocating elements of type Other.
-		typedef heap_allocator<Other, Heap, Alignment> other;
+		typedef heap_allocator<Other, Heap, AlignmentOrZero> other;
 	};
 	
 	/// Default constructor.
 	LEAN_INLINE heap_allocator() { }
 	/// Copy constructor.
 	template <class Other>
-	LEAN_INLINE heap_allocator(const heap_allocator<Other, Heap, Alignment> &right) { }
+	LEAN_INLINE heap_allocator(const heap_allocator<Other, Heap, AlignmentOrZero> &right) { }
 	/// Assignment operator.
 	template <class Other>
-	LEAN_INLINE heap_allocator& operator=(const heap_allocator<Other, Heap, Alignment> &right) { return *this; }
+	LEAN_INLINE heap_allocator& operator=(const heap_allocator<Other, Heap, AlignmentOrZero> &right) { return *this; }
 	
 	/// Allocates the given number of elements.
 	LEAN_INLINE pointer allocate(size_type count)
 	{
-		return reinterpret_cast<pointer>( heap_type::allocate<Alignment>(count * sizeof(value_type)) );
+		return reinterpret_cast<pointer>( heap_type::allocate<alignment::value>(count * sizeof(value_type)) );
 	}
 	/// Allocates the given amount of memory.
 	LEAN_INLINE pointer allocate(size_type count, const void *)
@@ -71,7 +78,7 @@ public:
 	/// Allocates the given amount of memory.
 	LEAN_INLINE void deallocate(pointer ptr, size_type)
 	{
-		heap_type::free<Alignment>(ptr);
+		heap_type::free<alignment::value>(ptr);
 	}
 
 	/// Constructs a new element from the given value at the given pointer.
@@ -126,8 +133,8 @@ public:
 #ifndef DOXYGEN_SKIP_THIS
 
 /// STL allocator heap adapter.
-template <class Heap, size_t Alignment>
-class heap_allocator<void, Heap, Alignment>
+template <class Heap, size_t AlignmentOrZero>
+class heap_allocator<void, Heap, AlignmentOrZero>
 {
 public:
 	/// Heap adapted by this heap allocator.
@@ -151,31 +158,31 @@ public:
 	struct rebind
 	{
 		/// Equivalent allocator allocating elements of type Other.
-		typedef heap_allocator<Other, Heap, Alignment> other;
+		typedef heap_allocator<Other, Heap, AlignmentOrZero> other;
 	};
 	
 	/// Default constructor.
 	LEAN_INLINE heap_allocator() { }
 	/// Copy constructor.
 	template <class Other>
-	LEAN_INLINE heap_allocator(const heap_allocator<Other, Heap, Alignment> &right) { }
+	LEAN_INLINE heap_allocator(const heap_allocator<Other, Heap, AlignmentOrZero> &right) { }
 	/// Assignment operator.
 	template <class Other>
-	LEAN_INLINE heap_allocator& operator=(const heap_allocator<Other, Heap, Alignment> &right) { return *this; }
+	LEAN_INLINE heap_allocator& operator=(const heap_allocator<Other, Heap, AlignmentOrZero> &right) { return *this; }
 };
 
 #endif
 
 /// Checks the given two allocators for equivalence.
-template <class Element, class Heap, size_t Alignment, class Other>
-LEAN_INLINE bool operator ==(const heap_allocator<Element, Heap, Alignment>&, const heap_allocator<Other, Heap, Alignment>&)
+template <class Element, class Heap, size_t AlignmentOrZero, class Other>
+LEAN_INLINE bool operator ==(const heap_allocator<Element, Heap, AlignmentOrZero>&, const heap_allocator<Other, Heap, AlignmentOrZero>&)
 {
 	return true;
 }
 
 /// Checks the given two allocators for inequivalence.
-template <class Element, class Heap, size_t Alignment, class Other>
-LEAN_INLINE bool operator !=(const heap_allocator<Element, Heap, Alignment>&, const heap_allocator<Other, Heap, Alignment>&)
+template <class Element, class Heap, size_t AlignmentOrZero, class Other>
+LEAN_INLINE bool operator !=(const heap_allocator<Element, Heap, AlignmentOrZero>&, const heap_allocator<Other, Heap, AlignmentOrZero>&)
 {
 	return false;
 }

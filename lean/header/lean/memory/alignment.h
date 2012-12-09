@@ -30,12 +30,20 @@
 							LEAN_STATIC_ASSERT(Size != 0U && Alignment != 0U);
 							static const size_t alignment = Alignment;
 						};
+
+						template <class Type>
+						struct alignof_t
+						{
+							static const size_t alignment = alignof_fix<sizeof(Type), __alignof(Type)>::alignment;
+						};
+						template <>
+						struct alignof_t<void> : alignof_t<void*> { };
 					}
 				}
 			}
 
 			/// Emulated alignof using MSVC-specific alignof operator extension.
-			#define alignof(type) ::lean::memory::impl::alignof_fix<sizeof(type), __alignof(type)>::alignment
+			#define alignof(type) ::lean::memory::impl::alignof_t<type>::alignment
 		#endif
 	#else
 		#error Unknown compiler, alignment specifiers unavailable.

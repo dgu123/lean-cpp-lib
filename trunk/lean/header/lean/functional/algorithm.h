@@ -164,19 +164,19 @@ inline Iterator find_sorted(Iterator begin, Iterator end, const Value &value)
 {
 	Iterator element = std::lower_bound(begin, end, value);
 
-	if (element != end && !(*element == value))
+	if (element != end && value < *element)
 		element = end;
 
 	return element;
 }
 
 /// Locates the position of the first occurence of the given element in the given sorted range.
-template <class Iterator, class Value, class Ord, class Eq>
-inline Iterator find_sorted(Iterator begin, Iterator end, const Value &value, Ord order, Eq equal)
+template <class Iterator, class Value, class Ord>
+inline Iterator find_sorted(Iterator begin, Iterator end, const Value &value, Ord order)
 {
 	Iterator element = std::lower_bound(begin, end, value, order);
 
-	if (element != end && !equal(*element, value))
+	if (element != end && order(value, *element))
 		element = end;
 
 	return element;

@@ -158,6 +158,29 @@ inline typename Vector::iterator push_sorted(Vector &vector, Value LEAN_FW_REF v
 	return vector.insert( pos, LEAN_FORWARD(Value, value) );
 }
 
+/// Pushes the given element into the given sorted vector.
+template <class Vector, class Value>
+inline typename Vector::iterator push_sorted_unique(Vector &vector, Value LEAN_FW_REF value)
+{
+	typename Vector::iterator pos = std::lower_bound( vector.begin(), vector.end(), value );
+	if (pos == vector.end() || value < *pos)
+		pos = vector.insert( pos, LEAN_FORWARD(Value, value) );
+	return pos;
+}
+
+/// Pushes the given element into the given sorted vector.
+template <class Vector, class Value, class Predicate>
+inline typename Vector::iterator push_sorted_unique(Vector &vector, Value LEAN_FW_REF value, Predicate predicate)
+{
+	typename Vector::iterator pos = std::lower_bound( vector.begin(), vector.end(), value, predicate);
+	if (pos == vector.end() || predicate(value, *pos))
+		pos = vector.insert( pos, LEAN_FORWARD(Value, value) );
+	return pos;
+
+	typename Vector::iterator pos = std::upper_bound( vector.begin(), vector.end(), value, LEAN_FORWARD(Predicate, predicate) );
+	return vector.insert( pos, LEAN_FORWARD(Value, value) );
+}
+
 /// Locates the position of the first occurence of the given element in the given sorted range.
 template <class Iterator, class Value>
 inline Iterator find_sorted(Iterator begin, Iterator end, const Value &value)
@@ -220,6 +243,7 @@ using functional::equal;
 using functional::lexicographical_compare;
 using functional::insert_last;
 using functional::push_unique;
+using functional::push_sorted_unique;
 using functional::push_sorted;
 using functional::find_sorted;
 using functional::remove;

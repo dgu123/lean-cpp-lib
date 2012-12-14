@@ -257,19 +257,19 @@ enum consume_t
 	consume ///< Consume the contents of the given object.
 };
 
+/// Returns the length of the given array.
+template <class Type, size_t Size>
+LEAN_INLINE size_t arraylen(Type (&)[Size])
+{
+	return Size;
+}
+
 /// Returns the address of the given reference.
 template <class Type>
 LEAN_INLINE Type* addressof(Type& value)
 {
 	// Use C-style cast as const_casting would only make it worse
 	return reinterpret_cast<Type*>( &(char&)value );
-}
-
-/// Returns the length of the given array.
-template <class Type, size_t Size>
-LEAN_INLINE size_t arraylen(Type (&)[Size])
-{
-	return Size;
 }
 
 /// Returns the next iterator.

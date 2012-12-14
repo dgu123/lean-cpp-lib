@@ -27,7 +27,8 @@ struct nullterminated_compatible : public nullterminated_incompatible
 	/// returning the beginning of the range.
 	static const Char* from(const Compatible &from);
 	/// Converts an object of your type into a nullterminated character range,
-	/// returning the end of the range (must be null character), nullptr if unknown.
+	/// returning the end of the range (must be null character). You may use
+	/// Traits::length(begin), if unknown.
 	static const Char* from(const Compatible &from, const Char *begin);
 
 	/// Converts a nullterminated character range into an object of your type.
@@ -144,7 +145,7 @@ public:
 	/// Gets a pointer to this nullterminated range.
 	LEAN_INLINE const_pointer c_str() const { return m_begin; }
 	/// Gets a pointer to this nullterminated range.
-	LEAN_INLINE const_pointer data() const { return c_str(); }
+	LEAN_INLINE const_pointer data() const { return m_begin; }
 
 	/// Returns a constant iterator to the first element contained by this character range. O(1).
 	LEAN_INLINE const_iterator begin() const { return m_begin; }
@@ -161,7 +162,7 @@ public:
 
 	/// Constructs a compatible object from this null-terminated character range.
 	template <class Compatible>
-	Compatible to() const
+	LEAN_INLINE Compatible to() const
 	{
 		typedef typename assert_nullterminated_compatible<
 				Compatible,

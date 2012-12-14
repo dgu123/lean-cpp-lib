@@ -17,6 +17,19 @@ namespace lean
 namespace functional
 {
 
+/// Computes an integer hash value from the given byte array.
+template <class Hash, class Iterator>
+LEAN_INLINE Hash hash(Iterator begin, Iterator end)
+{
+	Hash hash = 5381;
+
+	// djb2
+	while (begin != end)
+		hash = (Hash) (((hash << 5) + hash) ^ *begin++);
+
+	return hash;
+}
+
 #ifdef _MSC_VER
 
 /// Gets the position of the first set low bit.
@@ -36,6 +49,8 @@ LEAN_INLINE unsigned long first_bit_high(unsigned long mask)
 #endif
 
 } // namespace
+
+using functional::hash;
 
 using functional::first_bit_low;
 using functional::first_bit_high;

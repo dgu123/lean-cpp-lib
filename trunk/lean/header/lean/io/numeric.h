@@ -17,15 +17,22 @@ namespace lean
 namespace io
 {
 
+template <class Char, class Int>
+LEAN_INLINE Char digit_to_char(Int digit)
+{
+	return Char(((digit < Int(10)) ? '0' : ('a' - Int(10))) + digit);
+}
+
 /// Converts the given integer of the given type into an ascii character string, returning a pointer to the first character not written to.
 /// Does not append a terminating null character.
 template <class CharIter, class Integer>
-inline CharIter int_to_char(CharIter buffer, Integer num)
+inline CharIter int_to_char(CharIter buffer, Integer num, Integer base = 10)
 {
 	typedef typename lean::strip_modifiers<typename lean::strip_reference<Integer>::type>::type int_type;
 	typedef typename lean::int_type<lean::sign_class::sign, sizeof(int_type)>::type sint_type;
 	typedef typename lean::int_type<lean::sign_class::no_sign, sizeof(int_type)>::type uint_type;
 
+	const uint_type ubase = static_cast<uint_type>(base);
 	uint_type unum = static_cast<uint_type>(num);
 
 	// Check, if signed
@@ -44,8 +51,8 @@ inline CharIter int_to_char(CharIter buffer, Integer num)
 	// Convert backwards
 	do
 	{
-		*(buffer++) = '0' + static_cast<char>(unum % 10U);
-		unum = unum / 10U;
+		*(buffer++) = digit_to_char<char>(unum % ubase);
+		unum = unum / ubase;
 	}
 	while (unum > 0);
 

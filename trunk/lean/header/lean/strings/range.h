@@ -64,12 +64,30 @@ public:
 	/// Constructs an iterator range.
 	LEAN_INLINE range(iterator begin, iterator end)
 		: m_begin(begin), m_end(end) { }
+	/// Constructs an iterator range.
+	template <class Range>
+	LEAN_INLINE explicit range(const Range &range)
+		: m_begin(range.begin()), m_end(range.end()) { }
 
 	/// Assigns the given iterators to this range.
 	LEAN_INLINE void assign(iterator begin, iterator end)
 	{
 		m_begin = begin;
 		m_end = end;
+	}
+	/// Assigns the given iterators to this range.
+	template <class Range>
+	LEAN_INLINE void assign(const Range &range)
+	{
+		m_begin = range.begin();
+		m_end = range.end();
+	}
+
+	template <class Range>
+	LEAN_INLINE range& operator =(const Range &range)
+	{
+		assign(range);
+		return *this;
 	}
 
 	/// Gets whether this range is empty.
@@ -87,8 +105,9 @@ public:
 	LEAN_INLINE iterator end() const { return m_end; }
 
 	/// Gets the n-th element.
-	LEAN_INLINE typename iterator_types<iterator>::reference operator [](size_t n) const { return *(begin() + n); }
+	LEAN_INLINE typename iterator_types<iterator>::reference operator [](ptrdiff_t n) const { return *(m_begin + n); }
 };
+
 
 /// Casts the iterators of the given range into iterators of the given type.
 template <class DestRange, class Range>
@@ -121,12 +140,32 @@ LEAN_INLINE DestRange static_range_cast(const Range &right)
 		);
 }
 
+
 /// Makes a range from the given pair of iterators.
 template <class Iterator>
 LEAN_INLINE range<Iterator> make_range(Iterator begin, Iterator end)
 {
 	return range<Iterator>(begin, end);
 }
+/// Makes a range from the given pair of iterators.
+template <class Iterator>
+LEAN_INLINE range<Iterator> make_range_n(Iterator begin, size_t len)
+{
+	return range<Iterator>(begin, begin + len);
+}
+/// Makes a range from the given range-compatible object.
+template <class Range>
+LEAN_INLINE range<typename Range::iterator> make_range(Range &r)
+{
+	return range<typename Range::iterator>(r.begin(), r.end());
+}
+/// Makes a range from the given range-compatible object.
+template <class Range>
+LEAN_INLINE range<typename Range::const_iterator> make_range(const Range &r)
+{
+	return range<typename Range::const_iterator>(r.begin(), r.end());
+}
+
 
 /// Makes a range from the given null-terminated charcter string.
 template <class Char>
@@ -157,6 +196,7 @@ LEAN_INLINE String string_from_range(const Range &range)
 {
 	return string_traits<String>::construct(range.begin(), range.end());
 }
+
 
 namespace impl
 {
@@ -206,9 +246,11 @@ using strings::iterator_types;
 
 using strings::range;
 using strings::make_range;
+using strings::make_range_n;
 using strings::make_char_range;
 using strings::from_range;
 using strings::string_from_range;
+
 using strings::is_range;
 using strings::enable_if_range;
 using strings::enable_if_not_range;

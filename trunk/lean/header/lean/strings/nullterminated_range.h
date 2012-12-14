@@ -19,35 +19,35 @@ namespace strings
 /// Nullterminated character range class that may be constructed IMPLICITLY from arbitrary string classes.
 /// May be used in parameter lists, not recommended elsewhere.
 template < class Char, class Traits = char_traits<typename strip_const<Char>::type> >
-class nullterminated_range_implicit : public nullterminated_implicit<Char, Traits>
+class nullterminated_range_implicit
 {
-	typedef nullterminated_implicit<Char, Traits> base_type;
+	typedef nullterminated_implicit<Char, Traits> halfrange_type;
 
 public:
 	/// Type of the characters referenced by this range.
-	typedef typename base_type::value_type value_type;
+	typedef typename halfrange_type::value_type value_type;
 	
 	/// Type of the size returned by this range.
-	typedef typename base_type::size_type size_type;
+	typedef typename halfrange_type::size_type size_type;
 	/// Type of the difference between the addresses of two elements in this range.
-	typedef typename base_type::difference_type difference_type;
+	typedef typename halfrange_type::difference_type difference_type;
 
 	/// Type of pointers to the elements contained by this range.
-	typedef typename base_type::pointer pointer;
+	typedef typename halfrange_type::pointer pointer;
 	/// Type of constant pointers to the elements contained by this range.
-	typedef typename base_type::const_pointer const_pointer;
+	typedef typename halfrange_type::const_pointer const_pointer;
 	/// Type of references to the elements contained by this range.
-	typedef typename base_type::reference reference;
+	typedef typename halfrange_type::reference reference;
 	/// Type of constant references to the elements contained by this range.
-	typedef typename base_type::const_reference const_reference;
+	typedef typename halfrange_type::const_reference const_reference;
 
 	/// Type of iterators to the elements contained by this range.
-	typedef typename base_type::pointer iterator;
+	typedef typename halfrange_type::pointer iterator;
 	/// Type of constant iterators to the elements contained by this range.
-	typedef typename base_type::const_iterator const_iterator;
+	typedef typename halfrange_type::const_iterator const_iterator;
 
 	/// Character traits used by this range.
-	typedef typename base_type::traits_type traits_type;
+	typedef typename halfrange_type::traits_type traits_type;
 
 private:
 	/// Asserts null-termination.
@@ -57,47 +57,33 @@ private:
 		LEAN_ASSERT(traits_type::null(*end));
 	}
 
-	/// Gets the valid of the given two pointers.
-	static LEAN_INLINE const_pointer first_non_null(const_pointer a, const_pointer b)
-	{
-		return (a) ? a : b;
-	}
-
 protected:
+	const_pointer m_begin;
 	const_pointer m_end;
 
 public:
 	/// Constructs a character range from the given half-range.
 	LEAN_INLINE nullterminated_range_implicit(const nullterminated_implicit<Char, Traits> &right)
-		: base_type(right),
-		m_end(right.compute_end())
-	{
-		assert_null_terminated(m_end);
-	}
+		: m_begin(right.begin()),
+		m_end(right.compute_end()) { }
 	/// Constructs a character range from the given C string.
 	LEAN_INLINE nullterminated_range_implicit(const_pointer begin)
-		: base_type(begin),
-		m_end(base_type::compute_end())
-	{
-		assert_null_terminated(m_end);
-	}
+		: m_begin( LEAN_ASSERT_NOT_NULL(begin) ),
+		m_end( m_begin + traits_type::length(m_begin) ) { }
 	/// Constructs a character range from the given C string range (*end must be null character).
 	LEAN_INLINE nullterminated_range_implicit(const_pointer begin, const_pointer end)
-		: base_type(begin),
+		: m_begin(begin),
 		m_end(end)
 	{
+		LEAN_ASSERT(m_begin);
 		assert_null_terminated(m_end);
 	}
 	/// Constructs a character range from the given compatible object.
 	template <class Compatible>
 	LEAN_INLINE nullterminated_range_implicit(const Compatible &from,
 			typename enable_if<is_nullterminated_compatible<Compatible, value_type, traits_type>::value, const void*>::type = nullptr)
-		: base_type(from),
-		m_end(
-			first_non_null(
-				nullterminated_compatible<Compatible, value_type, traits_type>::from(from, base_type::begin()),
-				base_type::compute_end() )
-			)
+		: m_begin( LEAN_ASSERT_NOT_NULL((nullterminated_compatible<Compatible, value_type, traits_type>::from(from))) ),
+		m_end( nullterminated_compatible<Compatible, value_type, traits_type>::from(from, m_begin) )
 	{
 		assert_null_terminated(m_end);
 	}
@@ -111,13 +97,26 @@ public:
 	/// Gets the length of this character range, in code points (might differ from length() and size()). O(n).
 	LEAN_INLINE size_type count() const { return traits_type::count(m_begin, m_end); }
 	
+	/// Gets an element by position, access violation on failure.
+	LEAN_INLINE const_reference operator [](size_type pos) const { return m_begin[pos]; }
+	
+	/// Gets a pointer to this nullterminated range.
+	LEAN_INLINE const_pointer c_str() const { return m_begin; }
+	/// Gets a pointer to this nullterminated range.
+	LEAN_INLINE const_pointer data() const { return m_begin; }
+
+	/// Returns a constant iterator to the first element contained by this character range. O(1).
+	LEAN_INLINE const_iterator begin() const { return m_begin; }
 	/// Returns a constant iterator  the last element contained by this character range. O(1).
 	LEAN_INLINE const_iterator end() const { return m_end; }
 
 	/// Swaps the contents of this range with the contents of the given range.
 	LEAN_INLINE void swap(nullterminated_range_implicit& right)
 	{
-		base_type::swap(right);
+		const_pointer right_begin = right.m_begin;
+		right.m_begin = m_begin;
+		m_begin = right_begin;
+
 		const_pointer right_end = right.m_end;
 		right.m_end = m_end;
 		m_end = right_end;
@@ -125,13 +124,19 @@ public:
 
 	/// Constructs a compatible object from this null-terminated character range.
 	template <class Compatible>
-	Compatible to() const
+	LEAN_INLINE Compatible to() const
 	{
 		typedef typename assert_nullterminated_compatible<
 				Compatible,
 				value_type, traits_type
 			>::type assert_compatible;
 		return nullterminated_compatible<Compatible, value_type, traits_type>::to(m_begin, m_end);
+	}
+
+	/// Constructs a half-range from this character range.
+	LEAN_INLINE operator nullterminated_implicit<Char, Traits>() const
+	{
+		return nullterminated_implicit<Char, Traits>(m_begin);
 	}
 };
 

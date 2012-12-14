@@ -258,7 +258,6 @@
     <ClInclude Include="header\lean\strings\strings.h" />
     <ClInclude Include="header\lean\strings\string_traits.h" />
     <ClInclude Include="header\lean\strings\types.h" />
-    <ClInclude Include="header\lean\strings\utf_traits.h" />
     <ClInclude Include="header\lean\strings\utility.h" />
     <ClInclude Include="header\lean\tags\forward_ref.h" />
     <ClInclude Include="header\lean\tags\handle.h" />

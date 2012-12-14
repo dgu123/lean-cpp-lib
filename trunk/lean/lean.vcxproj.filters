@@ -291,9 +291,6 @@
     <ClInclude Include="header\lean\strings\nullterminated.h">
       <Filter>Header Files\strings</Filter>
     </ClInclude>
-    <ClInclude Include="header\lean\strings\utf_traits.h">
-      <Filter>Header Files\strings</Filter>
-    </ClInclude>
     <ClInclude Include="header\lean\strings\types.h">
       <Filter>Header Files\strings</Filter>
     </ClInclude>

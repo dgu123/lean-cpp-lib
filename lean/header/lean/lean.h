@@ -308,7 +308,7 @@ LEAN_INLINE void check(bool value)
 
 /// Asserts that the given value is not null.
 template <class Value>
-Value assert_not_null(Value &&value)
+LEAN_INLINE Value assert_not_null(Value &&value)
 {
 	LEAN_ASSERT(value != nullptr);
 	return std::forward<Value>(value);
@@ -316,7 +316,7 @@ Value assert_not_null(Value &&value)
 
 /// Asserts that the given value is not null.
 template <class Value>
-Value assert_not_null_debug(Value &&value)
+LEAN_INLINE Value assert_not_null_debug(Value &&value)
 {
 	LEAN_ASSERT_DEBUG(value != nullptr);
 	return std::forward<Value>(value);
@@ -326,7 +326,7 @@ Value assert_not_null_debug(Value &&value)
 
 /// Asserts that the given value is not null.
 template <class Value>
-Value& assert_not_null(Value &value)
+LEAN_INLINE Value& assert_not_null(Value &value)
 {
 	LEAN_ASSERT(value != nullptr);
 	return value;
@@ -334,7 +334,7 @@ Value& assert_not_null(Value &value)
 
 /// Asserts that the given value is not null.
 template <class Value>
-const Value& assert_not_null(const Value &value)
+LEAN_INLINE const Value& assert_not_null(const Value &value)
 {
 	LEAN_ASSERT(value != nullptr);
 	return value;
@@ -342,7 +342,7 @@ const Value& assert_not_null(const Value &value)
 
 /// Asserts that the given value is not null.
 template <class Value>
-Value& assert_not_null_debug(Value &value)
+LEAN_INLINE Value& assert_not_null_debug(Value &value)
 {
 	LEAN_ASSERT_DEBUG(value != nullptr);
 	return value;
@@ -350,7 +350,7 @@ Value& assert_not_null_debug(Value &value)
 
 /// Asserts that the given value is not null.
 template <class Value>
-const Value& assert_not_null_debug(const Value &value)
+LEAN_INLINE const Value& assert_not_null_debug(const Value &value)
 {
 	LEAN_ASSERT_DEBUG(value != nullptr);
 	return value;

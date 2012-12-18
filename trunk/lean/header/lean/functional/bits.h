@@ -19,12 +19,25 @@ namespace functional
 
 /// Computes an integer hash value from the given byte array.
 template <class Hash, class Iterator>
-LEAN_INLINE Hash hash(Iterator begin, Iterator end)
+LEAN_INLINE Hash compute_hash(Iterator begin, Iterator end)
 {
 	Hash hash = 5381;
 
 	// djb2
 	while (begin != end)
+		hash = (Hash) (((hash << 5) + hash) ^ *begin++);
+
+	return hash;
+}
+
+/// Computes an integer hash value from the given byte array.
+template <class Hash, class Iterator>
+LEAN_INLINE Hash compute_hash_nt(Iterator begin)
+{
+	Hash hash = 5381;
+
+	// djb2
+	while (*begin)
 		hash = (Hash) (((hash << 5) + hash) ^ *begin++);
 
 	return hash;
@@ -50,7 +63,7 @@ LEAN_INLINE unsigned long first_bit_high(unsigned long mask)
 
 } // namespace
 
-using functional::hash;
+using functional::compute_hash;
 
 using functional::first_bit_low;
 using functional::first_bit_high;

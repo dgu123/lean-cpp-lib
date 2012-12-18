@@ -44,11 +44,10 @@ template<class Element>
 struct hash : public std::unary_function<Element, size_t>
 {
 	typedef stdext::hash_compare<Element> stdext_hasher;
-	const stdext_hasher hasher;
 
-	size_t operator()(const Element &element) const
+	LEAN_INLINE size_t operator()(const Element &element) const
 	{
-		return hasher(element);
+		return stdext_hasher()(element);
 	}
 };
 
@@ -67,7 +66,16 @@ namespace lean
 namespace functional
 {
 
-using std::hash;
+template<class Element>
+struct hash : public std::unary_function<Element, size_t>
+{
+	typedef std::hash<Element> std_hash;
+
+	LEAN_INLINE size_t operator()(const Element &element) const
+	{
+		return std_hash()(element);
+	}
+};
 
 } // namespace
 } // namespace

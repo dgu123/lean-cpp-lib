@@ -87,12 +87,27 @@ using std::is_empty;
 
 #endif
 
+/// Returns an rval expression of type T.
+template <class T>
+T make_rval();
+/// Returns an lval expression of type T.
+template <class T>
+T& make_lval();
+
+template <size_t Size, class Type = void>
+struct nonzero_to_type { typedef Type type; };
+template <class Type>
+struct nonzero_to_type<0, Type> { };
+
 } // namespace
 
 using meta::is_equal;
 using meta::is_unsigned;
 using meta::is_derived;
 using meta::is_empty;
+
+using meta::make_rval;
+using meta::make_lval;
 
 /// True if Type defines the given type, false otherwise.
 #define LEAN_DEFINE_HAS_TYPE(TypeName)													\
@@ -112,6 +127,26 @@ using meta::is_empty;
 			sizeof( has_type_##TypeName::sfinae_check( static_cast<Type*>(nullptr) ) )	\
 			==																			\
 			sizeof(yes);																\
+	};
+
+/// True if the given expression is valid, false otherwise. Use T for Type in your expression.
+#define LEAN_DEFINE_IS_VALID(Name, Expr)																			\
+	template <class Type>																							\
+	class is_valid_##Name																							\
+	{																												\
+	public:																											\
+		typedef char yes[1];																						\
+		typedef char no[2];																							\
+																													\
+		template <class T>																							\
+		static yes& sfinae_check(T*, char (*)[sizeof(Expr)] = nullptr);												\
+		static no& sfinae_check(...);																				\
+																													\
+	public:																											\
+		static const bool value =																					\
+			sizeof( is_valid_##Name::sfinae_check( static_cast<Type*>(nullptr) ) )									\
+			==																										\
+			sizeof(yes);																							\
 	};
 
 /// True if Type defines the given type as X, false otherwise.
@@ -146,7 +181,8 @@ template <class Type>
 struct is_iterator
 {
 	/// True if the given type is an iterator.
-	static const bool value = strip_pointer<Type>::stripped || has_type_iterator_category<Type>::value;
+	static const bool value = strip_pointer<typename strip_reference<Type>::type>::stripped
+		|| has_type_iterator_category<typename strip_reference<Type>::type>::value;
 };
 
 #ifdef _MSC_VER

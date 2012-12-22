@@ -22,10 +22,13 @@ namespace tags
 {
 
 /// Pointer wrapper class that signals transferral ownership.
-template <class Type>
+template <class Type, class ActualType = Type>
 class move_ptr
 {
-	Type* *const ptr;
+	template <class OtherType, class OtherActualType>
+	friend class move_ptr;
+
+	ActualType* *const ptr;
 
 public:
 #ifndef LEAN0X_NO_NULLPTR
@@ -38,8 +41,12 @@ public:
 		: ptr(nullptr) { }
 #endif
 	/// Wraps the given pointer whose ownership is to be transferred.
-	LEAN_INLINE explicit move_ptr(Type *&ptr)
+	LEAN_INLINE explicit move_ptr(ActualType *&ptr)
 		: ptr(&ptr) { }
+	/// Copies the given move_ptr.
+	template <class OtherType>
+	LEAN_INLINE move_ptr(const move_ptr<OtherType, ActualType> &right)
+		: ptr(right.ptr) { }
 
 	/// Detaches the stored pointer.
 	LEAN_INLINE Type* transfer()
@@ -66,7 +73,7 @@ public:
 	
 	/// Wraps the given pointer whose ownership is to be transferred.
 	template <reference_state_t RS, class R>
-	LEAN_INLINE move_ptr(smart::scoped_ptr<Type, RS, R> &&ptr)
+	LEAN_INLINE move_ptr(smart::scoped_ptr<ActualType, RS, R> &&ptr)
 		: ptr(ptr.move_ptr().ptr) { }
 #endif
 };
@@ -76,6 +83,13 @@ template <class Type>
 LEAN_INLINE move_ptr<Type> do_move_ptr(Type *&ptr)
 {
 	return move_ptr<Type>(ptr);
+}
+
+/// Constructs a move pointer for the given pointer.
+template <class Type, class ActualType>
+LEAN_INLINE move_ptr<Type, ActualType> do_move_ptr(ActualType *&ptr)
+{
+	return move_ptr<Type, ActualType>(ptr);
 }
 
 } // namespace

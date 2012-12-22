@@ -44,6 +44,28 @@ struct iterator_types<const Type*>
 	typedef const Type& reference;
 };
 
+/*
+// NOTE: WORKAROUND: MSVC dereferencing in SFINAE expressions buggy,
+// defaults to T for non-dereferenceable types. '&' on r-value finally fails.
+LEAN_DEFINE_IS_VALID(iterator_deref, &*make_rval<T>())
+*/
+
+template < class Type, bool HasDeref = is_iterator<Type>::value >
+struct iterator_maybe : iterator_types<Type> { };
+template <class Type>
+struct iterator_maybe<Type, false>{ };
+
+template < class Type, bool HasDeref = is_iterator<Type>::value >
+struct iterator_reflexive : iterator_types<Type> { };
+template <class Type>
+struct iterator_reflexive<Type, false>
+{
+	typedef Type value_type;
+	typedef ptrdiff_t difference_type;
+	typedef const Type* pointer;
+	typedef const Type& reference;
+};
+
 /// Iterator range.
 template <class Iterator>
 class range
@@ -105,7 +127,7 @@ public:
 	LEAN_INLINE iterator end() const { return m_end; }
 
 	/// Gets the n-th element.
-	LEAN_INLINE typename iterator_types<iterator>::reference operator [](ptrdiff_t n) const { return *(m_begin + n); }
+	LEAN_INLINE typename iterator_reflexive<iterator>::reference operator [](ptrdiff_t n) const { return *(m_begin + n); }
 };
 
 
@@ -243,6 +265,8 @@ struct range_char_type2<Char1*, Char2*> { typedef typename strip_modifiers<Char1
 } // namespace
 
 using strings::iterator_types;
+using strings::iterator_maybe;
+using strings::iterator_reflexive;
 
 using strings::range;
 using strings::make_range;

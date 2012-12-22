@@ -30,6 +30,12 @@
 #define LEAN_EXIMPL_M(w) LEAN_EXIMPL(M, m, w)
 /// Defines a local reference to the private implementation 'm' of type 'M'.
 #define LEAN_EXIMPL_CM(w) LEAN_EXIMPL(const M, m, w)
+/// Defines a local type 'M' for the private implementation of type 'M'.
+#define LEAN_FRIMPL_T(t) typedef t::M M;
+/// Defines a local reference to the private implementation 'm' of type 'M'.
+#define LEAN_FRIMPL_M(t, w) LEAN_FRIMPL_T(t) LEAN_EXIMPL(M, m, w)
+/// Defines a local reference to the private implementation 'm' of type 'M'.
+#define LEAN_FRIMPL_CM(t, w) LEAN_FRIMPL_T(t) LEAN_EXIMPL(const M, m, w)
 
 /// Defines a local reference to the private implementation of the given type and name.
 #define LEAN_SIMPL(t, m) t &m = static_cast<t&>(*this);

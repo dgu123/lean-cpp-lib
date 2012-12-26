@@ -16,13 +16,15 @@
 /// 'True' has-*-parameter-argument.
 #define LEAN_VARIADIC_HAS_PARAMS ,
 
-#define LEAN_VARIADIC_TEMPLATE__LEAN_VARIADIC_NO_PARAMS()
+#define LEAN_VARIADIC_TEMPLATE__LEAN_VARIADIC_NO_PARAMS(tparams)
 #define LEAN_VARIADIC_TEMPLATE__LEAN_VARIADIC_HAS_PARAMS(tparams) template <tparams>
 
+#define LEAN_ASSERT_NO_VA_ARGS()
+
 /// Defines a variadic function template, optionally including additional template & function parameters.
-#define LEAN_VARIADIC_TEMPLATE_XXL(fwdop, fun, tparams, has_tparams, params, has_params, modifiers, body, args, has_args) \
+#define LEAN_VARIADIC_TEMPLATE_XXL(fwdop, fun, tparams, has_tparams, params, has_params, modifiers, body, args, has_args, ...) \
 	/* 0 */ \
-	LEAN_VARIADIC_TEMPLATE__##has_tparams(tparams)	\
+	LEAN_VARIADIC_TEMPLATE__##has_tparams(tparams##__VA_ARGS__)	\
 	fun(params) modifiers							\
 	body((args))									\
 	/* 1 */ \
@@ -229,28 +231,28 @@
 #define LEAN_COPY(type, arg) arg
 
 /// Defines variadic perfect-forwarding function including additional template & function parameters.
-#define LEAN_VARIADIC_TEMPLATE_TPA(fwdop, fun, tparams, params, modifiers, body, args) \
-	LEAN_VARIADIC_TEMPLATE_XXL(fwdop, fun, tparams, LEAN_VARIADIC_HAS_PARAMS, params, LEAN_VARIADIC_HAS_PARAMS, modifiers, body, args, LEAN_VARIADIC_HAS_PARAMS)
+#define LEAN_VARIADIC_TEMPLATE_TPA(fwdop, fun, tparams, params, modifiers, body, args, ...) \
+	LEAN_VARIADIC_TEMPLATE_XXL(fwdop##__VA_ARGS__, fun##__VA_ARGS__, tparams##__VA_ARGS__, LEAN_VARIADIC_HAS_PARAMS, params##__VA_ARGS__, LEAN_VARIADIC_HAS_PARAMS, modifiers##__VA_ARGS__, body##__VA_ARGS__, args##__VA_ARGS__, LEAN_VARIADIC_HAS_PARAMS) LEAN_ASSERT_NO_VA_ARGS(__VA_ARGS__)
 
 /// Defines variadic perfect-forwarding function including additional template & function parameters.
-#define LEAN_VARIADIC_TEMPLATE_TP(fwdop, fun, tparams, params, modifiers, body) \
-	LEAN_VARIADIC_TEMPLATE_XXL(fwdop, fun, tparams, LEAN_VARIADIC_HAS_PARAMS, params, LEAN_VARIADIC_HAS_PARAMS, modifiers, body, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS)
+#define LEAN_VARIADIC_TEMPLATE_TP(fwdop, fun, tparams, params, modifiers, body, ...) \
+	LEAN_VARIADIC_TEMPLATE_XXL(fwdop##__VA_ARGS__, fun##__VA_ARGS__, tparams##__VA_ARGS__, LEAN_VARIADIC_HAS_PARAMS, params##__VA_ARGS__, LEAN_VARIADIC_HAS_PARAMS, modifiers##__VA_ARGS__, body##__VA_ARGS__, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS) LEAN_ASSERT_NO_VA_ARGS(__VA_ARGS__)
 
 /// Defines variadic perfect-forwarding function including additional template parameters.
-#define LEAN_VARIADIC_TEMPLATE_T(fwdop, fun, tparams, modifiers, body) \
-	LEAN_VARIADIC_TEMPLATE_XXL(fwdop, fun, tparams, LEAN_VARIADIC_HAS_PARAMS, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, modifiers, body, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS)
+#define LEAN_VARIADIC_TEMPLATE_T(fwdop, fun, tparams, modifiers, body, ...) \
+	LEAN_VARIADIC_TEMPLATE_XXL(fwdop##__VA_ARGS__, fun##__VA_ARGS__, tparams##__VA_ARGS__, LEAN_VARIADIC_HAS_PARAMS, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, modifiers##__VA_ARGS__, body##__VA_ARGS__, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS) LEAN_ASSERT_NO_VA_ARGS(__VA_ARGS__)
 
 /// Defines variadic perfect-forwarding function including additional function parameters.
-#define LEAN_VARIADIC_TEMPLATE_P(fwdop, fun, params, modifiers, body) \
-	LEAN_VARIADIC_TEMPLATE_XXL(fwdop, fun, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, params, LEAN_VARIADIC_HAS_PARAMS, modifiers, body, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS)
+#define LEAN_VARIADIC_TEMPLATE_P(fwdop, fun, params, modifiers, body, ...) \
+	LEAN_VARIADIC_TEMPLATE_XXL(fwdop##__VA_ARGS__, fun##__VA_ARGS__, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, params##__VA_ARGS__, LEAN_VARIADIC_HAS_PARAMS, modifiers##__VA_ARGS__, body##__VA_ARGS__, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS) LEAN_ASSERT_NO_VA_ARGS(__VA_ARGS__)
 
 /// Defines variadic perfect-forwarding function including additional function parameters.
-#define LEAN_VARIADIC_TEMPLATE_PA(fwdop, fun, params, modifiers, body, args) \
-	LEAN_VARIADIC_TEMPLATE_XXL(fwdop, fun, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, params, LEAN_VARIADIC_HAS_PARAMS, modifiers, body, args, LEAN_VARIADIC_HAS_PARAMS)
+#define LEAN_VARIADIC_TEMPLATE_PA(fwdop, fun, params, modifiers, body, args, ...) \
+	LEAN_VARIADIC_TEMPLATE_XXL(fwdop##__VA_ARGS__, fun##__VA_ARGS__, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, params##__VA_ARGS__, LEAN_VARIADIC_HAS_PARAMS, modifiers##__VA_ARGS__, body##__VA_ARGS__, args##__VA_ARGS__, LEAN_VARIADIC_HAS_PARAMS) LEAN_ASSERT_NO_VA_ARGS(__VA_ARGS__)
 
 /// Defines variadic perfect-forwarding function.
-#define LEAN_VARIADIC_TEMPLATE(fwdop, fun, modifiers, body) \
-	LEAN_VARIADIC_TEMPLATE_XXL(fwdop, fun, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, modifiers, body, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS)
+#define LEAN_VARIADIC_TEMPLATE(fwdop, fun, modifiers, body, ...) \
+	LEAN_VARIADIC_TEMPLATE_XXL(fwdop##__VA_ARGS__, fun##__VA_ARGS__, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS, modifiers##__VA_ARGS__, body##__VA_ARGS__, LEAN_NOTHING, LEAN_VARIADIC_NO_PARAMS) LEAN_ASSERT_NO_VA_ARGS(__VA_ARGS__)
 
 /// @}
 

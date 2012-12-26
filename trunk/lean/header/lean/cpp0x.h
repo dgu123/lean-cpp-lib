@@ -42,6 +42,8 @@
 	#define LEAN0X_NO_ATTRIBUTES
 	/// Indicates that decltype is not available.
 	#define LEAN0X_NO_DECLTYPE
+	/// Indicates that override is not available.
+	#define LEAN0X_NO_OVERRIDE
 #endif
 
 #ifndef LEAN0X_DISABLE
@@ -53,6 +55,7 @@
 		#undef LEAN0X_NO_STATIC_ASSERT
 		#undef LEAN0X_NO_STL
 		#undef LEAN0X_NO_DECLTYPE
+		#undef LEAN0X_NO_OVERRIDE
 	#endif
 
 	#if !defined(LEAN0X_NO_RVALUE_REFERENCES) && defined(LEAN0X_NO_IMPLICIT_MOVE)
@@ -70,6 +73,15 @@
 // Fix missing noexcept
 #if defined(LEAN0X_NO_NOEXCEPT) && !defined(noexcept)
 	#define noexcept throw()
+#endif
+
+// Add override safety
+#ifndef LEAN0X_NO_OVERRIDE
+	/// Enforces virtual method overriding.
+	#define LEAN_OVERRIDE override
+#else
+	/// Enforces virtual method overriding.
+	#define LEAN_OVERRIDE
 #endif
 
 // Emulate static_assert
@@ -182,6 +194,8 @@
 	// Re-enable move semantics for documentation
 	#undef LEAN0X_DISABLE
 	#undef LEAN0X_NO_RVALUE_REFERENCES
+	#undef LEAN0X_NO_DECLTYPE
+	#undef LEAN0X_NO_ATTRIBUTES
 #endif
 
 #endif

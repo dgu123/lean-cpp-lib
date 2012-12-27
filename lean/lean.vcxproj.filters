@@ -85,6 +85,9 @@
     <Filter Include="Source Files\containers">
       <UniqueIdentifier>{80228357-14f3-4861-8647-61504697e831}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\meta">
+      <UniqueIdentifier>{b43e9aa1-1708-4039-a31a-a0fa55a15676}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -589,6 +592,9 @@
     </ClCompile>
     <ClCompile Include="source\inst_containers.cpp">
       <Filter>Source Files\containers</Filter>
+    </ClCompile>
+    <ClCompile Include="header\lean\meta\source\support.cpp">
+      <Filter>Source Files\meta</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

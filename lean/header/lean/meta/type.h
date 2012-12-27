@@ -79,6 +79,11 @@ public:
 	typedef typename conditional_type<is_complete, FullType, BaseType>::type type;
 };
 
+/// Absorbs the given values.
+LEAN_MAYBE_EXPORT void absorb(...);
+/// Cast functions to this type.
+typedef void (*absorbfun)();
+
 } // namespace
 
 using meta::identity;
@@ -89,6 +94,13 @@ using meta::conditional_type;
 using meta::first_non_void;
 using meta::complete_type_or_base;
 
+using meta::absorb;
+using meta::absorbfun;
+
 } // namespace
+
+#ifdef LEAN_INCLUDE_LINKED
+#include "source/support.cpp"
+#endif
 
 #endif

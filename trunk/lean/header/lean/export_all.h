@@ -7,6 +7,8 @@
 #define LEAN_EXPORT_ALL
 
 // Include everything that might be exported
+#include "meta/type.h"
+
 #include "containers/simple_hash_map.h"
 
 #include "io/file.h"

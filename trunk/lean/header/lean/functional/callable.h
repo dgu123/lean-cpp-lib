@@ -8,6 +8,7 @@
 
 #include "../lean.h"
 #include "../tags/noncopyable.h"
+#include "../functional/variadic.h"
 
 namespace lean
 {
@@ -105,11 +106,14 @@ LEAN_INLINE callable_memfun<Class, Signature> make_callable(Class *obj, Signatur
 }
 
 /// Stores a pointer to a polymorphic method to be called on invokation of operator ().
+template <class Signature>
 class vcallable
 {
 public:
+	/// Signature.
+	typedef Signature signature_type;
 	/// Polymorphic function pointer type.
-	typedef void (*fun_ptr)(vcallable&);
+	typedef signature_type (vcallable::*fun_ptr);
 	
 private:
 	fun_ptr m_fun;
@@ -120,6 +124,21 @@ protected:
 		: m_fun(fun)
 	{
 		LEAN_ASSERT(m_fun);
+	}
+	/// Stores the given polymorphic method to be called by operator().
+	template <class Derived>
+	LEAN_INLINE vcallable(signature_type Derived::* fun) noexcept
+		: m_fun( static_cast<signature_type vcallable::*>(fun) )
+	{
+		LEAN_ASSERT(m_fun);
+
+		// MONITOR: Does static cast account for that?
+		// Make sure cast is "valid"
+		LEAN_STATIC_ASSERT_MSG_ALT(
+				offsetof(Derived, m_fun) == offsetof(vcallable, m_fun),
+				"Classes derived from vcallable are required to align with their vcallable subobject",
+				Classes_derived_from_vcallable_required_to_align_with_vcallable_subobject
+			);
 	}
 	
 	LEAN_INLINE vcallable(const vcallable &right) noexcept
@@ -132,34 +151,40 @@ protected:
 	}
 
 public:
+
+#ifdef DOXYGEN_READ_THIS
 	/// Calls the function stored by this callable object.
-	LEAN_INLINE void operator ()()
+	LEAN_INLINE void operator ()(...)
 	{
-		(*m_fun)(*this);
+		(this->*m_fun)(...);
 	}
+#else
+	#define LEAN_VCALLABLE_METHOD_DECL \
+		LEAN_INLINE void operator ()
+	#define LEAN_VCALLABLE_METHOD_BODY(call) \
+		{ \
+			(this->*m_fun)##call; \
+		}
+	LEAN_VARIADIC_TEMPLATE(LEAN_FORWARD, LEAN_VCALLABLE_METHOD_DECL, LEAN_NOTHING, LEAN_VCALLABLE_METHOD_BODY)
+#endif
+	
 };
 
 /// Stores a pointer to a method to be called on invokation of operator ().
-template <class Derived>
-class vcallable_base : public vcallable
+template <class Signature, class Derived>
+class vcallable_base : public vcallable<Signature>
 {
-private:
-	static void call(vcallable &self)
-	{
-		static_cast<Derived&>(self)();
-	}
-
 protected:
 	/// Stores the given object and method to be called by operator().
 	LEAN_INLINE vcallable_base() noexcept
-		: vcallable(&call) { }
+		: vcallable<Signature>( &Derived::operator () ) { }
 
 	LEAN_INLINE vcallable_base(const vcallable_base &right) noexcept
-		: vcallable(right) { }
+		: vcallable<Signature>(right) { }
 	
 	LEAN_INLINE vcallable_base& operator =(const vcallable_base &right) noexcept
 	{
-		vcallable::operator =(right);
+		vcallable<Signature>::operator =(right);
 		return *this;
 	}
 };

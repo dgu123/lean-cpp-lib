@@ -294,8 +294,56 @@ inline void close(Element *gap, Element *gapEnd, Element *&end, Allocator &alloc
 		destruct(end, oldEnd, allocator, destructTag);
 }
 
+template <class C>
+LEAN_INLINE void* emplace_allocate(C &c)
+{
+	return c.allocate_back();
+}
+
+template <class C, class V>
+LEAN_INLINE V& emplace_shift(C &c, V *p)
+{
+	return c.shift_back(p);
+}
+
+} // namespace
+
+// NOTE: Different namespace to get rid of lean::container defaults for user-defined types
+namespace impl
+{
+	
+template <class C>
+struct emplace_shift_ref_t { C &c; };
+template <class C, class V>
+LEAN_INLINE V& operator *(emplace_shift_ref_t<C> r, V *p) { return emplace_shift(r.c, p); }
+
+template <class C>
+LEAN_INLINE emplace_shift_ref_t<C> make_emplace_shift_ref(C &c)
+{
+	emplace_shift_ref_t<C> r = { c };
+	return r;
+}
+template <class C>
+LEAN_INLINE emplace_shift_ref_t<const C> make_emplace_shift_ref(const C &c)
+{
+	emplace_shift_ref_t<const C> r = { c };
+	return r;
+}
+
 } // namespace
 
 } // namespace
+
+#ifndef LEAN_NO_EMPLACE_NEW
+
+/// @addtogroup GlobalMacros
+/// @{
+
+/// Modified operator new that emplaces into the given container.
+#define new_emplace(c) ::lean::impl::make_emplace_shift_ref(c) * new(emplace_allocate(c))
+
+/// @}
+
+#endif
 
 #endif

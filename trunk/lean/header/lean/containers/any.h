@@ -256,6 +256,7 @@ using containers::any_cast_default;
 #ifndef LEAN_NO_ANY_CAST
 	using lean::any_cast;
 	using lean::any_cast_checked;
+	using lean::any_cast_default;
 #endif
 
 #endif

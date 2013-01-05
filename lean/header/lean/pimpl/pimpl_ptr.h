@@ -7,6 +7,7 @@
 #define LEAN_PIMPL_PIMPL_PTR
 
 #include "../tags/noncopyable.h"
+#include "static_pimpl.h"
 
 namespace lean
 {
@@ -149,6 +150,13 @@ using pimpl::pimpl_ptr;
 #define LEAN_PIMPL_M LEAN_PIMPL(M, m)
 /// Defines a local reference to the private implementation 'm' of type 'M'.
 #define LEAN_PIMPL_CM LEAN_PIMPL(const M, m)
+
+/// Defines a local type 'M' for the private implementation of type 'M'.
+#define LEAN_DEPIMPL(d, t, m) t &m = *static_cast<d*>(this)->m;
+/// Defines a local reference to the private implementation 'm' of type 'M'.
+#define LEAN_DEPIMPL_M(d) LEAN_FRIMPL_T(d) LEAN_DEPIMPL(d, M, m)
+/// Defines a local reference to the private implementation 'm' of type 'M'.
+#define LEAN_DEPIMPL_CM(d) LEAN_FRIMPL_T(d) LEAN_DEPIMPL(const d, const M, m)
 
 /// @}
 

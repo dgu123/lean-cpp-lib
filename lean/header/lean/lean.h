@@ -157,6 +157,26 @@
 
 #ifndef LEAN_INTERFACE_BEHAVIOR
 
+	/// Defines delegating default construction.
+	#define LEAN_BASE_DELEGATE_CONS(name, base) \
+		LEAN_INLINE name() : base() { }	
+	/// Defines delegating copy construction.
+	#define LEAN_BASE_DELEGATE_COPY(name, base) \
+		LEAN_INLINE name(const name &right) : base(right) { }
+	/// Defines delegating assignment.
+	#define LEAN_BASE_DELEGATE_ASSIGNMENT(name, base) \
+		LEAN_INLINE name& operator =(const name &right) { this->base::operator =(right); return *this; }
+
+	/// Defines delegating copy construction and assignment.
+	#define LEAN_BASE_DELEGATE_COPYASSIGNMENT(name, base) \
+		LEAN_BASE_DELEGATE_COPY(name, base) \
+		LEAN_BASE_DELEGATE_ASSIGNMENT(name, base)
+	/// Defines delegating default/copy construction and assignment.
+	#define LEAN_BASE_DELEGATE(name, base) \
+		LEAN_BASE_DELEGATE_CONS(name, base) \
+		LEAN_BASE_DELEGATE_COPY(name, base) \
+		LEAN_BASE_DELEGATE_ASSIGNMENT(name, base)
+
 #ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
 	/// Makes the given class behave like an interface.
 	#define LEAN_INTERFACE_BEHAVIOR(name) \
@@ -164,11 +184,19 @@
 				LEAN_INLINE name& operator =(const name&) noexcept { return *this; } \
 				LEAN_INLINE ~name() noexcept { } \
 			private:
+
+	/// Makes the given class behave like a base class.
+	#define LEAN_BASE_BEHAVIOR(name) \
+			protected: \
+				LEAN_INLINE ~name() noexcept { } \
+			private:
 #else
 	#define LEAN_INTERFACE_BEHAVIOR(name) \
 			protected: \
 				LEAN_INLINE name& operator =(const name&) noexcept { return *this; } \
 			private:
+
+	#define LEAN_BASE_BEHAVIOR(name) private:
 #endif
 
 	/// Makes the given class behave like an interface supporting shared ownership.
@@ -177,6 +205,12 @@
 				virtual ~name() noexcept { } \
 			protected: \
 				LEAN_INLINE name& operator =(const name&) noexcept { return *this; } \
+			private:
+
+	/// Makes the given class behave like a base class supporting shared ownership.
+	#define LEAN_SHARED_BASE_BEHAVIOR(name) \
+			public: \
+				virtual ~name() noexcept { } \
 			private:
 
 	/// Makes the given class behave like a static interface.

@@ -17,24 +17,6 @@ namespace lean
 namespace meta
 {
 
-/// True if types are equal, false otherwise.
-template <class Type1, class Type2>
-struct is_equal
-{
-	/// True if types are equal, false otherwise.
-	static const bool value = false;
-};
-
-#ifndef DOXYGEN_SKIP_THIS
-
-template <class Type>
-struct is_equal<Type, Type>
-{
-	static const bool value = true;
-};
-
-#endif
-
 /// Checks if the given integer type is unsigned.
 template <class Integer>
 struct is_unsigned
@@ -101,7 +83,6 @@ struct nonzero_to_type<0, Type> { };
 
 } // namespace
 
-using meta::is_equal;
 using meta::is_unsigned;
 using meta::is_derived;
 using meta::is_empty;

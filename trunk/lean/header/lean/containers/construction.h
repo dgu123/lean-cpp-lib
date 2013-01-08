@@ -129,9 +129,10 @@ LEAN_INLINE Element* copy_construct(Iterator source, Iterator sourceEnd, Element
 {
 	return copy_construct(source, sourceEnd, dest, allocator);
 }
-template <class Element, class Allocator>
-LEAN_INLINE Element* copy_construct(const Element *source, const Element *sourceEnd, Element *dest, Allocator &allocator, trivial_construction_t)
+template <class SrcElement, class Element, class Allocator>
+LEAN_INLINE Element* copy_construct(SrcElement *source, SrcElement *sourceEnd, Element *dest, Allocator &allocator, trivial_construction_t)
 {
+	LEAN_SIZE_COMPATIBLE(SrcElement, Element);
 	size_t count = sourceEnd - source;
 	memcpy(dest, lean::addressof(*source), count * sizeof(Element));
 	return dest + count;
@@ -175,7 +176,7 @@ inline Element* move_construct(Iterator source, Iterator sourceEnd, Element *des
 template <class Iterator, class Element, class Allocator>
 LEAN_INLINE Element* move_construct(Iterator source, Iterator sourceEnd, Element *dest, Allocator &allocator, trivial_construction_t)
 {
-	return copy_construct(source, sourceEnd, dest, allocator);
+	return copy_construct(source, sourceEnd, dest, allocator, trivial_construction_t());
 }
 
 /// Moves the given source element to the given destination.
@@ -201,11 +202,15 @@ inline Element* move(Iterator source, Iterator sourceEnd, Element *dest, nontriv
 template <class Iterator, class Element>
 LEAN_INLINE Element* move(Iterator source, Iterator sourceEnd, Element *dest, trivial_construction_t)
 {
-	return move(source, sourceEnd, dest);
+	for (; source != sourceEnd; ++dest, ++source)
+		move(dest, *source, trivial_construction_t());
+
+	return dest;
 }
-template <class Element>
-LEAN_INLINE Element* move(const Element *source, const Element *sourceEnd, Element *dest, trivial_construction_t)
+template <class SrcElement, class Element>
+LEAN_INLINE Element* move(SrcElement *source, SrcElement *sourceEnd, Element *dest, trivial_construction_t)
 {
+	LEAN_SIZE_COMPATIBLE(SrcElement, Element);
 	size_t count = sourceEnd - source;
 	memmove(dest, lean::addressof(*source), count * sizeof(Element));
 	return dest + count;
@@ -224,11 +229,17 @@ inline Element* move_backwards(Iterator source, Iterator sourceEnd, Element *des
 template <class Iterator, class Element>
 LEAN_INLINE Element* move_backwards(Iterator source, Iterator sourceEnd, Element *dest, trivial_construction_t)
 {
-	return move_backwards(source, sourceEnd, dest);
+	Element *destEnd = dest + (sourceEnd - source);
+
+	for (dest = destEnd; source != sourceEnd; )
+		move(--dest, *--sourceEnd, trivial_construction_t());
+
+	return destEnd;
 }
-template <class Element>
-LEAN_INLINE Element* move_backwards(const Element *source, const Element *sourceEnd, Element *dest, trivial_construction_t)
+template <class SrcElement, class Element>
+LEAN_INLINE Element* move_backwards(SrcElement *source, SrcElement *sourceEnd, Element *dest, trivial_construction_t)
 {
+	LEAN_SIZE_COMPATIBLE(SrcElement, Element);
 	size_t count = sourceEnd - source;
 	memmove(dest, lean::addressof(*source), count * sizeof(Element));
 	return dest + count;

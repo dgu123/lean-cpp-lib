@@ -508,6 +508,33 @@ public:
 		return where;
 	}
 #endif
+
+	/// Inserts the given elements.
+	template <class SrcIt>
+	iterator insert_disjoint(iterator where, SrcIt begin, SrcIt end)
+	{
+		LEAN_ASSERT(m_elements <= where);
+		LEAN_ASSERT(where <= m_elementsEnd);
+
+		size_t count = end - begin;
+
+		if (static_cast<size_t>(m_capacityEnd - m_elementsEnd) < count)
+			grow(count);
+
+		open_uninit(where, where + count);
+
+		try
+		{
+			copy_construct(begin, end, where);
+		}
+		catch (...)
+		{
+			close_uninit(where, where + count);
+			throw;
+		}
+
+		return where;
+	}
 	
 	/// Erases the given element.
 	void erase(iterator where)

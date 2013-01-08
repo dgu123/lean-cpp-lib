@@ -29,19 +29,23 @@ private:
 
 public:
 	/// Constructs a strided pointer from the given pointer.
-	LEAN_INLINE explicit strided_ptr(object_type *object = nullptr, ptrdiff_t stride = sizeof(object_type))
+	LEAN_INLINE strided_ptr()
+		: m_object( nullptr ),
+		m_stride( sizeof(object_type) ) { }
+	/// Constructs a strided pointer from the given pointer.
+	LEAN_INLINE strided_ptr(object_type *object, ptrdiff_t stride)
 		: m_object( object ),
-		m_stride( stride ) { };
+		m_stride( stride ) { }
 	/// Constructs a strided pointer from the given pointer.
 	template <class Type2>
-	LEAN_INLINE explicit strided_ptr(Type2 *object, ptrdiff_t stride = sizeof(Type2))
+	LEAN_INLINE strided_ptr(Type2 *object, ptrdiff_t stride)
 		: m_object( object ),
-		m_stride( stride ) { };
+		m_stride( stride ) { }
 	/// Constructs a strided pointer from the given pointer.
 	template <class Type2>
 	LEAN_INLINE strided_ptr(const strided_ptr<Type2> &right)
 		: m_object( right.get() ),
-		m_stride( right.get_stride() ) { };
+		m_stride( right.get_stride() ) { }
 	
 	/// Replaces the stored pointer with the given pointer.
 	template <class Type2>
@@ -69,8 +73,8 @@ public:
 	}
 };
 
-template <class T> LEAN_INLINE strided_ptr<T> operator +(const strided_ptr<T> &p, ptrdiff_t diff) { return strided_ptr<T>( &p[diff], p.get_stride() ); }
-template <class T> LEAN_INLINE strided_ptr<T> operator -(const strided_ptr<T> &p, ptrdiff_t diff) { return strided_ptr<T>( &p[-diff], p.get_stride() ); }
+template <class T> LEAN_INLINE strided_ptr<T> operator +(const strided_ptr<T> &p, ptrdiff_t diff) { return strided_ptr<T>( lean::addressof(p[diff]), p.get_stride() ); }
+template <class T> LEAN_INLINE strided_ptr<T> operator -(const strided_ptr<T> &p, ptrdiff_t diff) { return strided_ptr<T>( lean::addressof(p[-diff]), p.get_stride() ); }
 
 template <class T>
 LEAN_INLINE ptrdiff_t operator -(const strided_ptr<T> &p, const strided_ptr<T> &q)

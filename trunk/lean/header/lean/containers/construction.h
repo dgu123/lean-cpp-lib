@@ -91,17 +91,17 @@ LEAN_INLINE void default_construct(Element *dest, Element *destEnd, Allocator &a
 
 /// Copies the given source element to the given destination.
 template <class Element, class Allocator>
-LEAN_INLINE void copy_construct(Element *dest, const Element &source, Allocator &allocator, nontrivial_construction_t = nontrivial_construction_t())
+LEAN_INLINE void copy_construct(Element *dest, const typename identity<Element>::type &source, Allocator &allocator, nontrivial_construction_t = nontrivial_construction_t())
 {
 	allocator.construct(dest, source);
 }
 template <class Element>
-LEAN_INLINE void copy_construct(Element *dest, const Element &source, no_allocator_t, nontrivial_construction_t = nontrivial_construction_t())
+LEAN_INLINE void copy_construct(Element *dest, const typename identity<Element>::type &source, no_allocator_t, nontrivial_construction_t = nontrivial_construction_t())
 {
 	new (static_cast<void*>(dest)) Element(source);
 }
 template <class Element, class Allocator>
-LEAN_INLINE void copy_construct(Element *dest, const Element &source, Allocator &allocator, trivial_construction_t)
+LEAN_INLINE void copy_construct(Element *dest, const typename identity<Element>::type &source, Allocator &allocator, trivial_construction_t)
 {
 	memcpy(dest, lean::addressof(source), sizeof(Element));
 }
@@ -126,6 +126,11 @@ inline Element* copy_construct(Iterator source, Iterator sourceEnd, Element *des
 }
 template <class Iterator, class Element, class Allocator>
 LEAN_INLINE Element* copy_construct(Iterator source, Iterator sourceEnd, Element *dest, Allocator &allocator, trivial_construction_t)
+{
+	return copy_construct(source, sourceEnd, dest, allocator);
+}
+template <class Element, class Allocator>
+LEAN_INLINE Element* copy_construct(const Element *source, const Element *sourceEnd, Element *dest, Allocator &allocator, trivial_construction_t)
 {
 	size_t count = sourceEnd - source;
 	memcpy(dest, lean::addressof(*source), count * sizeof(Element));
@@ -170,7 +175,7 @@ inline Element* move_construct(Iterator source, Iterator sourceEnd, Element *des
 template <class Iterator, class Element, class Allocator>
 LEAN_INLINE Element* move_construct(Iterator source, Iterator sourceEnd, Element *dest, Allocator &allocator, trivial_construction_t)
 {
-	return copy_construct(source, sourceEnd, dest, allocator, trivial_construction_t());
+	return copy_construct(source, sourceEnd, dest, allocator);
 }
 
 /// Moves the given source element to the given destination.
@@ -196,6 +201,11 @@ inline Element* move(Iterator source, Iterator sourceEnd, Element *dest, nontriv
 template <class Iterator, class Element>
 LEAN_INLINE Element* move(Iterator source, Iterator sourceEnd, Element *dest, trivial_construction_t)
 {
+	return move(source, sourceEnd, dest);
+}
+template <class Element>
+LEAN_INLINE Element* move(const Element *source, const Element *sourceEnd, Element *dest, trivial_construction_t)
+{
 	size_t count = sourceEnd - source;
 	memmove(dest, lean::addressof(*source), count * sizeof(Element));
 	return dest + count;
@@ -213,6 +223,11 @@ inline Element* move_backwards(Iterator source, Iterator sourceEnd, Element *des
 }
 template <class Iterator, class Element>
 LEAN_INLINE Element* move_backwards(Iterator source, Iterator sourceEnd, Element *dest, trivial_construction_t)
+{
+	return move_backwards(source, sourceEnd, dest);
+}
+template <class Element>
+LEAN_INLINE Element* move_backwards(const Element *source, const Element *sourceEnd, Element *dest, trivial_construction_t)
 {
 	size_t count = sourceEnd - source;
 	memmove(dest, lean::addressof(*source), count * sizeof(Element));

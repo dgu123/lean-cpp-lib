@@ -11,6 +11,25 @@ namespace lean
 namespace meta
 {
 
+/// True if types are equal, false otherwise.
+template <class Type1, class Type2>
+struct is_equal
+{
+	/// True if types are equal, false otherwise.
+	static const bool value = false;
+};
+
+#ifndef DOXYGEN_SKIP_THIS
+
+template <class Type>
+struct is_equal<Type, Type>
+{
+	static const bool value = true;
+};
+
+#endif
+
+
 /// Redefines the given type.
 template <class Type>
 struct identity
@@ -86,6 +105,7 @@ typedef void (*absorbfun)();
 
 } // namespace
 
+using meta::is_equal;
 using meta::identity;
 using meta::enable_if;
 using meta::enable_move;

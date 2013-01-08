@@ -8,6 +8,8 @@
 
 #include "../lean.h"
 
+namespace std { struct random_access_iterator_tag; }
+
 namespace lean
 {
 namespace tags
@@ -18,63 +20,86 @@ template <class Type>
 class strided_ptr
 {
 public:
-	/// Type of the object pointed to.
-	typedef Type object_type;
-	/// Type of the pointer stored by this pointer.
-	typedef object_type* value_type;
+	/// Type of the elements pointed to.
+	typedef Type value_type;
+	/// Pointer to the elements.
+	typedef value_type* pointer;
+	/// Reference to an element.
+	typedef value_type& reference;
+	/// Difference type.
+	typedef ptrdiff_t difference_type;
+	/// Random access iterator.
+	typedef std::random_access_iterator_tag iterator_category;
 
 private:
-	value_type m_object;
-	ptrdiff_t m_stride;
+	pointer m_ptr;
+	difference_type m_stride;
 
 public:
 	/// Constructs a strided pointer from the given pointer.
 	LEAN_INLINE strided_ptr()
-		: m_object( nullptr ),
-		m_stride( sizeof(object_type) ) { }
+		: m_ptr( nullptr ),
+		m_stride( sizeof(value_type) ) { }
 	/// Constructs a strided pointer from the given pointer.
-	LEAN_INLINE strided_ptr(object_type *object, ptrdiff_t stride)
-		: m_object( object ),
+	LEAN_INLINE strided_ptr(pointer object, difference_type stride)
+		: m_ptr( object ),
 		m_stride( stride ) { }
 	/// Constructs a strided pointer from the given pointer.
 	template <class Type2>
-	LEAN_INLINE strided_ptr(Type2 *object, ptrdiff_t stride)
-		: m_object( object ),
+	LEAN_INLINE strided_ptr(Type2 *object, difference_type stride = sizeof(Type2))
+		: m_ptr( object ),
 		m_stride( stride ) { }
 	/// Constructs a strided pointer from the given pointer.
 	template <class Type2>
 	LEAN_INLINE strided_ptr(const strided_ptr<Type2> &right)
-		: m_object( right.get() ),
+		: m_ptr( right.get() ),
 		m_stride( right.get_stride() ) { }
 	
 	/// Replaces the stored pointer with the given pointer.
 	template <class Type2>
 	LEAN_INLINE strided_ptr& operator =(const strided_ptr<Type2> &right)
 	{
-		m_object = right.get();
+		m_ptr = right.get();
 		m_stride = right.get_stride();
 		return *this;
 	}
 
+	/// Increments the pointer.
+	LEAN_INLINE strided_ptr& operator ++() { m_ptr = lean::addressof((*this)[1]); return *this; }
+	/// Decrements the pointer.
+	LEAN_INLINE strided_ptr& operator --() { m_ptr = lean::addressof((*this)[-1]); return *this; }
+
+	/// Increments the pointer.
+	LEAN_INLINE strided_ptr operator ++(int) { strided_ptr old(*this); m_ptr = lean::addressof((*this)[1]); return old; }
+	/// Decrements the pointer.
+	LEAN_INLINE strided_ptr operator --(int) { strided_ptr old(*this); m_ptr = lean::addressof((*this)[-1]); return old; }
+
 	/// Gets the pointer stored by this strided pointer. Don't call unless you know what you are doing!
-	LEAN_INLINE value_type get() const { return m_object; }
+	LEAN_INLINE pointer get() const { return m_ptr; }
 	/// Gets the stride stored by this strided pointer. Don't call unless you know what you are doing!
-	LEAN_INLINE ptrdiff_t get_stride() const { return m_stride; }
+	LEAN_INLINE difference_type get_stride() const { return m_stride; }
 
 	/// Gets the first object stored by this strided pointer.
-	LEAN_INLINE object_type& operator *() const { return *m_object; }
+	LEAN_INLINE reference operator *() const { return *m_ptr; }
 	/// Gets the first object stored by this strided pointer.
-	LEAN_INLINE object_type* operator ->() const { return m_object; }
+	LEAN_INLINE pointer operator ->() const { return m_ptr; }
 
 	/// Gets the n-th object stored by this strided pointer.
-	LEAN_INLINE object_type& operator [](ptrdiff_t n) const
+	LEAN_INLINE reference operator [](difference_type n) const
 	{
-		return *(object_type*) ((char*) m_object + m_stride * n);
+		return *(pointer) ((char*) m_ptr + m_stride * n);
 	}
 };
 
 template <class T> LEAN_INLINE strided_ptr<T> operator +(const strided_ptr<T> &p, ptrdiff_t diff) { return strided_ptr<T>( lean::addressof(p[diff]), p.get_stride() ); }
 template <class T> LEAN_INLINE strided_ptr<T> operator -(const strided_ptr<T> &p, ptrdiff_t diff) { return strided_ptr<T>( lean::addressof(p[-diff]), p.get_stride() ); }
+
+template <class T> LEAN_INLINE bool operator ==(const strided_ptr<T> &l, const strided_ptr<T> &r) { return l.get() == r.get(); }
+template <class T> LEAN_INLINE bool operator !=(const strided_ptr<T> &l, const strided_ptr<T> &r) { return l.get() != r.get(); }
+template <class T> LEAN_INLINE bool operator <=(const strided_ptr<T> &l, const strided_ptr<T> &r) { return l.get() <= r.get(); }
+template <class T> LEAN_INLINE bool operator >=(const strided_ptr<T> &l, const strided_ptr<T> &r) { return l.get() >= r.get(); }
+template <class T> LEAN_INLINE bool operator <(const strided_ptr<T> &l, const strided_ptr<T> &r) { return l.get() < r.get(); }
+template <class T> LEAN_INLINE bool operator >(const strided_ptr<T> &l, const strided_ptr<T> &r) { return l.get() > r.get(); }
 
 template <class T>
 LEAN_INLINE ptrdiff_t operator -(const strided_ptr<T> &p, const strided_ptr<T> &q)

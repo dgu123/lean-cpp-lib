@@ -519,7 +519,11 @@ public:
 		size_t count = end - begin;
 
 		if (static_cast<size_t>(m_capacityEnd - m_elementsEnd) < count)
+		{
+			size_t whereIdx = where - m_elements;
 			grow(count);
+			where = m_elements + whereIdx;
+		}
 
 		open_uninit(where, where + count);
 

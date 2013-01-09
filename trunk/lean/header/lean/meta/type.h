@@ -29,6 +29,24 @@ struct is_equal<Type, Type>
 
 #endif
 
+/// Empty base class.
+class empty_base
+{
+protected:
+#ifdef LEAN0X_NO_DELETE_METHODS
+	LEAN_INLINE empty_base() noexcept { }
+	LEAN_INLINE empty_base(const empty_base&) noexcept { }
+	LEAN_INLINE empty_base& operator =(const empty_base&) noexcept { return *this; }
+#ifndef LEAN_OPTIMIZE_DEFAULT_DESTRUCTOR
+	LEAN_INLINE ~empty_base() noexcept { }
+#endif
+#else
+	empty_base() noexcept = default;
+	empty_base(const empty_base&) noexcept = default;
+	empty_base& operator =(const empty_base&) noexcept = default;
+	~empty_base() noexcept = default;
+#endif
+};
 
 /// Redefines the given type.
 template <class Type>
@@ -107,6 +125,7 @@ typedef void (*absorbfun)();
 
 using meta::is_equal;
 using meta::identity;
+using meta::empty_base;
 using meta::enable_if;
 using meta::enable_move;
 

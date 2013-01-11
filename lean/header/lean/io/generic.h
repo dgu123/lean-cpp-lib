@@ -87,6 +87,64 @@ public:
 	}
 };
 
+/// Boolean value serialization.
+template <class Type, utf8_t Delimiter = ';'>
+struct bool_serialization : public generic_serialization<Type, Delimiter>
+{
+	/// Value type.
+	typedef Type value_type;
+	/// Delimiter character.
+	static const utf8_t delimiter = Delimiter;
+
+	/// Gets the maximum length of the given number of values when serialized. Zero if unpredictable.
+	static size_t max_length(size_t count)
+	{
+		// N numbers & delimiters
+		return (1 + 1) * count;
+	}
+
+	// Writes the given number of values to the given character buffer, returning the first character not written to.
+	static utf8_t* write(utf8_t *begin, const std::type_info &type, const void *values, size_t count)
+	{
+		if (type != typeid(value_type))
+			return begin;
+
+		const value_type *typedValues = static_cast<const value_type*>(values);
+		
+		for (size_t i = 0; i < count; ++i)
+		{
+			if (i != 0)
+				*begin++ = delimiter;
+
+			begin = bool_to_char(begin, typedValues[i]);
+		}
+
+		return begin;
+	}
+	using generic_serialization<Type, Delimiter>::write;
+
+	// Reads the given number of values from the given range of characters, returning the first character not read.
+	static const utf8_t* read(const utf8_t *begin, const utf8_t *end, const std::type_info &type, void *values, size_t count)
+	{
+		if (type != typeid(value_type))
+			return begin;
+
+		value_type *typedValues = static_cast<value_type*>(values);
+
+		for (size_t i = 0; i < count; ++i)
+		{
+			if (i != 0)
+				// Skip UNTIL next delimiter found
+				while (begin != end && *begin++ != delimiter);
+
+			begin = char_to_bool(begin, end, typedValues[i]);
+		}
+
+		return begin;
+	}
+	using generic_serialization<Type, Delimiter>::read;
+};
+
 /// Integer value serialization.
 template <class Type, utf8_t Delimiter = ';'>
 struct int_serialization : public generic_serialization<Type, Delimiter>

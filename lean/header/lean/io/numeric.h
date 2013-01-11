@@ -156,6 +156,40 @@ inline bool string_to_int(const utf8_ntri &string, Integer &num)
 	return (char_to_int(string.begin(), end, num) == end);
 }
 
+/// Converts the given boolean of the given type into an ascii character string, returning a pointer to the first character not written to.
+/// Does not append a terminating null character.
+template <class CharIter, class Boolean>
+inline CharIter bool_to_char(CharIter buffer, Boolean val)
+{
+	*buffer++ = (val) ? '1' : '0';
+	return buffer;
+}
+
+/// Converts the given boolean of the given type into an ascii character string.
+template <class Boolean>
+inline utf8_string bool_to_string(Boolean val)
+{
+	char buffer[1];
+	return utf8_string(buffer, bool_to_char(buffer, val));
+}
+
+/// Converts the given range of characters into a boolean of the given type.
+/// Does not require *end to be a terminating null character.
+template <class CharIter, class Boolean>
+inline CharIter char_to_bool(CharIter begin, CharIter end, Boolean &val)
+{
+	val = (begin != end) && (*begin++ != '0');
+	return begin;
+}
+
+/// Converts the given range of characters into a boolean of the given type.
+template <class Boolean>
+inline bool string_to_bool(const utf8_ntri &string, Boolean &val)
+{
+	utf8_ntri::const_iterator end = string.end();
+	return (char_to_bool(string.begin(), end, val) == end);
+}
+
 /// Estimates the maximum string length for floating-point values of the given type.
 template <class Float>
 struct max_float_string_length

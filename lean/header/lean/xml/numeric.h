@@ -57,6 +57,15 @@ inline Float get_float_attribute(const rapidxml::xml_node<Char> &node, const Ran
 	return value;
 }
 
+/// Gets the integer value of the given XML attribute, returns the default value if not available.
+template <class Char, class Boolean, class Range>
+inline Boolean get_bool_attribute(const rapidxml::xml_node<Char> &node, const Range &name, const Boolean &defaultValue)
+{
+	Boolean value(defaultValue);
+	string_to_bool( get_attribute(node, name), value );
+	return value;
+}
+
 /// Gets the minimum of the given integer attribute considering all direct child nodes.
 template <class Int, class Char, class Range>
 LEAN_INLINE Int min_int_attribute(const rapidxml::xml_node<Char> &node, const Range &attribute, Int startValue,
@@ -91,6 +100,7 @@ using xml::append_int_attribute;
 using xml::append_float_attribute;
 using xml::get_int_attribute;
 using xml::get_float_attribute;
+using xml::get_bool_attribute;
 using xml::min_int_attribute;
 using xml::max_int_attribute;
 

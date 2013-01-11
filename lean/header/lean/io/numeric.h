@@ -178,7 +178,8 @@ inline utf8_string bool_to_string(Boolean val)
 template <class CharIter, class Boolean>
 inline CharIter char_to_bool(CharIter begin, CharIter end, Boolean &val)
 {
-	val = (begin != end) && (*begin++ != '0');
+	if (begin != end)
+		val = (*begin++ != '0');
 	return begin;
 }
 
@@ -275,6 +276,11 @@ using io::float_to_string;
 using io::max_float_string_length;
 using io::char_to_float;
 using io::string_to_float;
+
+using io::bool_to_char;
+using io::bool_to_string;
+using io::char_to_bool;
+using io::string_to_bool;
 
 } // namespace
 

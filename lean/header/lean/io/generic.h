@@ -136,6 +136,10 @@ struct bool_serialization : public generic_serialization<Type, Delimiter>
 			if (i != 0)
 				// Skip UNTIL next delimiter found
 				while (begin != end && *begin++ != delimiter);
+			
+			// Skip white space
+			while (begin != end && *begin == ' ')
+				begin++;
 
 			begin = char_to_bool(begin, end, typedValues[i]);
 		}
@@ -195,6 +199,10 @@ struct int_serialization : public generic_serialization<Type, Delimiter>
 				// Skip UNTIL next delimiter found
 				while (begin != end && *begin++ != delimiter);
 
+			// Skip white space
+			while (begin != end && *begin == ' ')
+				begin++;
+
 			begin = char_to_int(begin, end, typedValues[i]);
 		}
 
@@ -252,6 +260,10 @@ struct float_serialization : public generic_serialization<Type, Delimiter>
 			if (i != 0)
 				// Skip UNTIL next delimiter found
 				while (begin != end && *begin++ != delimiter);
+
+			// Skip white space
+			while (begin != end && *begin == ' ')
+				begin++;
 
 			begin = char_to_float(begin, end, typedValues[i]);
 		}

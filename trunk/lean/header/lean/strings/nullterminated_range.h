@@ -173,7 +173,7 @@ public:
 	/// Constructs a half-range from this character range.
 	LEAN_INLINE operator nullterminated<Char, Traits>() const
 	{
-		return nullterminated<Char, Traits>(*this);
+		return nullterminated<Char, Traits>(m_begin);
 	}
 };
 

@@ -57,15 +57,15 @@ public:
 };
 
 /// Destribes a property.
-template <class Class, class Derived = void>
+template <class Class, class Derived = void, class TypeInfo = property_type_info>
 struct property_desc
 {
 	/// Type of the most derived structure.
 	typedef typename first_non_void<Derived, property_desc>::type actual_type;
 
 	/// Property type
-	const property_type_info *type_info;	///< Property type.
-	size_t count;							///< Number of elements.
+	const TypeInfo *type_info;	///< Property type.
+	size_t count;				///< Number of elements.
 
 	/// Setter type.
 	typedef property_setter<Class> setter_type;
@@ -84,7 +84,7 @@ struct property_desc
 		setter(setter_storage_type::null()),
 		getter(getter_storage_type::null()) { }
 	/// Constructs a property description from the given parameters.
-	property_desc(const property_type_info &type, size_t count)
+	property_desc(const TypeInfo &type, size_t count)
 		: type_info(&type),
 		count(count),
 		setter(setter_storage_type::null()),
@@ -97,28 +97,38 @@ struct property_desc
 };
 
 /// Describes a named property.
-template <class Class, class Derived = void>
-struct named_property_desc : public property_desc<Class, typename first_non_void< Derived, named_property_desc<Class, Derived> >::type>
+template <class Class, class Derived = void, class TypeInfo = property_type_info>
+struct named_property_desc
+	: public property_desc<
+		Class,
+		typename first_non_void< Derived, named_property_desc<Class, Derived, TypeInfo> >::type,
+		TypeInfo
+	>
 {
 	/// Type of the most derived structure.
-	typedef typename first_non_void<Derived, named_property_desc>::type actual_type;
+	typedef typename named_property_desc::actual_type actual_type;
 
 	utf8_string name;	///< Property name.
 
 	/// Constructs an empty property description.
 	named_property_desc() { }
 	/// Constructs a property description from the given parameters.
-	named_property_desc(const utf8_ntri &name, const property_type_info &type, size_t count)
-		: property_desc<Class, actual_type>(type, count),
+	named_property_desc(const utf8_ntri &name, const TypeInfo &type, size_t count)
+		: typename named_property_desc::property_desc(type, count),
 		name(name.to<utf8_string>()) { }
 };
 
 /// Describes a UI property.
-template <class Class, class Widget, class Derived = void>
-struct ui_property_desc : public named_property_desc<Class, typename first_non_void< Derived, ui_property_desc<Class, Widget, Derived> >::type>
+template <class Class, class Widget, class Derived = void, class TypeInfo = property_type_info>
+struct ui_property_desc
+	: public named_property_desc<
+		Class,
+		typename first_non_void< Derived, ui_property_desc<Class, Widget, Derived, TypeInfo> >::type,
+		TypeInfo
+	>
 {
 	/// Type of the most derived structure.
-	typedef typename first_non_void<Derived, ui_property_desc>::type actual_type;
+	typedef typename ui_property_desc::actual_type actual_type;
 
 	Widget widget;	///< UI widget used to display/edit this property.
 
@@ -139,8 +149,8 @@ struct ui_property_desc : public named_property_desc<Class, typename first_non_v
 		value_step(value_storage_type::null()),
 		max_value(value_storage_type::null()) { }
 	/// Constructs a property description from the given parameters.
-	ui_property_desc(const utf8_ntri &name, const property_type_info &type, size_t count, const Widget &widget)
-		: named_property_desc<Class, actual_type>(name, type, count),
+	ui_property_desc(const utf8_ntri &name, const TypeInfo &type, size_t count, const Widget &widget)
+		: typename ui_property_desc::named_property_desc(name, type, count),
 		widget(widget),
 		default_value(value_storage_type::null()),
 		min_value(value_storage_type::null()),

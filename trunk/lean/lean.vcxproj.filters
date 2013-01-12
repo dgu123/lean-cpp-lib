@@ -540,6 +540,9 @@
     <ClInclude Include="header\lean\strings\hashing.h">
       <Filter>Header Files\strings</Filter>
     </ClInclude>
+    <ClInclude Include="header\lean\containers\simple_queue.h">
+      <Filter>Header Files\containers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

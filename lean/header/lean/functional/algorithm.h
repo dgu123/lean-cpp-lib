@@ -101,7 +101,7 @@ inline void move_to_front(Iterator first, Iterator last, containers::trivial_con
 {
 	char temp[sizeof(*last)];
 	memcpy(temp, lean::addressof(*last), sizeof(*last));
-	memmove(lean::addressof(*first), lean::addressof(*first) + 1, sizeof(*first) * (last - first));
+	memmove(lean::addressof(*first) + 1, lean::addressof(*first), sizeof(*first) * (last - first));
 	memcpy(lean::addressof(*first), temp, sizeof(*first));
 }
 

@@ -14,6 +14,8 @@
 #include "../rapidxml/rapidxml.hpp"
 #include "../rapidxml/rapidxml_print.hpp"
 
+#include "../logging/errors.h"
+
 #ifndef LEAN_XML_FILE_SAVE_BATCH_SIZE
 	/// Batch size used (in bytes) when writing XML files to file.
 	/// @ingroup AssortedSwitches
@@ -37,7 +39,9 @@ namespace impl
 		char *source = document.allocate_string(nullptr, fileSize + 1);
 		source[fileSize] = 0;
 		
-		file.read(source, fileSize); // TODO: strict (exception on error)
+		if (file.read(source, fileSize) != fileSize)
+			LEAN_THROW_ERROR_CTX("Error reading xml file", fileName);
+
 		return source;
 	}
 }

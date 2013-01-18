@@ -20,7 +20,7 @@ namespace smart
 
 /// Deletes the given object (default policy implementation).
 template <class Type>
-LEAN_INLINE void release_ptr(Type *object)
+LEAN_INLINE void release_ptr(const Type *object)
 {
 	if (sizeof(Type) > 0)
 		delete object;
@@ -28,7 +28,7 @@ LEAN_INLINE void release_ptr(Type *object)
 
 /// Deletes the given array (default policy implementation).
 template <class Type>
-LEAN_INLINE void release_array_ptr(Type *object)
+LEAN_INLINE void release_array_ptr(const Type *object)
 {
 	if (sizeof(Type) > 0)
 		delete[] object;

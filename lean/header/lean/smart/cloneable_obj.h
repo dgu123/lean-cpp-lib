@@ -8,6 +8,7 @@
 
 #include "../cpp0x.h"
 #include "../meta/strip.h"
+#include "common.h"
 
 namespace lean
 {
@@ -47,7 +48,7 @@ struct ptr_or_ref_to<Type, false>
 } // namespace
 
 /// Cloneable object class that stores an automatic instance of the given cloneable type.
-template <class Cloneable, bool PointerSemantics = false>
+template <class Cloneable, bool PointerSemantics = val_sem>
 class cloneable_obj
 {
 public:

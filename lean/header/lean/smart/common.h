@@ -29,8 +29,15 @@ const bind_reference_t bind_reference = consume;
 /// Determines whether a reference is in a critical state.
 enum reference_state_t
 {
-	stable_ref = false,		/// Reference is stable, referenced object cannot accidentally be destroyed.
-	critical_ref = true		/// Reference is critical, referenced object might accidentally get destroyed.
+	stable_ref = false,		///< Reference is stable, referenced object cannot accidentally be destroyed.
+	critical_ref = true		///< Reference is critical, referenced object might accidentally get destroyed.
+};
+
+/// Determines wrapper semantic.
+enum ptr_semantic_t
+{
+	val_sem = false,	///< Value semantics (const-transitive, non-null).
+	ptr_sem = true		///< Pointer semantics (const-intransitive, null).
 };
 
 #ifndef LEAN0X_NO_DECLTYPE
@@ -69,6 +76,10 @@ struct move_ref
 
 using smart::bind_reference_t;
 using smart::bind_reference;
+
+using smart::ptr_semantic_t;
+using smart::val_sem;
+using smart::ptr_sem;
 
 using smart::reference_state_t;
 using smart::stable_ref;

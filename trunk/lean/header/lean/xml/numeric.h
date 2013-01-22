@@ -24,7 +24,7 @@ inline void append_int_attribute(rapidxml::xml_document<Char> &document, rapidxm
 	Char *numEnd = int_to_char(numBuffer, value);
 	*numEnd = 0;
 
-	append_attribute( *node.document(), node, name, nullterminated_range<Char>(numBuffer, numEnd) );
+	append_attribute( document, node, name, nullterminated_range<Char>(numBuffer, numEnd) );
 }
 
 /// Appends a floating-point XML attribute to the given node.
@@ -36,7 +36,7 @@ inline void append_float_attribute(rapidxml::xml_document<Char> &document, rapid
 	Char *numEnd = float_to_char(numBuffer, value);
 	*numEnd = 0;
 
-	append_attribute( *node.document(), node, name, nullterminated_range<Char>(numBuffer, numEnd) );
+	append_attribute( document, node, name, nullterminated_range<Char>(numBuffer, numEnd) );
 }
 
 /// Gets the integer value of the given XML attribute, returns the default value if not available.

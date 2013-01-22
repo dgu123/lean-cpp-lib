@@ -24,37 +24,70 @@ class any : public cloneable
 	LEAN_SHARED_INTERFACE_BEHAVIOR(any)
 
 	template <class Value>
-	friend Value* any_cast(any*);
+	friend Value* any_cast(any*, ptrdiff_t);
 
 protected:
 	/// Gets a pointer to the stored value, if the given type matches the value stored by this object, nullptr otherwise.
-	virtual void* get_any_ptr(const std::type_info& type) = 0;
+	virtual void* get_any_ptr(const std::type_info& type, ptrdiff_t idx) = 0;
 
 public:
 	/// Gets the type of the stored value.
 	virtual const std::type_info& type() const = 0;
+	/// Gets the number of stored values.
+	virtual size_t size() const = 0;
+};
+
+template <class BaseType>
+struct var_default
+{
+	typedef BaseType type;
+	
+	template <class Value>
+	type* operator ()(Value *value) const
+	{
+		return static_cast<type*>(value);
+	}
+};
+
+template <class UnionType>
+struct var_union
+{
+	typedef UnionType type;
+	
+	template <class Value>
+	type* operator ()(Value *value) const
+	{
+		return reinterpret_cast<type*>(value);
+	}
 };
 
 /// Any value.
-template <class Value, class UnionValue = Value, class Heap = default_heap>
+template <class Value, class Variance = var_default<Value>, class Heap = default_heap>
 class any_value : public heap_bound<Heap>, public any
 {
-private:
-	Value m_value;
-
-protected:
-	/// Gets a pointer to the stored value, if the given type matches the value stored by this object, nullptr otherwise.
-	void* get_any_ptr(const std::type_info& type)
-	{
-		return (typeid(Value) == type || !is_equal<Value, UnionValue>::value && typeid(UnionValue) == type)
-			? &m_value
-			: nullptr;
-	}
-
 public:
 	/// Value type.
 	typedef Value value_type;
 
+protected:
+	value_type m_value;
+
+	/// Gets a pointer to the stored value, if the given type matches the value stored by this object, nullptr otherwise.
+	void* get_any_ptr(const std::type_info& type, ptrdiff_t idx) LEAN_OVERRIDE
+	{
+		if (idx == 0)
+		{
+			if (typeid(value_type) == type)
+				// NOTE: const_cast to make sure there is NO cast
+				return const_cast<value_type*>(&m_value);
+			else if (!is_equal<value_type, typename Variance::type>::value && typeid(typename Variance::type) == type)
+				return Variance()(&m_value);
+		}
+		
+		return nullptr;
+	}
+	
+public:
 	/// Constructor.
 	LEAN_INLINE any_value()
 		: m_value() { }
@@ -105,10 +138,12 @@ public:
 	LEAN_INLINE const volatile value_type& get() const volatile { return m_value; }
 
 	/// Gets the type of the stored value.
-	LEAN_INLINE const std::type_info& type() const
+	const std::type_info& type() const LEAN_OVERRIDE
 	{
 		return typeid(value_type);
 	}
+	/// Gets the number of stored values.
+	size_t size() const LEAN_OVERRIDE { return 1; }
 
 	/// Clones this value.
 	LEAN_INLINE any_value* clone() const { return new any_value(*this); }
@@ -118,32 +153,123 @@ public:
 	LEAN_INLINE void destroy() const { delete this; }
 };
 
+/// Any value vector.
+template <class Vector, class Variance = var_default<typename Vector::value_type>, class Heap = default_heap>
+class any_vector : public any_value<Vector, var_default<Vector>, Heap>
+{
+public:
+	/// Vector type.
+	typedef Vector vector_type;
+	/// Value type.
+	typedef typename vector_type::value_type value_type;
+
+protected:
+	/// Gets a pointer to the stored value, if the given type matches the value stored by this object, nullptr otherwise.
+	void* get_any_ptr(const std::type_info& type, ptrdiff_t idx)
+	{
+		if (idx < this->m_value.size())
+		{
+			if (typeid(value_type) == type)
+				// NOTE: const_cast to make sure there is NO cast
+				return const_cast<value_type*>(&this->m_value[idx]);
+			else if (!is_equal<value_type, typename Variance::type>::value && typeid(typename Variance::type) == type)
+				return Variance()(&this->m_value[idx]);
+		}
+		
+		return this->any_value::get_any_ptr(type, idx);
+	}
+	
+public:
+	/// Constructor.
+	LEAN_INLINE any_vector() { }
+	/// Constructor.
+	LEAN_INLINE any_vector(const vector_type &value)
+		: typename any_vector::any_value(value) { }
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Constructor.
+	LEAN_INLINE any_vector(vector_type &&value)
+		: typename any_vector::any_value(std::move(value)) { }
+#endif
+#ifdef LEAN0X_NEED_EXPLICIT_MOVE
+	/// Constructor.
+	LEAN_INLINE any_vector(any_vector &&right)
+		: typename any_vector::any_value(std::move(right)) { }
+#endif
+
+	/// Assignment.
+	LEAN_INLINE any_vector& operator =(const vector_type &value)
+	{
+		this->any_value::operator =(value);
+		return *this;
+	}
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	/// Assignment.
+	LEAN_INLINE any_vector& operator =(vector_type &&value)
+	{
+		this->any_value::operator =(std::move(value));
+		return *this;
+	}
+#endif
+#ifdef LEAN0X_NEED_EXPLICIT_MOVE
+	/// Assignment.
+	LEAN_INLINE any_vector& operator =(any_vector &&right)
+	{
+		this->any_value::operator =(std::move(right));
+		return *this;
+	}
+#endif
+
+	/// Gets the stored value.
+	LEAN_INLINE value_type& get() { return this->m_value[0]; }
+	/// Gets the stored value.
+	LEAN_INLINE const value_type& get() const { return this->m_value[0]; }
+	/// Gets the stored value.
+	LEAN_INLINE volatile value_type& get() volatile { return this->m_value[0]; }
+	/// Gets the stored value.
+	LEAN_INLINE const volatile value_type& get() const volatile { return this->m_value[0]; }
+
+	/// Gets the type of the stored value.
+	const std::type_info& type() const LEAN_OVERRIDE
+	{
+		return typeid(value_type);
+	}
+	/// Gets the number of stored values.
+	size_t size() const LEAN_OVERRIDE { return this->m_value.size(); }
+
+	/// Clones this value.
+	LEAN_INLINE any_vector* clone() const { return new any_vector(*this); }
+	/// Moves the contents of this cloneable to a clone.
+	LEAN_INLINE any_vector* clone_move() { return new any_vector(LEAN_MOVE(*this)); }
+	/// Destroys a clone.
+	LEAN_INLINE void destroy() const { delete this; }
+};
+
 /// Gets a pointer to the value of the given type, if the given value type matches the value stored by the given object, nullptr otherwise.
 template <class Value>
-LEAN_INLINE Value* any_cast(any *pContainer)
+LEAN_INLINE Value* any_cast(any *pContainer, ptrdiff_t idx = 0)
 {
 	return static_cast<Value*>(
 		(pContainer)
-			? pContainer->get_any_ptr(typeid(Value))
+			? pContainer->get_any_ptr(typeid(Value), idx)
 			: nullptr );
 }
 /// Gets a pointer to the value of the given type, if the given value type matches the value stored by the given object, nullptr otherwise.
 template <class Value>
-LEAN_INLINE const Value* any_cast(const any *pContainer)
+LEAN_INLINE const Value* any_cast(const any *pContainer, ptrdiff_t idx = 0)
 {
-	return any_cast<const Value>(const_cast<any*>(pContainer));
+	return any_cast<const Value>(const_cast<any*>(pContainer), idx);
 }
 /// Gets a pointer to the value of the given type, if the given value type matches the value stored by the given object, nullptr otherwise.
 template <class Value>
-LEAN_INLINE volatile Value* any_cast(volatile any *pContainer)
+LEAN_INLINE volatile Value* any_cast(volatile any *pContainer, ptrdiff_t idx = 0)
 {
-	return any_cast<volatile Value>(const_cast<any*>(pContainer));
+	return any_cast<volatile Value>(const_cast<any*>(pContainer), idx);
 }
 /// Gets a pointer to the value of the given type, if the given value type matches the value stored by the given object, nullptr otherwise.
 template <class Value>
-LEAN_INLINE const volatile Value* any_cast(const volatile any *pContainer)
+LEAN_INLINE const volatile Value* any_cast(const volatile any *pContainer, ptrdiff_t idx = 0)
 {
-	return any_cast<const volatile Value>(const_cast<any*>(pContainer));
+	return any_cast<const volatile Value>(const_cast<any*>(pContainer), idx);
 }
 
 namespace impl
@@ -158,10 +284,10 @@ namespace impl
 
 /// Gets a value of the given type, if the given value type matches the value stored by the given object, throws bad_cast otherwise.
 template <class Value>
-LEAN_INLINE Value any_cast_checked(any *container)
+LEAN_INLINE Value any_cast_checked(any *container, ptrdiff_t idx = 0)
 {
 	typedef typename lean::strip_reference<Value>::type nonref_value_type;
-	nonref_value_type *pValue = any_cast<nonref_value_type>(container);
+	nonref_value_type *pValue = any_cast<nonref_value_type>(container, idx);
 	
 	if (!pValue)
 		impl::throw_bad_cast();
@@ -170,53 +296,53 @@ LEAN_INLINE Value any_cast_checked(any *container)
 }
 /// Gets a value of the given type, if the given value type matches the value stored by the given object, throws bad_cast otherwise.
 template <class Value>
-LEAN_INLINE Value any_cast_checked(const any *container)
+LEAN_INLINE Value any_cast_checked(const any *container, ptrdiff_t idx = 0)
 {
 	typedef typename lean::strip_reference<Value>::type nonref_value_type;
-	return any_cast_checked<const nonref_value_type&>(const_cast<any*>(container));
+	return any_cast_checked<const nonref_value_type&>(const_cast<any*>(container), idx);
 }
 /// Gets a value of the given type, if the given value type matches the value stored by the given object, throws bad_cast otherwise.
 template <class Value>
-LEAN_INLINE Value any_cast_checked(volatile any *container)
+LEAN_INLINE Value any_cast_checked(volatile any *container, ptrdiff_t idx = 0)
 {
 	typedef typename lean::strip_reference<Value>::type nonref_value_type;
-	return any_cast_checked<volatile nonref_value_type&>(const_cast<any*>(container));
+	return any_cast_checked<volatile nonref_value_type&>(const_cast<any*>(container), idx);
 }
 /// Gets a value of the given type, if the given value type matches the value stored by the given object, throws bad_cast otherwise.
 template <class Value>
-LEAN_INLINE Value any_cast_checked(const volatile any *container)
+LEAN_INLINE Value any_cast_checked(const volatile any *container, ptrdiff_t idx = 0)
 {
 	typedef typename lean::strip_reference<Value>::type nonref_value_type;
-	return any_cast_checked<const volatile nonref_value_type&>(const_cast<any*>(container));
+	return any_cast_checked<const volatile nonref_value_type&>(const_cast<any*>(container), idx);
 }
 
 /// Gets a value of the given type, if the given value type matches the value stored by the given object, throws bad_cast otherwise.
 template <class Value>
-LEAN_INLINE Value any_cast(any &container)
+LEAN_INLINE Value any_cast(any &container, ptrdiff_t idx = 0)
 {
 	typedef typename lean::strip_reference<Value>::type nonref_value_type;
-	return any_cast_checked<nonref_value_type&>(&container);
+	return any_cast_checked<nonref_value_type&>(&container, idx);
 }
 /// Gets a value of the given type, if the given value type matches the value stored by the given object, throws bad_cast otherwise.
 template <class Value>
-LEAN_INLINE Value any_cast(const any &container)
+LEAN_INLINE Value any_cast(const any &container, ptrdiff_t idx = 0)
 {
 	typedef typename lean::strip_reference<Value>::type nonref_value_type;
-	return any_cast<const nonref_value_type&>(const_cast<any&>(container));
+	return any_cast<const nonref_value_type&>(const_cast<any&>(container), idx);
 }
 /// Gets a value of the given type, if the given value type matches the value stored by the given object, throws bad_cast otherwise.
 template <class Value>
-LEAN_INLINE Value any_cast(volatile any &container)
+LEAN_INLINE Value any_cast(volatile any &container, ptrdiff_t idx = 0)
 {
 	typedef typename lean::strip_reference<Value>::type nonref_value_type;
-	return any_cast<volatile nonref_value_type&>(const_cast<any&>(container));
+	return any_cast<volatile nonref_value_type&>(const_cast<any&>(container), idx);
 }
 /// Gets a value of the given type, if the given value type matches the value stored by the given object, throws bad_cast otherwise.
 template <class Value>
-LEAN_INLINE Value any_cast(const volatile any &container)
+LEAN_INLINE Value any_cast(const volatile any &container, ptrdiff_t idx = 0)
 {
 	typedef typename lean::strip_reference<Value>::type nonref_value_type;
-	return any_cast<const volatile nonref_value_type&>(const_cast<any&>(container));
+	return any_cast<const volatile nonref_value_type&>(const_cast<any&>(container), idx);
 }
 
 /// Gets a value of the given type, if the given value type matches the value stored by the given object, default otherwise.
@@ -239,6 +365,10 @@ LEAN_INLINE Value any_cast_default(const any &container, const Value &defaultVal
 
 using containers::any;
 using containers::any_value;
+using containers::any_vector;
+
+using containers::var_default;
+using containers::var_union;
 
 using containers::any_cast;
 using containers::any_cast_checked;

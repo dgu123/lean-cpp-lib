@@ -55,15 +55,15 @@ namespace containers
 	template class any_value<int>;
 	template class any_value<test_value>;
 
-	template test_value* any_cast(any*, ptrdiff_t);
-	template const test_value* any_cast(const any*, ptrdiff_t);
-	template volatile test_value* any_cast(volatile any*, ptrdiff_t);
-	template const volatile test_value* any_cast(const volatile any*, ptrdiff_t);
+	template test_value* any_cast(any*, size_t);
+	template const test_value* any_cast(const any*, size_t);
+	template volatile test_value* any_cast(volatile any*, size_t);
+	template const volatile test_value* any_cast(const volatile any*, size_t);
 
-	template test_value& any_cast(any&, ptrdiff_t);
-	template const test_value& any_cast(const any&, ptrdiff_t);
-	template volatile test_value& any_cast(volatile any&, ptrdiff_t);
-	template const volatile test_value& any_cast(const volatile any&, ptrdiff_t);
+	template test_value& any_cast(any&, size_t);
+	template const test_value& any_cast(const any&, size_t);
+	template volatile test_value& any_cast(volatile any&, size_t);
+	template const volatile test_value& any_cast(const volatile any&, size_t);
 
 	// Arrays
 	template class static_array<std::string, 17>;

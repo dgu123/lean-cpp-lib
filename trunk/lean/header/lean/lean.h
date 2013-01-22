@@ -87,6 +87,8 @@
 	#pragma warning(disable : 4512)
 	// Extern template now standard
 	#pragma warning(disable : 4231)
+	// 'override' specifier is now standard
+	#pragma warning(disable : 4481)
 
 #endif
 

@@ -69,7 +69,7 @@ struct var_deref
 	template <class Value>
 	type* operator ()(Value *value) const
 	{
-		return lean::addressof(**value);
+		return *value; // More general, but undefined in null cases: lean::addressof(**value);
 	}
 };
 
@@ -89,11 +89,14 @@ protected:
 	{
 		if (idx == 0)
 		{
-			if (typeid(value_type) == type)
-				// NOTE: const_cast to make sure there is NO cast
-				return const_cast<value_type*>(&m_value);
-			else if (!is_equal<value_type, typename Variance::type>::value && typeid(typename Variance::type) == type)
-				return Variance()(&m_value);
+			typedef typename rec_strip_modifiers<value_type>::type storage_t;
+			typedef typename rec_strip_modifiers<typename Variance::type>::type var_t;
+
+			if (typeid(storage_t) == type)
+				// NOTE: const_cast also makes sure there is no implicit type conversion
+				return const_cast<storage_t*>(&m_value);
+			else if (!is_equal<storage_t, var_t>::value && typeid(var_t) == type)
+				return const_cast<var_t*>( Variance()(&m_value) );
 		}
 		
 		return nullptr;
@@ -179,13 +182,16 @@ protected:
 	/// Gets a pointer to the stored value, if the given type matches the value stored by this object, nullptr otherwise.
 	void* get_any_ptr(const std::type_info& type, size_t idx)
 	{
+		typedef typename rec_strip_modifiers<value_type>::type storage_t;
+		typedef typename rec_strip_modifiers<typename Variance::type>::type var_t;
+
 		if (idx < this->m_value.size())
 		{
-			if (typeid(value_type) == type)
-				// NOTE: const_cast to make sure there is NO cast
-				return const_cast<value_type*>(&this->m_value[idx]);
-			else if (!is_equal<value_type, typename Variance::type>::value && typeid(typename Variance::type) == type)
-				return Variance()(&this->m_value[idx]);
+			if (typeid(storage_t) == type)
+				// NOTE: const_cast also makes sure there is no implicit type conversion
+				return const_cast<storage_t*>(&this->m_value[idx]);
+			else if (!is_equal<storage_t, var_t>::value && typeid(var_t) == type)
+				return const_cast<var_t*>( Variance()(&this->m_value[idx]) );
 		}
 		
 		return this->any_value::get_any_ptr(type, idx);
@@ -260,10 +266,11 @@ public:
 template <class Value>
 LEAN_INLINE Value* any_cast(any *pContainer, size_t idx = 0)
 {
-	return static_cast<Value*>(
-		(pContainer)
-			? pContainer->get_any_ptr(typeid(Value), idx)
-			: nullptr );
+	return static_cast<Value*>( 
+			(pContainer)
+				? pContainer->get_any_ptr( typeid(typename rec_strip_modifiers<Value>::type), idx )
+				: nullptr
+		);
 }
 /// Gets a pointer to the value of the given type, if the given value type matches the value stored by the given object, nullptr otherwise.
 template <class Value>

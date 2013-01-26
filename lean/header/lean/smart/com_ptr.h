@@ -198,6 +198,8 @@ public:
 	LEAN_INLINE com_type& operator *() const { return *m_object; };
 	/// Gets the COM object stored by this COM pointer.
 	LEAN_INLINE com_type* operator ->() const { return m_object; };
+	/// Gets the COM object stored by this COM pointer (getter compatibility).
+	LEAN_INLINE com_type* operator ()() const { return m_object; }
 
 	/// Gets the COM object stored by this COM pointer.
 	LEAN_INLINE operator com_type*() const

@@ -60,19 +60,24 @@ public:
 	LEAN_INLINE const const_value_type& get() const { return m_object; }
 
 	/// Gets the object stored by this transitive pointer.
-	LEAN_INLINE object_type& operator *() { return *get(); }
+	LEAN_INLINE object_type& operator *() { return *m_object; }
 	/// Gets the object stored by this transitive pointer.
-	LEAN_INLINE const object_type& operator *() const { return *get(); }
+	LEAN_INLINE const object_type& operator *() const { return *m_object; }
 	
 	/// Gets the object stored by this transitive pointer.
-	LEAN_INLINE object_type* operator ->() { return get(); }
+	LEAN_INLINE object_type* operator ->() { return m_object; }
 	/// Gets the object stored by this transitive pointer.
-	LEAN_INLINE const object_type* operator ->() const { return get(); }
+	LEAN_INLINE const object_type* operator ->() const { return m_object; }
+
+	/// Gets the object stored by this transitive pointer (getter compatibility).
+	LEAN_INLINE object_type* operator ()() { return m_object; }
+	/// Gets the object stored by this transitive pointer (getter compatibility).
+	LEAN_INLINE const object_type* operator ()() const { return m_object; }
 
 	/// Gets the object stored by this transitive pointer.
-	LEAN_INLINE operator value_type() { return get(); }
+	LEAN_INLINE operator value_type() { return m_object; }
 	/// Gets the object stored by this transitive pointer.
-	LEAN_INLINE operator const_value_type() const { return get(); }
+	LEAN_INLINE operator const_value_type() const { return m_object; }
 };
 
 } // namespace

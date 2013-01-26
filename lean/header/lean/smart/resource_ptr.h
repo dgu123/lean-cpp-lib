@@ -210,12 +210,14 @@ public:
 	}
 
 	/// Gets the resource stored by this resource pointer.
-	LEAN_INLINE resource_type *const & get(void) const { return m_resource; };
+	LEAN_INLINE resource_type *const & get(void) const { return m_resource; }
 
 	/// Gets the resource stored by this resource pointer.
-	LEAN_INLINE resource_type& operator *() const { return *m_resource; };
+	LEAN_INLINE resource_type& operator *() const { return *m_resource; }
 	/// Gets the resource stored by this resource pointer.
-	LEAN_INLINE resource_type* operator ->() const { return m_resource; };
+	LEAN_INLINE resource_type* operator ->() const { return m_resource; }
+	/// Gets the resource stored by this resource pointer (getter compatibility).
+	LEAN_INLINE resource_type* operator ()() const { return m_resource; }
 
 	/// Gets the resource stored by this resource pointer.
 	LEAN_INLINE operator resource_type*() const

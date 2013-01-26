@@ -214,11 +214,15 @@ public:
 	value_type* operator ->() { LEAN_ASSERT(m_cloneable); return m_cloneable; };
 	/// Gets the value stored by this cloneable object.
 	maybe_const_value_type* operator ->() const { LEAN_ASSERT(m_cloneable); return m_cloneable; };
+	/// Gets the value stored by this cloneable object (getter compatibility).
+	maybe_pointer operator ()() { return impl::ptr_or_ref_to<maybe_pointer, PointerSemantics>::get( m_cloneable ); }
+	/// Gets the value stored by this cloneable object (getter compatibility).
+	const_maybe_pointer operator ()() const { return impl::ptr_or_ref_to<const_maybe_pointer, PointerSemantics>::get( m_cloneable ); }
 
 	/// Gets the value stored by this cloneable object.
-	operator maybe_pointer() { return impl::ptr_or_ref_to<maybe_pointer, PointerSemantics>::get( getptr() ); };
+	operator maybe_pointer() { return impl::ptr_or_ref_to<maybe_pointer, PointerSemantics>::get( m_cloneable ); };
 	/// Gets the value stored by this cloneable object.
-	operator const_maybe_pointer() const { return impl::ptr_or_ref_to<const_maybe_pointer, PointerSemantics>::get( getptr() ); };
+	operator const_maybe_pointer() const { return impl::ptr_or_ref_to<const_maybe_pointer, PointerSemantics>::get( m_cloneable ); };
 };
 
 } // namespace

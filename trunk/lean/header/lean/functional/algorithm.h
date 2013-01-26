@@ -132,12 +132,15 @@ LEAN_INLINE typename enable_if<!is_derived<Predicate, containers::construction_t
 
 /// Pushes the given element onto the given vector.
 template <class Vector, class Value>
-inline typename Vector::iterator push_unique(Vector &vector, Value LEAN_FW_REF value)
+inline typename Vector::iterator push_unique(Vector &vector, Value LEAN_FW_REF value, bool *pNew = nullptr)
 {
 	typename Vector::iterator pos = std::find( vector.begin(), vector.end(), value );
 
-	if (pos == vector.end())
+	bool bNew = (pos == vector.end());
+	if (bNew)
 		pos = vector.insert( pos, LEAN_FORWARD(Value, value) );
+	if (pNew)
+		*pNew = bNew;
 
 	return pos;
 }

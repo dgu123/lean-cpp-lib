@@ -121,12 +121,14 @@ public:
 		return resource_ptr<resource_type>(m_resource, m_refCounter);
 	}
 	/// Gets the resource stored by this resource pointer.
-	LEAN_INLINE resource_type* get_unchecked() const { return m_resource; };
+	LEAN_INLINE resource_type* get_unchecked() const { return m_resource; }
 
 	/// Gets the resource stored by this resource pointer.
-	LEAN_INLINE resource_type& operator *() const { return *m_resource; };
+	LEAN_INLINE resource_type& operator *() const { return *m_resource; }
 	/// Gets the resource stored by this resource pointer.
-	LEAN_INLINE resource_type* operator ->() const { return m_resource; };
+	LEAN_INLINE resource_type* operator ->() const { return m_resource; }
+	/// Gets the resource stored by this resource pointer (getter compatibility).
+	LEAN_INLINE resource_type* operator ()() const { return m_resource; }
 
 	/// Gets the resource stored by this resource pointer.
 	LEAN_INLINE operator resource_type*() const { return m_resource; };

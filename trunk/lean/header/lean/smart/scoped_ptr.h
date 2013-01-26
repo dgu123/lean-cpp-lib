@@ -278,6 +278,8 @@ public:
 	LEAN_INLINE object_type& operator *() const { return *m_object; }
 	/// Gets the object stored by this scoped pointer.
 	LEAN_INLINE object_type* operator ->() const { return m_object; }
+	/// Gets the object stored by this scoped pointer (getter compatibility).
+	LEAN_INLINE object_type* operator ()() const { return m_object; }
 
 	/// Gets the n-th element.
 	LEAN_INLINE object_type& operator [](ptrdiff_t n) const { return m_object[n]; }

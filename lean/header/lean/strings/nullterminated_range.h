@@ -66,6 +66,10 @@ public:
 	LEAN_INLINE nullterminated_range_implicit(const nullterminated_implicit<Char, Traits> &right)
 		: m_begin(right.begin()),
 		m_end(right.compute_end()) { }
+	/// Constructs an empty character range.
+	LEAN_INLINE nullterminated_range_implicit()
+		: m_begin( &null_char<Char, Traits>::value ),
+		m_end( m_begin ) { }
 	/// Constructs a character range from the given C string.
 	LEAN_INLINE nullterminated_range_implicit(const_pointer begin)
 		: m_begin( LEAN_ASSERT_NOT_NULL(begin) ),
@@ -151,6 +155,9 @@ public:
 	/// Constructs a character range from the given C string.
 	explicit LEAN_INLINE nullterminated_range(typename implicit_type::const_pointer begin)
 		: implicit_type(begin) { }
+	/// Constructs an empty character range.
+	LEAN_INLINE nullterminated_range()
+		: implicit_type() { }
 	/// Constructs a character range from the given C string range (*end must be null character).
 	LEAN_INLINE nullterminated_range(typename implicit_type::const_pointer begin, typename implicit_type::const_pointer end)
 		: implicit_type(begin, end) { }

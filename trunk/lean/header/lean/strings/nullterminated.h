@@ -76,6 +76,12 @@ struct assert_nullterminated_compatible
 	typedef void type;
 };
 
+template <class Char, class Traits>
+struct null_char
+{
+	static const Char value = static_cast<Char>(0);
+};
+
 /// Nullterminated character half-range class that may be IMPLICITLY constructed from arbitrary string classes.
 /// May be used in parameter lists, not recommended elsewhere.
 template < class Char, class Traits = char_traits<typename strip_const<Char>::type> >
@@ -116,7 +122,7 @@ protected:
 
 public:
 	/// Constructs a (half) character range from the given C string.
-	LEAN_INLINE nullterminated_implicit(const_pointer begin)
+	LEAN_INLINE nullterminated_implicit(const_pointer begin = &null_char<Char, Traits>::value)
 		: m_begin(begin)
 	{
 		LEAN_ASSERT(m_begin);
@@ -181,7 +187,7 @@ public:
 	typedef nullterminated_implicit<Char, Traits> implicit_type;
 
 	/// Constructs a (half) character range from the given C string.
-	explicit LEAN_INLINE nullterminated(typename implicit_type::const_pointer begin)
+	explicit LEAN_INLINE nullterminated(typename implicit_type::const_pointer begin = &null_char<Char, Traits>::value)
 		: implicit_type(begin)  { }
 	/// Constructs a (half) character range from the given compatible object.
 	template <class Compatible>

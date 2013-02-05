@@ -57,30 +57,23 @@ namespace memory
 {
 	/// Checks whether the given alignment is a valid power of two.
 	template <size_t Alignment>
-	struct check_alignment
+	struct is_valid_alignment
 	{
 		/// Specifies whether the given alignment is a valid power of two.
-		static const bool valid = false;
+		static const bool value = Alignment && !(Alignment & (Alignment - 1));
 	};
 
-#ifndef DOXYGEN_SKIP_THIS
-
-	template <> struct check_alignment<1> { static const bool valid = true; };
-	template <> struct check_alignment<2> { static const bool valid = true; };
-	template <> struct check_alignment<4> { static const bool valid = true; };
-	template <> struct check_alignment<8> { static const bool valid = true; };
-	template <> struct check_alignment<16> { static const bool valid = true; };
-	template <> struct check_alignment<32> { static const bool valid = true; };
-	template <> struct check_alignment<64> { static const bool valid = true; };
-	template <> struct check_alignment<128> { static const bool valid = true; };
-
-#endif
+	/// Checks whether the given alignment is valid.
+	LEAN_INLINE bool check_alignment(size_t aligment)
+	{
+		return aligment && !(aligment & (aligment - 1));
+	}
 
 	/// (Negatively) aligns the given unsigned integer on the given alignment boundaries.
 	template <size_t Alignment, class Integer>
-	LEAN_INLINE Integer nalign_integer(Integer integer)
+	LEAN_INLINE Integer lower_align_integer(Integer integer)
 	{
-		LEAN_STATIC_ASSERT_MSG_ALT(check_alignment<Alignment>::valid,
+		LEAN_STATIC_ASSERT_MSG_ALT(is_valid_alignment<Alignment>::value,
 			"Alignment is required to be power of two.", Alignment_is_required_to_be_power_of_two);
 
 		// Widen BEFORE complement, otherwise higher-order bits might be lost
@@ -89,17 +82,17 @@ namespace memory
 
 	/// (Negatively) aligns the given pointer on the given alignment boundaries.
 	template <size_t Alignment, class Value>
-	LEAN_INLINE Value* nalign(Value *pointer)
+	LEAN_INLINE Value* lower_align(Value *pointer)
 	{
 		return reinterpret_cast<Value*>(
-			nalign_integer<Alignment>( reinterpret_cast<uintptr_t>(pointer) ) );
+			lower_align_integer<Alignment>( reinterpret_cast<uintptr_t>(pointer) ) );
 	}
 
 	/// Aligns the given unsigned integer on the given alignment boundaries.
 	template <size_t Alignment, class Integer>
 	LEAN_INLINE Integer align_integer(Integer integer)
 	{
-		LEAN_STATIC_ASSERT_MSG_ALT(check_alignment<Alignment>::valid,
+		LEAN_STATIC_ASSERT_MSG_ALT(is_valid_alignment<Alignment>::value,
 			"Alignment is required to be power of two.", Alignment_is_required_to_be_power_of_two);
 
 		integer += (Alignment - 1);
@@ -119,7 +112,7 @@ namespace memory
 	template <size_t Alignment, class Integer>
 	LEAN_INLINE Integer upper_align_integer(Integer integer)
 	{
-		LEAN_STATIC_ASSERT_MSG_ALT(check_alignment<Alignment>::valid,
+		LEAN_STATIC_ASSERT_MSG_ALT(is_valid_alignment<Alignment>::value,
 			"Alignment is required to be power of two.", Alignment_is_required_to_be_power_of_two);
 
 		integer += Alignment;
@@ -172,6 +165,7 @@ namespace memory
 
 } // namespace
 
+using memory::is_valid_alignment;
 using memory::check_alignment;
 using memory::stack_aligned;
 

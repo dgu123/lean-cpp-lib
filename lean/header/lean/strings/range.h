@@ -188,6 +188,19 @@ LEAN_INLINE range<typename Range::const_iterator> make_range(const Range &r)
 	return range<typename Range::const_iterator>(r.begin(), r.end());
 }
 
+/// Makes a range from the given range-compatible vector.
+template <class Range>
+LEAN_INLINE range<typename Range::pointer> make_range_v(Range &r)
+{
+	return range<typename Range::pointer>(&r[0], &r[0] + r.size());
+}
+/// Makes a range from the given range-compatible vector.
+template <class Range>
+LEAN_INLINE range<typename Range::const_pointer> make_range_v(const Range &r)
+{
+	return range<typename Range::const_pointer>(&r[0], &r[0] + r.size());
+}
+
 
 /// Makes a range from the given null-terminated charcter string.
 template <class Char>
@@ -271,6 +284,7 @@ using strings::iterator_reflexive;
 using strings::range;
 using strings::make_range;
 using strings::make_range_n;
+using strings::make_range_v;
 using strings::make_char_range;
 using strings::from_range;
 using strings::string_from_range;

@@ -12,14 +12,12 @@
 /// @see lean::smart::resource
 /// @{
 
-/*
 /// Allows resource pointers access to a class' reference counter.
 #define LEAN_MAKE_RESOURCE \
 	template <class Resource, bool Critical> \
 	friend class lean::smart::resource_ptr; \
 	template <class Resource> \
 	friend class lean::smart::weak_resource_ptr;
-*/
 
 /// Overrides the @code resource_interface@endcode methods required for a resource interface to treated like a resource.
 /// WARNING: Changes class visibility.
@@ -46,7 +44,7 @@ class weak_resource_ptr;
 template < class Counter = long, class Allocator = std::allocator<Counter>, bool Lazy = false >
 class resource
 {
-//	LEAN_MAKE_RESOURCE
+	LEAN_MAKE_RESOURCE
 
 public:
 	/// Resource base type.
@@ -66,6 +64,17 @@ private:
 		m_refCounter = ref_counter_type();
 	}
 
+	/// Returns the reference counter of this resource.
+	const ref_counter_type& ref_counter() const
+	{
+		if (Lazy)
+		{
+			if (m_refCounter.is_null())
+				create_ref_counter();
+		}
+		return m_refCounter;
+	}
+
 protected:
 	/// Default constructor.
 	resource()
@@ -83,16 +92,6 @@ protected:
 #endif
 
 public:
-	/// Returns the reference counter of this resource.
-	const ref_counter_type& ref_counter() const
-	{
-		if (Lazy)
-		{
-			if (m_refCounter.is_null())
-				create_ref_counter();
-		}
-		return m_refCounter;
-	}
 	/// Gets the reference count.
 	typename ref_counter_type::counter_type ref_count() const { return m_refCounter.count(); }
 };

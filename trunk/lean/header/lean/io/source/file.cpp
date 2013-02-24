@@ -45,7 +45,7 @@ namespace impl
 		if ((share & file::read) || (share & file::share_default))
 			winShare |= FILE_SHARE_READ;
 		// Share for writing, if default & access read-only
-		if (share & file::write || (share & file::share_default) && !(access & file::write))
+		if (share & file::write /*|| (share & file::share_default) && !(access & file::write)*/)
 			winShare |= FILE_SHARE_WRITE;
 
 		return winShare;
@@ -165,4 +165,14 @@ LEAN_MAYBE_INLINE lean::uint8 lean::io::file::size() const
 		LEAN_LOG_WIN_ERROR_CTX("GetFileSizeEx()", name().c_str());
 
 	return size;
+}
+
+// Marks this file modified.
+LEAN_MAYBE_INLINE void lean::io::file::touch()
+{
+	::FILETIME currentFileTime;
+	::GetSystemTimeAsFileTime(&currentFileTime);
+	
+	if (!::SetFileTime(m_handle, nullptr, nullptr, &currentFileTime))
+		LEAN_LOG_WIN_ERROR_CTX("SetFileTime()", name().c_str());
 }

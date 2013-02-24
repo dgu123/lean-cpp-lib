@@ -129,7 +129,7 @@ public:
 #endif
 
 	/// Retrieves the stored handle.
-	LEAN_INLINE value_type get() const { return m_handle; }
+	LEAN_INLINE const value_type& get() const { return m_handle; }
 	/// Retrieves the stored handle.
 	LEAN_INLINE operator value_type() const { return get(); }
 

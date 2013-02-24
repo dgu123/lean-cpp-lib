@@ -81,6 +81,9 @@ public:
 	/// Gets the size of this file, in bytes.
 	LEAN_MAYBE_EXPORT uint8 size() const;
 
+	/// Marks this file modified.
+	LEAN_MAYBE_EXPORT void touch();
+
 	/// Gets the file handle of this file.
 	LEAN_INLINE windows_file_handle handle() const { return m_handle; };
 	/// Gets the name of this file.

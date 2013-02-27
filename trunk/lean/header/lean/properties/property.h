@@ -27,12 +27,15 @@ class LEAN_INTERFACE property_setter : public cloneable
 	LEAN_INTERFACE_BEHAVIOR(property_setter)
 
 public:
+	/// Type of the object whose properties are exposed.
+	typedef Class object_type;
+
 	/// Passes the given values of the given type to the given object.
-	virtual bool operator ()(Class &object, const std::type_info &type, const void *values, size_t count) = 0;
+	virtual bool operator ()(object_type &object, const std::type_info &type, const void *values, size_t count) = 0;
 
 	/// Passes the given values to the given object.
 	template <class Value>
-	LEAN_INLINE bool operator ()(Class &object, const Value *values, size_t count)
+	LEAN_INLINE bool operator ()(object_type &object, const Value *values, size_t count)
 	{
 		return (*this)(object, typeid(Value), values, count);
 	}
@@ -45,12 +48,15 @@ class LEAN_INTERFACE property_getter : public cloneable
 	LEAN_INTERFACE_BEHAVIOR(property_getter)
 
 public:
+	/// Type of the object whose properties are exposed.
+	typedef Class object_type;
+
 	/// Fetches the given number of values of the given type from the given object.
-	virtual bool operator ()(const Class &object, const std::type_info &type, void *values, size_t count) const = 0;
+	virtual bool operator ()(const object_type &object, const std::type_info &type, void *values, size_t count) const = 0;
 
 	/// Fetches the given number of values from the given object.
 	template <class Value>
-	LEAN_INLINE bool operator ()(const Class &object, Value *values, size_t count) const
+	LEAN_INLINE bool operator ()(const object_type &object, Value *values, size_t count) const
 	{
 		return (*this)(object, typeid(Value), values, count);
 	}

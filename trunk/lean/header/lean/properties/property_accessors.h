@@ -57,6 +57,7 @@ private:
 
 public:
 	typedef typename strip_modifiers<Value>::type value_type;
+	typedef value_type original_value_type;
 
 	property_constant(const Value *constantValues, size_t count)
 		: m_constantValues(constantValues),
@@ -132,6 +133,7 @@ class property_n_setter : public property_setter<BaseClass>
 public:
 	typedef typename strip_modifiers<Value>::type value_type;
 	typedef typename strip_modifiers<UnionValue>::type union_type;
+	typedef union_type original_value_type;
 
 	/// Passes the given number of values of the given type to the given object using the stored setter method, if the value types are matching.
 	bool operator ()(BaseClass &baseObject, const std::type_info &type, const void *values, size_t count)
@@ -176,6 +178,7 @@ class property_n_getter : public property_getter<BaseClass>
 public:
 	typedef typename strip_modifiers<Value>::type value_type;
 	typedef typename strip_modifiers<UnionValue>::type union_type;
+	typedef union_type original_value_type;
 	
 	/// Retrieves the given number of values of the given type from the given object using the stored getter method, if available.
 	bool operator ()(const BaseClass &baseObject, const std::type_info &type, void *values, size_t count) const
@@ -361,6 +364,7 @@ private:
 public:
 	typedef typename strip_modifiers<typename strip_reference<ValueArg>::type>::type value_type;
 	typedef typename strip_modifiers<typename strip_reference<UnionValueArg>::type>::type union_type;
+	typedef union_type original_value_type;
 
 	/// Passes the given number of values of the given type to the given object using the stored setter method, if the value types are matching.
 	bool operator ()(BaseClass &baseObject, const std::type_info &type, const void *values, size_t count)
@@ -417,6 +421,7 @@ private:
 public:
 	typedef typename strip_modifiers<typename strip_reference<ValueArg>::type>::type value_type;
 	typedef typename strip_modifiers<typename strip_reference<UnionValueArg>::type>::type union_type;
+	typedef union_type original_value_type;
 
 	/// Retrieves the given number of values of the given type from the given object using the stored getter method, if available.
 	bool operator ()(const BaseClass &object, const std::type_info &type, void *values, size_t count) const
@@ -568,6 +573,7 @@ class property_r_getter : public property_getter<BaseClass>
 public:
 	typedef typename strip_modifiers<typename strip_reference<ValueReturn>::type>::type value_type;
 	typedef typename strip_modifiers<typename strip_reference<UnionValueReturn>::type>::type union_type;
+	typedef union_type original_value_type;
 
 	/// Retrieves the given number of values of the given type from the given object using the stored getter method, if available.
 	bool operator ()(const BaseClass &baseObject, const std::type_info &type, void *values, size_t count) const

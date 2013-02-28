@@ -133,7 +133,15 @@ private:
 		containers::close(where, whereEnd, m_elementsEnd, allocRef.allocator,
 			typename Policy::move_tag(), typename Policy::destruct_tag());
 	}
-	
+
+	template <bool RawMove>
+	LEAN_INLINE void reallocate_move_construct_helper(Element *source, Element *sourceEnd, Element *dest)
+	{
+		move_construct(source, sourceEnd, dest);
+	}
+	template <>
+	LEAN_INLINE void reallocate_move_construct_helper<true>(Element *source, Element *sourceEnd, Element *dest) { }
+
 	/// Allocates space for the given number of elements.
 	void reallocate(size_type newCapacity)
 	{
@@ -144,7 +152,7 @@ private:
 		if (!Policy::raw_move)
 			try
 			{
-				move_construct(m_elements, m_elementsEnd, newElements);
+				reallocate_move_construct_helper<Policy::raw_move>(m_elements, m_elementsEnd, newElements);
 			}
 			catch(...)
 			{

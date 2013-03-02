@@ -198,7 +198,7 @@ public:
 				return true;
 		}
 
-		LEAN_ASSERT(0);
+		LEAN_ASSERT_UNREACHABLE();
 	}
 	/// Increments the current reference count.
 	counter_type increment() const

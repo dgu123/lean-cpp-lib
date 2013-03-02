@@ -29,7 +29,7 @@ public:
 	critical_section(unsigned long spinCount = 4096)
 	{
 		if (!::InitializeCriticalSectionAndSpinCount(&m_criticalSection, spinCount))
-			LEAN_ASSERT(false);
+			LEAN_ASSERT_UNREACHABLE();
 	}
 	/// Destructor.
 	~critical_section()

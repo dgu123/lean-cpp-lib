@@ -97,32 +97,17 @@
 	#define LEAN_ASSUME(expr) __assume(expr)
 	/// Defined, if LEAN_ASSUME supported.
 	#define LEAN_HAS_ASSUME 1
+	/// Interrups program execution.
+	#define LEAN_DEBUGBREAK() __debugbreak()
+	/// May be used to mark specific branches unreachable.
+	#define LEAN_UNREACHABLE() __assume(false)
 #else
 	/// Assumes that the given expression is always true.
 	#define LEAN_ASSUME(expr)
-#endif
-
-#ifdef LEAN_DEBUG_BUILD
-	#include <cassert>
-	#ifdef LEAN_HAS_ASSUME
-		/// Asserts that the given expression is always true.
-		#define LEAN_ASSERT(expr) ( assert(expr), LEAN_ASSUME(expr) )
-	#else
-		/// Asserts that the given expression is always true.
-		#define LEAN_ASSERT(expr) assert(expr)
-	#endif
-	/// Asserts that the given expression is always true, does not assume anything in release builds.
-	#define LEAN_ASSERT_DEBUG(expr) assert(expr)
-#else
-	#ifdef LEAN_HAS_ASSUME
-		/// Asserts that the given expression is always true.
-		#define LEAN_ASSERT(expr) LEAN_ASSUME(expr)
-	#else
-		/// Asserts that the given expression is always true.
-		#define LEAN_ASSERT(expr)
-	#endif
-	/// Asserts that the given expression is always true, does not assume anything in release builds.
-	#define LEAN_ASSERT_DEBUG(expr)
+	/// Interrups program execution.
+	#define LEAN_DEBUGBREAK() __builtin_trap()
+	/// May be used to mark specific branches unreachable.
+	#define LEAN_UNREACHABLE() __builtin_unreachable()
 #endif
 
 #ifdef _MSC_VER
@@ -141,9 +126,9 @@
 	/// Instructs the compiler to inline a specific method.
 	#define LEAN_INLINE inline
 	/// Instructs the compiler not to inline a specific method in a header file.
-	#define LEAN_NOINLINE inline
+	#define LEAN_NOINLINE inline __attribute__((noinline)) 
 	/// Instructs the compiler not to inline a specific method at link time.
-	#define LEAN_NOLTINLINE
+	#define LEAN_NOLTINLINE __attribute__((noinline)) 
 #endif
 
 /// Instructs the compiler not to inline a specific template function in a header file.
@@ -155,6 +140,76 @@
 #else
 	/// Reduces overhead for purely virtual classes.
 	#define LEAN_INTERFACE
+#endif
+
+#if !defined(LEAN_INTEGRATE_ONCE) && defined(LEAN_HEADER_ONLY) && !defined(LEAN_BUILD_LIB)
+	/// Picks the first argument in a linked library, the second one in a header-only library.
+	#define LEAN_LINK_SELECT(linklib, headeronly) headeronly
+#else
+	/// Picks the first argument in a linked library, the second one in a header-only library.
+	#define LEAN_LINK_SELECT(linklib, headeronly) linklib
+	/// Using a linked library.
+	#define LEAN_LINKING 1
+#endif
+
+#if !defined(LEAN_LINKING) || defined(LEAN_INTEGRATE_ONCE)
+	/// Also include linked function definitions.
+	#define LEAN_INCLUDE_LINKED 1
+#endif
+
+/// Trys to avoid inlining in a header-only library.
+#define LEAN_MAYBE_LINK LEAN_LINK_SELECT(, LEAN_NOINLINE)
+/// Trys to avoid inlining in a header-only library as well as at link time.
+#define LEAN_ALWAYS_LINK LEAN_LINK_SELECT(LEAN_NOLTINLINE, LEAN_NOINLINE)
+
+#if !defined(LEAN_INTEGRATE_ONCE) && (defined(LEAN_HEADER_ONLY) || !defined(LEAN_MIN_DEPENDENCY)) && !defined(LEAN_BUILD_LIB)
+	/// Picks the first argument in a header-only / non-min-dependency library, the second one in a min-dependency / linked library.
+	#define LEAN_INLINE_SELECT(maxdep, mindep) maxdep
+	/// Inlining in header-only library
+	#define LEAN_INLINING 1
+#else
+	/// Picks the first argument in a header-only / non-min-dependency library, the second one in a min-dependency / linked library.
+	#define LEAN_INLINE_SELECT(maxdep, mindep) mindep
+#endif
+
+#if defined(LEAN_INLINING) || defined(LEAN_INTEGRATE_ONCE)
+	/// Include inlined function definitions.
+	#define LEAN_INCLUDE_INLINED 1
+#endif
+
+/// Inlines in a header-only / non-min-dependency library.
+#define LEAN_MAYBE_INLINE LEAN_INLINE_SELECT(inline, )
+/// Trys to avoid inlining in header-only / non-min-dependency library as well as at link time.
+#define LEAN_NEVER_INLINE LEAN_INLINE_SELECT(LEAN_NOINLINE, LEAN_NOLTINLINE)
+
+namespace lean
+{
+	/// Returns true if execution should be continued normally.
+	LEAN_MAYBE_EXPORT bool maybeIgnoreAssertion(const char *message, const char *file, unsigned int line);
+}
+
+#ifdef LEAN_DEBUG_BUILD
+	/// Asserts that the given expression is always true.
+	#define LEAN_ASSERT_CTX(expr, msg, file, line) (void) ((expr) || ::lean::maybeIgnoreAssertion(msg, file, line) || (LEAN_DEBUGBREAK(), 0) )
+	/// Asserts that the given expression is always true.
+	#define LEAN_ASSERT(expr) LEAN_ASSERT_CTX(expr, #expr, __FILE__, __LINE__)
+	/// Asserts that the given expression is always true, does not assume anything in release builds.
+	#define LEAN_ASSERT_DEBUG_CTX(expr, msg, file, line) LEAN_ASSERT_CTX(expr, msg, file, line)
+	/// Asserts that the given expression is always true, does not assume anything in release builds.
+	#define LEAN_ASSERT_DEBUG(expr) LEAN_ASSERT(expr)
+	/// Asserts that the calling point is unreachable.
+	#define LEAN_ASSERT_UNREACHABLE() (::lean::maybeIgnoreAssertion("unreachable", __FILE__, __LINE__), LEAN_DEBUGBREAK(), LEAN_UNREACHABLE())
+#else
+	/// Asserts that the given expression is always true.
+	#define LEAN_ASSERT_CTX(expr, msg, file, line) LEAN_ASSUME(expr)
+	/// Asserts that the given expression is always true.
+	#define LEAN_ASSERT(expr) LEAN_ASSUME(expr)
+	/// Asserts that the given expression is always true, does not assume anything in release builds.
+	#define LEAN_ASSERT_DEBUG_CTX(expr, msg, file, line)
+	/// Asserts that the given expression is always true, does not assume anything in release builds.
+	#define LEAN_ASSERT_DEBUG(expr)
+	/// Asserts that the calling point is unreachable.
+	#define LEAN_ASSERT_UNREACHABLE() LEAN_UNREACHABLE()
 #endif
 
 #ifndef LEAN_INTERFACE_BEHAVIOR
@@ -230,46 +285,6 @@
 			private:
 #endif
 
-#if !defined(LEAN_INTEGRATE_ONCE) && defined(LEAN_HEADER_ONLY) && !defined(LEAN_BUILD_LIB)
-	/// Picks the first argument in a linked library, the second one in a header-only library.
-	#define LEAN_LINK_SELECT(linklib, headeronly) headeronly
-#else
-	/// Picks the first argument in a linked library, the second one in a header-only library.
-	#define LEAN_LINK_SELECT(linklib, headeronly) linklib
-	/// Using a linked library.
-	#define LEAN_LINKING 1
-#endif
-
-#if !defined(LEAN_LINKING) || defined(LEAN_INTEGRATE_ONCE)
-	/// Also include linked function definitions.
-	#define LEAN_INCLUDE_LINKED 1
-#endif
-
-/// Trys to avoid inlining in a header-only library.
-#define LEAN_MAYBE_LINK LEAN_LINK_SELECT(, LEAN_NOINLINE)
-/// Trys to avoid inlining in a header-only library as well as at link time.
-#define LEAN_ALWAYS_LINK LEAN_LINK_SELECT(LEAN_NOLTINLINE, LEAN_NOINLINE)
-
-#if !defined(LEAN_INTEGRATE_ONCE) && (defined(LEAN_HEADER_ONLY) || !defined(LEAN_MIN_DEPENDENCY)) && !defined(LEAN_BUILD_LIB)
-	/// Picks the first argument in a header-only / non-min-dependency library, the second one in a min-dependency / linked library.
-	#define LEAN_INLINE_SELECT(maxdep, mindep) maxdep
-	/// Inlining in header-only library
-	#define LEAN_INLINING 1
-#else
-	/// Picks the first argument in a header-only / non-min-dependency library, the second one in a min-dependency / linked library.
-	#define LEAN_INLINE_SELECT(maxdep, mindep) mindep
-#endif
-
-#if defined(LEAN_INLINING) || defined(LEAN_INTEGRATE_ONCE)
-	/// Include inlined function definitions.
-	#define LEAN_INCLUDE_INLINED 1
-#endif
-
-/// Inlines in a header-only / non-min-dependency library.
-#define LEAN_MAYBE_INLINE LEAN_INLINE_SELECT(inline, )
-/// Trys to avoid inlining in header-only / non-min-dependency library as well as at link time.
-#define LEAN_NEVER_INLINE LEAN_INLINE_SELECT(LEAN_NOINLINE, LEAN_NOLTINLINE)
-
 /// @}
 
 /// @addtogroup Libray Lean cpp library
@@ -335,26 +350,26 @@ namespace lean
 {
 
 /// Asserts that the given value is always true.
-LEAN_INLINE void check(bool value)
+LEAN_INLINE void check(bool value, const char *expr = "check", const char *file = __FILE__, unsigned int line = __LINE__)
 {
-	LEAN_ASSERT_DEBUG(value);
+	LEAN_ASSERT_DEBUG_CTX(value, expr, file, line);
 }
 
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 
 /// Asserts that the given value is not null.
 template <class Value>
-LEAN_INLINE Value assert_not_null(Value &&value)
+LEAN_INLINE Value assert_not_null(Value &&value, const char *expr = "not nullptr", const char *file = __FILE__, unsigned int line = __LINE__)
 {
-	LEAN_ASSERT(value != nullptr);
+	LEAN_ASSERT_CTX(value != nullptr, expr, file, line);
 	return std::forward<Value>(value);
 }
 
 /// Asserts that the given value is not null.
 template <class Value>
-LEAN_INLINE Value assert_not_null_debug(Value &&value)
+LEAN_INLINE Value assert_not_null_debug(Value &&value, const char *expr = "not nullptr", const char *file = __FILE__, unsigned int line = __LINE__)
 {
-	LEAN_ASSERT_DEBUG(value != nullptr);
+	LEAN_ASSERT_DEBUG_CTX(value != nullptr, expr, file, line);
 	return std::forward<Value>(value);
 }
 
@@ -362,33 +377,33 @@ LEAN_INLINE Value assert_not_null_debug(Value &&value)
 
 /// Asserts that the given value is not null.
 template <class Value>
-LEAN_INLINE Value& assert_not_null(Value &value)
+LEAN_INLINE Value& assert_not_null(Value &value, const char *expr = "not nullptr", const char *file = __FILE__, unsigned int line = __LINE__)
 {
-	LEAN_ASSERT(value != nullptr);
+	LEAN_ASSERT_CTX(value != nullptr, expr, file, line);
 	return value;
 }
 
 /// Asserts that the given value is not null.
 template <class Value>
-LEAN_INLINE const Value& assert_not_null(const Value &value)
+LEAN_INLINE const Value& assert_not_null(const Value &value, const char *expr = "not nullptr", const char *file = __FILE__, unsigned int line = __LINE__)
 {
-	LEAN_ASSERT(value != nullptr);
+	LEAN_ASSERT_CTX(value != nullptr, expr, file, line);
 	return value;
 }
 
 /// Asserts that the given value is not null.
 template <class Value>
-LEAN_INLINE Value& assert_not_null_debug(Value &value)
+LEAN_INLINE Value& assert_not_null_debug(Value &value, const char *expr = "not nullptr", const char *file = __FILE__, unsigned int line = __LINE__)
 {
-	LEAN_ASSERT_DEBUG(value != nullptr);
+	LEAN_ASSERT_DEBUG_CTX(value != nullptr, expr, file, line);
 	return value;
 }
 
 /// Asserts that the given value is not null.
 template <class Value>
-LEAN_INLINE const Value& assert_not_null_debug(const Value &value)
+LEAN_INLINE const Value& assert_not_null_debug(const Value &value, const char *expr = "not nullptr", const char *file = __FILE__, unsigned int line = __LINE__)
 {
-	LEAN_ASSERT_DEBUG(value != nullptr);
+	LEAN_ASSERT_DEBUG_CTX(value != nullptr, expr, file, line);
 	return value;
 }
 
@@ -425,11 +440,11 @@ LEAN_INLINE const Type& max(const Type &a, const Type &b)
 /// @{
 
 /// Asserts that the given expression is never null, returning the expression.
-#define LEAN_ASSERT_NOT_NULL(expr) ::lean::assert_not_null(expr)
+#define LEAN_ASSERT_NOT_NULL(expr) ::lean::assert_not_null(expr, #expr " != nullptr", __FILE__, __LINE__)
 /// Asserts that the given expression is never null, returning the expression.
-#define LEAN_ASSERT_NOT_NULL_DEBUG(expr) ::lean::assert_not_null_debug(expr)
+#define LEAN_ASSERT_NOT_NULL_DEBUG(expr) ::lean::assert_not_null_debug(expr, #expr " != nullptr", __FILE__, __LINE__)
 /// Asserts that no unhandled exceptions escape the preceding try block.
-#define LEAN_ASSERT_NOEXCEPT catch (...) { LEAN_ASSERT(false); }
+#define LEAN_ASSERT_NOEXCEPT catch (...) { LEAN_ASSERT_UNREACHABLE(); }
 
 /// @}
 
@@ -443,5 +458,9 @@ LEAN_INLINE const Type& max(const Type &a, const Type &b)
 #endif
 
 #include "types.h"
+
+#ifdef LEAN_INCLUDE_LINKED
+#include "logging/source/assert.cpp"
+#endif
 
 #endif

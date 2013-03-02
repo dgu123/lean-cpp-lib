@@ -599,5 +599,8 @@
     <ClCompile Include="header\lean\meta\source\support.cpp">
       <Filter>Source Files\meta</Filter>
     </ClCompile>
+    <ClCompile Include="header\lean\logging\source\assert.cpp">
+      <Filter>Source Files\logging</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -25,24 +25,25 @@
 			LEAN_INLINE name(const name&) noexcept { }
 
 /// Defines a local reference to the private implementation of the given type and name.
-#define LEAN_EXIMPL(t, m, w) t &m = static_cast<t&>(w);
+#define LEAN_STATIC_NAMED_PIMPL_AT(t, m, w) t &m = static_cast<t&>(w);
 /// Defines a local reference to the private implementation 'm' of type 'M'.
-#define LEAN_EXIMPL_M(w) LEAN_EXIMPL(M, m, w)
+#define LEAN_STATIC_PIMPL_AT(w) LEAN_STATIC_NAMED_PIMPL_AT(M, m, w)
 /// Defines a local reference to the private implementation 'm' of type 'M'.
-#define LEAN_EXIMPL_CM(w) LEAN_EXIMPL(const M, m, w)
-/// Defines a local type 'M' for the private implementation of type 'M'.
-#define LEAN_FRIMPL_T(t) typedef t::M M;
-/// Defines a local reference to the private implementation 'm' of type 'M'.
-#define LEAN_FRIMPL_M(t, w) LEAN_FRIMPL_T(t) LEAN_EXIMPL(M, m, w)
-/// Defines a local reference to the private implementation 'm' of type 'M'.
-#define LEAN_FRIMPL_CM(t, w) LEAN_FRIMPL_T(t) LEAN_EXIMPL(const M, m, w)
+#define LEAN_STATIC_PIMPL_AT_CONST(w) LEAN_STATIC_NAMED_PIMPL_AT(const M, m, w)
 
 /// Defines a local reference to the private implementation of the given type and name.
-#define LEAN_SIMPL(t, m) t &m = static_cast<t&>(*this);
+#define LEAN_STATIC_NAMED_PIMPL(t, m) LEAN_STATIC_NAMED_PIMPL_AT(t, m, *this)
 /// Defines a local reference to the private implementation 'm' of type 'M'.
-#define LEAN_SIMPL_M LEAN_SIMPL(M, m)
+#define LEAN_STATIC_PIMPL LEAN_STATIC_PIMPL_AT(*this)
 /// Defines a local reference to the private implementation 'm' of type 'M'.
-#define LEAN_SIMPL_CM LEAN_SIMPL(const M, m)
+#define LEAN_STATIC_PIMPL_CONST LEAN_STATIC_PIMPL_AT_CONST(*this)
+
+/// Defines a local type 'M' for the private implementation of type 'M'.
+#define LEAN_FREE_PIMPL(t) typedef t::M M;
+/// Defines a local reference to the private implementation 'm' of type 'M'.
+#define LEAN_FREE_STATIC_PIMPL_AT(t, w) LEAN_FREE_PIMPL(t) LEAN_STATIC_PIMPL_AT(w)
+/// Defines a local reference to the private implementation 'm' of type 'M'.
+#define LEAN_FREE_STATIC_PIMPL_AT_CONST(t, w) LEAN_FREE_PIMPL(t) LEAN_STATIC_PIMPL_AT_CONST(w)
 
 /// @}
 

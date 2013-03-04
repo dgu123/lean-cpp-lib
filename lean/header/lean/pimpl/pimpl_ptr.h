@@ -145,7 +145,7 @@ using pimpl::pimpl_ptr;
 /// @{
 
 /// Defines a local reference to the private implementation of the given type and name.
-#define LEAN_NAMED_PIMPL_AT(t, m, w) t &m = *(w).m;
+#define LEAN_NAMED_PIMPL_AT(t, m, w) t &m = *((w).m)
 /// Defines a local reference to the private implementation 'm' of type 'M'.
 #define LEAN_PIMPL_AT(w) LEAN_NAMED_PIMPL_AT(M, m, w)
 /// Defines a local reference to the private implementation 'm' of type 'M'.
@@ -154,21 +154,21 @@ using pimpl::pimpl_ptr;
 /// Defines a local reference to the private implementation of the given type and name.
 #define LEAN_NAMED_PIMPL(t, m) LEAN_NAMED_PIMPL_AT(t, m, *this)
 /// Defines a local reference to the private implementation 'm' of type 'M'.
-#define LEAN_PIMPL LEAN_PIMPL_AT(*this)
+#define LEAN_PIMPL() LEAN_PIMPL_AT(*this)
 /// Defines a local reference to the private implementation 'm' of type 'M'.
-#define LEAN_PIMPL_CONST LEAN_PIMPL_AT_CONST(*this)
+#define LEAN_PIMPL_CONST() LEAN_PIMPL_AT_CONST(*this)
 
 /// Defines a local reference to the private implementation 'm' of type 'M'.
-#define LEAN_FREE_PIMPL_AT(t, w) LEAN_FREE_PIMPL(t) LEAN_PIMPL_AT(w)
+#define LEAN_FREE_PIMPL_AT(t, w) LEAN_FREE_PIMPL(t); LEAN_PIMPL_AT(w)
 /// Defines a local reference to the private implementation 'm' of type 'M'.
-#define LEAN_FREE_PIMPL_AT_CONST(t, w) LEAN_FREE_PIMPL(t) LEAN_PIMPL_AT_CONST(w)
+#define LEAN_FREE_PIMPL_AT_CONST(t, w) LEAN_FREE_PIMPL(t); LEAN_PIMPL_AT_CONST(w)
 
 /// Defines a local type 'M' for the private implementation of type 'M'.
 #define LEAN_NAMED_PIMPL_IN(d, t, m) LEAN_NAMED_PIMPL_AT(t, m, static_cast<d&>(*this))
 /// Defines a local reference to the private implementation 'm' of type 'M'.
-#define LEAN_PIMPL_IN(d) LEAN_FREE_PIMPL(d) LEAN_PIMPL_AT(static_cast<d&>(*this))
+#define LEAN_PIMPL_IN(d) LEAN_FREE_PIMPL(d); LEAN_PIMPL_AT(static_cast<d&>(*this))
 /// Defines a local reference to the private implementation 'm' of type 'M'.
-#define LEAN_PIMPL_IN_CONST(d) LEAN_FREE_PIMPL(d) LEAN_PIMPL_AT_CONST(static_cast<const d&>(*this))
+#define LEAN_PIMPL_IN_CONST(d) LEAN_FREE_PIMPL(d); LEAN_PIMPL_AT_CONST(static_cast<const d&>(*this))
 
 /// @}
 

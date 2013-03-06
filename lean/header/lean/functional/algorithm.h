@@ -240,6 +240,32 @@ inline bool remove_unordered(Vector &vector, const Value &value)
 	return bRemoved;
 }
 
+/// Generates a sequence of consecutive numbers.
+template <class Counter>
+struct increment_gen
+{
+	typedef Counter value_type;
+	value_type counter;
+
+	increment_gen(value_type init)
+		: counter(init) { }
+
+	LEAN_INLINE value_type operator ()() { return counter++; }
+};
+
+/// Generates a sequence of consecutive numbers.
+template <class Counter>
+struct decrement_gen
+{
+	typedef Counter value_type;
+	value_type counter;
+
+	decrement_gen(value_type onePlusInit)
+		: counter(onePlusInit) { }
+
+	LEAN_INLINE value_type operator ()() { return --counter; }
+};
+
 } // namespace
 
 using functional::equal;
@@ -251,6 +277,9 @@ using functional::push_sorted;
 using functional::find_sorted;
 using functional::remove;
 using functional::remove_unordered;
+
+using functional::increment_gen;
+using functional::decrement_gen;
 
 } // namespace
 

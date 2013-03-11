@@ -218,6 +218,42 @@ inline bool remove(Vector &vector, const Value &value)
 	return bRemoved;
 }
 
+template <class CmpIt>
+struct in_range_predicate
+{
+	CmpIt removeBegin, removeEnd;
+
+	in_range_predicate(CmpIt begin, CmpIt end)
+		: removeBegin(begin),
+		removeEnd(end) { }
+
+	template <class T>
+	bool operator ()(const T &v)
+	{
+		for (CmpIt it = removeBegin; it != removeEnd; ++it)
+			if (v == *it)
+				return true;
+		return false;
+	}
+};
+
+/// Removes the given elements from the given vector.
+template <class RangeIt, class CmpIt>
+inline RangeIt remove_all(RangeIt begin, RangeIt end, CmpIt removeBegin, CmpIt removeEnd)
+{
+	return std::remove_if(begin, end, in_range_predicate<CmpIt>(removeBegin, removeEnd));
+}
+
+/// Removes the given elements from the given vector.
+template <class Vector, class CmpIt>
+inline bool remove_all(Vector &vector, CmpIt removeBegin, CmpIt removeEnd)
+{
+	typename Vector::iterator newEnd = remove_all(vector.begin(), vector.end(), removeBegin, removeEnd);
+	bool bRemoved = (newEnd != vector.end());
+	vector.erase(newEnd, vector.end());
+	return bRemoved;
+}
+
 /// Removes the given element from the given vector.
 template <class Vector, class Value>
 inline bool remove_unordered(Vector &vector, const Value &value)
@@ -276,6 +312,7 @@ using functional::push_sorted_unique;
 using functional::push_sorted;
 using functional::find_sorted;
 using functional::remove;
+using functional::remove_all;
 using functional::remove_unordered;
 
 using functional::increment_gen;

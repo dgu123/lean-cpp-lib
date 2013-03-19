@@ -179,7 +179,7 @@ public:
 	LEAN_INLINE Base& next() { return *this; }
 	LEAN_INLINE const Base& next() const { return *this; }
 
-	LEAN_INLINE void swap(parallel_vector_array &right)
+	LEAN_INLINE void swap(parallel_vector_array &right) noexcept
 	{
 		this->Base::swap(right);
 		using std::swap;
@@ -218,6 +218,31 @@ public:
 	LEAN_INLINE ~parallel_vector()
 	{
 		this->Base::deallocate(v.get_allocator(), v.size(), v.capacity());
+	}
+	
+	parallel_vector(const parallel_vector &right)
+		: v(right.v)
+	{
+		this->Base::reallocate(v.size(), v.get_allocator(), 0, 0);
+
+		try
+		{
+			for (size_t i = 0, count = v.size(); i < count; ++i)
+				this->Base::place_back_from(i, right, i);
+		}
+		LEAN_ASSERT_NOEXCEPT
+	}
+	
+#ifndef LEAN0X_NO_RVALUE_REFERENCES
+	LEAN_INLINE parallel_vector(parallel_vector &&right) noexcept
+		: Base(std::move(right)),
+		v(std::move(right.v)) { }
+#endif
+
+	LEAN_INLINE parallel_vector& operator =(parallel_vector right) noexcept
+	{
+		swap(right);
+		return *this;
 	}
 
 	using Base::get;
@@ -332,8 +357,9 @@ public:
 	LEAN_INLINE Base& next() { return *this; }
 	LEAN_INLINE const Base& next() const { return *this; }
 
-	LEAN_INLINE void swap(parallel_vector &right)
+	LEAN_INLINE void swap(parallel_vector &right) noexcept
 	{
+		this->Base::swap(right);
 		using std::swap;
 		swap(v, right.v);
 	}
@@ -343,7 +369,7 @@ public:
 
 /// Swaps the given two multi_vectors.
 template <class Type, class ID, class VectorBinder, class Base>
-LEAN_INLINE void swap(parallel_vector<Type, ID, VectorBinder, Base> &left, parallel_vector<Type, ID, VectorBinder, Base> &right)
+LEAN_INLINE void swap(parallel_vector<Type, ID, VectorBinder, Base> &left, parallel_vector<Type, ID, VectorBinder, Base> &right) noexcept
 {
 	left.swap(right);
 }

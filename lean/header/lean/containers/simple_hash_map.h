@@ -73,11 +73,9 @@ struct default_keys
 // Numeric (generic) defaults
 template <class Key>
 const Key default_keys<Key>::invalid_key =
-	(numeric_limits<Key>::has_infinity)
-		? numeric_limits<Key>::infinity
-		: (numeric_limits<Key>::is_unsigned)
-			? numeric_limits<Key>::max
-			: numeric_limits<Key>::min;
+	(numeric_limits<Key>::is_unsigned)
+		? numeric_limits<Key>::max
+		: numeric_limits<Key>::min;
 template <class Key>
 const Key default_keys<Key>::end_key = Key();
 

@@ -46,10 +46,6 @@ struct numeric_limits
 	static const Type min;
 	/// Greatest value.
 	static const Type max;
-	/// Specifies whether infinity is available.
-	static const bool has_infinity;
-	/// Infinity.
-	static const Type infinity;
 };
 
 namespace limits_impl
@@ -59,8 +55,6 @@ namespace limits_impl
 	{
 		static const bool is_int = true;
 		static const bool is_float = false;
-		static const bool has_infinity = false;
-		static const Integer infinity = static_cast<Integer>(0);
 	};
 
 	template <class SInteger>
@@ -158,42 +152,27 @@ struct numeric_limits<float> : public limits_impl::float_limits_base
 {
 	static const float min;
 	static const float max;
-	static const float has_infinity;
-	static const float infinity;
 };
 const float numeric_limits<float>::min = -FLT_MAX;
 const float numeric_limits<float>::max = FLT_MAX;
-const float numeric_limits<float>::has_infinity = true;
-// WARNING: Breaks everything due to VC++'s strictly unordered template constant initialization
-// const float numeric_limits<float>::infinity = std::numeric_limits<float>::infinity();
 
 template <>
 struct numeric_limits<double> : public limits_impl::float_limits_base
 {
 	static const double min;
 	static const double max;
-	static const double has_infinity;
-	static const double infinity;
 };
 const double numeric_limits<double>::min = -DBL_MAX;
 const double numeric_limits<double>::max = DBL_MAX;
-const double numeric_limits<double>::has_infinity = true;
-// WARNING: Breaks everything due to VC++'s strictly unordered template constant initialization
-// const double numeric_limits<double>::infinity = std::numeric_limits<double>::infinity();
 
 template <>
 struct numeric_limits<long double> : public limits_impl::float_limits_base
 {
 	static const long double min;
 	static const long double max;
-	static const long double has_infinity;
-	static const long double infinity;
 };
 const long double numeric_limits<long double>::min = -LDBL_MAX;
 const long double numeric_limits<long double>::max = LDBL_MAX;
-const long double numeric_limits<long double>::has_infinity = true;
-// WARNING: Breaks everything due to VC++'s strictly unordered template constant initialization
-// const long double numeric_limits<long double>::infinity = std::numeric_limits<long double>::infinity();
 
 } // namespace
 

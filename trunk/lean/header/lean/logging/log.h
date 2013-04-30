@@ -9,59 +9,41 @@
 #include "../lean.h"
 #include "../tags/noncopyable.h"
 #include "../strings/types.h"
-#include "../strings/conversions.h"
-#include "../concurrent/spin_lock.h"
-#include "../concurrent/shareable_spin_lock.h"
-#include "log_target.h"
-#include <vector>
-#include <iosfwd>
+
 #include <ostream>
-#include "streamconv.h"
 
 namespace lean
 {
 namespace logging
 {
 
+class log_target;
 class log_stream_out;
 
 /// Log class.
-class log : public noncopyable
+class LEAN_INTERFACE log
 {
+	LEAN_INTERFACE_BEHAVIOR(log)
+
 friend class log_stream_out;
 
-private:
+public:
 	typedef std::basic_ostream<char> output_stream;
-	typedef std::basic_ostringstream<char> string_stream;
-	typedef std::vector<string_stream*> stream_vector;
-	stream_vector m_streams;
-
-	typedef std::vector<output_stream*> free_stream_vector;
-	free_stream_vector m_freeStreams;
-	spin_lock<> m_streamLock;
-
-	typedef std::vector<log_target*> target_vector;
-	target_vector m_targets;
-	shareable_spin_lock<> m_targetLock;
+	typedef std::basic_string<char> string_type;
 
 	/// Acquires a stream to write to. This method is thread-safe.
-	LEAN_MAYBE_EXPORT output_stream& acquireStream();
+	virtual output_stream& acquireStream() = 0;
 	/// Prints the contents of the given stream and releases the stream for further re-use. This method is thread-safe.
-	LEAN_MAYBE_EXPORT void flushAndReleaseStream(output_stream &stream);
+	virtual void flushAndReleaseStream(output_stream &stream) = 0;
 
 public:
-	/// Constructor.
-	LEAN_MAYBE_EXPORT log(log_target *initialTarget = nullptr);
-	/// Destructor.
-	LEAN_MAYBE_EXPORT ~log();
-
 	/// Adds the given target to this log. This method is thread-safe.
-	LEAN_MAYBE_EXPORT void add_target(log_target *target);
+	virtual void add_target(log_target *target) = 0;
 	/// Removes the given target from this log. This method is thread-safe.
-	LEAN_MAYBE_EXPORT void remove_target(log_target *target);
+	virtual void remove_target(log_target *target) = 0;
 
 	/// Prints the given message. This method is thread-safe.
-	LEAN_MAYBE_EXPORT void print(const char_ntri &message);
+	virtual void print(const char_ntri &message) = 0;
 };
 
 /// Log stream class.
@@ -152,9 +134,5 @@ using logging::info_log;
 #define LEAN_LOG_ERROR_BREAK() ::lean::log_stream_out(::lean::error_log()) << ::std::endl
 
 /// @}
-
-#ifdef LEAN_INCLUDE_LINKED
-#include "source/log.cpp"
-#endif
 
 #endif

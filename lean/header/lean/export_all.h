@@ -18,7 +18,7 @@
 
 #include "logging/errors.h"
 #include "logging/win_errors.h"
-#include "logging/log.h"
+#include "logging/log_details.h"
 #include "logging/log_debugger.h"
 #include "logging/log_file.h"
 

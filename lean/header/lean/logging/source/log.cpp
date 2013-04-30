@@ -1,29 +1,40 @@
 #ifdef LEAN_BUILD_LIB
 #include "../../depconfig.h"
-#include "../log.h"
+#include "../log_details.h"
 #endif
 
 #include <sstream>
 #include <algorithm>
 #include "../log_debugger.h"
 
+namespace lean
+{
+namespace logging
+{
+
+struct log_details::string_storage
+{
+	string_stream stream;
+	string_type string;
+};
+
 // Destructor.
-LEAN_ALWAYS_LINK lean::logging::log::log(log_target *initialTarget)
+LEAN_ALWAYS_LINK log_details::log_details(log_target *initialTarget)
 {
 	if (initialTarget)
 		m_targets.push_back(initialTarget);
 }
 
 // Constructor.
-LEAN_ALWAYS_LINK lean::logging::log::~log()
+LEAN_ALWAYS_LINK log_details::~log_details()
 {
 	for (stream_vector::iterator itStream = m_streams.begin();
 		itStream != m_streams.end(); ++itStream)
-		delete (*itStream);
+		delete *itStream;
 }
 
 // Adds the given target to this log. This method is thread-safe.
-LEAN_ALWAYS_LINK void lean::logging::log::add_target(log_target *target)
+LEAN_ALWAYS_LINK void log_details::add_target(log_target *target)
 {
 	if (target != nullptr)
 	{
@@ -33,7 +44,7 @@ LEAN_ALWAYS_LINK void lean::logging::log::add_target(log_target *target)
 }
 
 // Removes the given target from this log. This method is thread-safe.
-LEAN_ALWAYS_LINK void lean::logging::log::remove_target(log_target *target)
+LEAN_ALWAYS_LINK void log_details::remove_target(log_target *target)
 {
 	if (target != nullptr)
 	{
@@ -45,7 +56,7 @@ LEAN_ALWAYS_LINK void lean::logging::log::remove_target(log_target *target)
 }
 
 // Prints the given message. This method is thread-safe.
-LEAN_ALWAYS_LINK void lean::logging::log::print(const char_ntri &message)
+LEAN_ALWAYS_LINK void log_details::print(const char_ntri &message)
 {
 	scoped_ssl_lock_shared lock(m_targetLock);
 
@@ -55,20 +66,20 @@ LEAN_ALWAYS_LINK void lean::logging::log::print(const char_ntri &message)
 }
 
 // Acquires a stream to write to. This method is thread-safe.
-LEAN_ALWAYS_LINK lean::logging::log::output_stream& lean::logging::log::acquireStream()
+LEAN_ALWAYS_LINK log_details::output_stream& log_details::acquireStream()
 {
 	scoped_sl_lock lock(m_streamLock);
 
 	if (m_freeStreams.empty())
 	{
-		std::auto_ptr<string_stream> stream(new string_stream());
+		std::auto_ptr<string_storage> newStorage(new string_storage());
 
 		// Make sure m_freeStreams.capacity() >= m_streams.size()
 		// + Never add invalid element to m_streams
 		m_freeStreams.reserve(m_streams.size() + 1);
-		m_streams.push_back(stream.get());
+		m_streams.push_back(newStorage.get());
 
-		return *stream.release();
+		return newStorage.release()->stream;
 	}
 	else
 	{
@@ -79,35 +90,43 @@ LEAN_ALWAYS_LINK lean::logging::log::output_stream& lean::logging::log::acquireS
 }
 
 // Prints the contents of the given stream and releases the stream for further re-use. This method is thread-safe.
-LEAN_ALWAYS_LINK void lean::logging::log::flushAndReleaseStream(output_stream &stream)
+LEAN_ALWAYS_LINK void log_details::flushAndReleaseStream(output_stream &stream)
 {
-	string_stream& stringStream = static_cast<string_stream&>(stream);
+	string_storage& storage = reinterpret_cast<string_storage&>(static_cast<string_stream&>(stream));
 
-	// Retrieve message & try to reset stream
-	std::string message = stringStream.str();
-	stringStream.str("");
-	stream.clear();
+	// Retrieve message
+	storage.stream.clear();
+	storage.string.resize((size_t) storage.stream.tellp());
+	storage.stream.seekg(0);
+	storage.stream.read(&storage.string[0], storage.string.size());
+
+	// Print stream message
+	print(storage.string);
+
+	// Reset stream
+	storage.stream.str(std::string());
+	storage.stream.clear();
 
 	// Release stream (if reset successfully)
 	{
 		scoped_sl_lock lock(m_streamLock);
 		m_freeStreams.push_back(&stream);
 	}
-
-	// Print stream message
-	print(message);
 }
 
 // Gets the error log.
-LEAN_ALWAYS_LINK lean::logging::log& lean::logging::error_log()
+LEAN_ALWAYS_LINK log& error_log()
 {
-	static log errorLog(&log_debugger::get());
+	static log_details errorLog(&log_debugger::get());
 	return errorLog;
 }
 
 // Gets the info log.
-LEAN_ALWAYS_LINK lean::logging::log& lean::logging::info_log()
+LEAN_ALWAYS_LINK log& info_log()
 {
-	static log infoLog(nullptr);
+	static log_details infoLog(nullptr);
 	return infoLog;
 }
+
+} // namespace
+} // namespace

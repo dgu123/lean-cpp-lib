@@ -188,6 +188,7 @@
     <ClInclude Include="header\lean\limits.h" />
     <ClInclude Include="header\lean\logging\errors.h" />
     <ClInclude Include="header\lean\logging\log_debugger.h" />
+    <ClInclude Include="header\lean\logging\log_details.h" />
     <ClInclude Include="header\lean\logging\log_file.h" />
     <ClInclude Include="header\lean\logging\log_stream.h" />
     <ClInclude Include="header\lean\logging\log_target.h" />

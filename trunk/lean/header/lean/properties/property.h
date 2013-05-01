@@ -211,13 +211,13 @@ LEAN_INLINE bool get_property(const Class &object, const cloneable_obj<property_
 static const size_t invalid_property_id = static_cast<size_t>(-1);
 
 /// Finds a property by name, returning its ID on success, invalid_property_id on failure.
-template <class String, class Collection, class ID>
-inline size_t find_property(const Collection &collection, const String &name, ID invalidID = invalid_property_id)
+template <class ID, class Collection, class String>
+inline ID find_property(const Collection &collection, const String &name, ID invalidID = static_cast<ID>(-1), ID baseOffset = 0)
 {
 	for (typename Collection::const_iterator itProperty = collection.begin();
 		itProperty != collection.end(); ++itProperty)
 		if (itProperty->name == name)
-			return itProperty - collection.begin();
+			return (ID) (itProperty - collection.begin()) + baseOffset;
 
 	return invalidID;
 }

@@ -62,10 +62,9 @@ namespace impl
 	/// Clamps the given map size.
 	inline size_t clamp_map_size(uint8 size)
 	{
-		if (size > static_cast<size_t>(-1))
-			size = static_cast<size_t>(-1);
-
-		return static_cast<size_t>(size);
+		return (size < static_cast<size_t>(-1))
+			? static_cast<size_t>(size)
+			: static_cast<size_t>(-1);
 	}
 
 } // namespace

@@ -117,8 +117,15 @@ LEAN_ALWAYS_LINK void log_details::flushAndReleaseStream(output_stream &stream)
 // Gets the error log.
 LEAN_ALWAYS_LINK log& error_log()
 {
-	static log_details errorLog(&log_debugger::get());
+	static log_details errorLog(log_debugger::get_if_attached());
 	return errorLog;
+}
+
+// Gets the debug log.
+LEAN_ALWAYS_LINK log& debug_log()
+{
+	static log_details debugLog(log_debugger::get_if_attached());
+	return debugLog;
 }
 
 // Gets the info log.

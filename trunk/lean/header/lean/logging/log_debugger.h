@@ -28,6 +28,8 @@ private:
 public:
 	/// Gets the log target instance. This method is thread-safe.
 	LEAN_MAYBE_EXPORT static log_debugger& get();
+	/// Gets the log target instance. This method is thread-safe.
+	LEAN_MAYBE_EXPORT static log_debugger* get_if_attached();
 
 	/// Prints the given message to the debug output window. This method is thread-safe.
 	void print(const char_ntri &message) { print_debugger(message); }

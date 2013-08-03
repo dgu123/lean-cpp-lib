@@ -48,7 +48,7 @@
 
 #ifndef LEAN0X_DISABLE
 
-	// Enable Visual Studio 2010 C++0x features
+	// Enable Visual Studio 2010 C++11 features
 	#if (_MSC_VER >= 1600) && defined(_MSC_EXTENSIONS)
 		#undef LEAN0X_NO_NULLPTR
 		#undef LEAN0X_NO_RVALUE_REFERENCES
@@ -56,6 +56,8 @@
 		#undef LEAN0X_NO_STL
 		#undef LEAN0X_NO_DECLTYPE
 		#undef LEAN0X_NO_OVERRIDE
+		// WORKAROUND: Need to patch in missing C++11 features
+		#define _ALLOW_KEYWORD_MACROS
 	#endif
 
 	#if !defined(LEAN0X_NO_RVALUE_REFERENCES) && defined(LEAN0X_NO_IMPLICIT_MOVE)

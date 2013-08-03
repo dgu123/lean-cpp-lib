@@ -106,8 +106,28 @@ public:
 
 /// Gets the error log.
 LEAN_MAYBE_EXPORT log& error_log();
+/// Gets the debug log.
+LEAN_MAYBE_EXPORT log& debug_log();
 /// Gets the info log.
 LEAN_MAYBE_EXPORT log& info_log();
+
+struct error_stream : public log_stream_out
+{
+	error_stream()
+		: log_stream_out(error_log()) { }
+};
+
+struct debug_stream : public log_stream_out
+{
+	debug_stream()
+		: log_stream_out(debug_log()) { }
+};
+
+struct info_stream : public log_stream_out
+{
+	info_stream()
+		: log_stream_out(info_log()) { }
+};
 
 } // namespace
 
@@ -115,7 +135,12 @@ using logging::log;
 using logging::log_stream_out;
 
 using logging::error_log;
+using logging::debug_log;
 using logging::info_log;
+
+using logging::error_stream;
+using logging::debug_stream;
+using logging::info_stream;
 
 } // namespace
 

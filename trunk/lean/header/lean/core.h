@@ -281,6 +281,25 @@ T& make_lval();
 template <class Integer>
 struct is_unsigned : literal_bool<(Integer(-1) > Integer(0))> { };
 
+/// Converts the given signed integer type to the corresponding unsigned integer type.
+template <class Integer>
+struct make_unsigned;
+/// Converts the given unsigned integer type to the corresponding signed integer type.
+template <class Integer>
+struct make_signed;
+#ifndef DOXYGEN_SKIP_THIS
+	#define LEAN_MAKE_INTEGER_SIGN_MAPPING(integer) \
+		template <> struct make_unsigned<unsigned integer> { typedef unsigned integer type; }; \
+		template <> struct make_unsigned<signed integer> { typedef unsigned integer type; }; \
+		template <> struct make_signed<unsigned integer> { typedef signed integer type; }; \
+		template <> struct make_signed<signed integer> { typedef signed integer type; };
+	LEAN_MAKE_INTEGER_SIGN_MAPPING(char)
+	LEAN_MAKE_INTEGER_SIGN_MAPPING(short)
+	LEAN_MAKE_INTEGER_SIGN_MAPPING(int)
+	LEAN_MAKE_INTEGER_SIGN_MAPPING(long)
+	LEAN_MAKE_INTEGER_SIGN_MAPPING(long long)
+#endif
+
 namespace detail
 {
 	namespace checks
@@ -363,6 +382,7 @@ struct iterator_types {
 	typedef typename std::iterator_traits<Type>::pointer pointer;
 	typedef typename std::iterator_traits<Type>::reference reference;
 };
+// note: pointer shortcut w/o STL <iterator> cruft
 template<class Type>
 struct iterator_types<Type*> {
 	typedef Type value_type;
@@ -379,19 +399,29 @@ struct iterator_types<Type const*> {
 };
 
 template <class Type, bool HasDeref = is_iterator<Type>::value>
-struct iterator_types_or_none : iterator_types<Type> { };
+struct iterator_types_or_none_base : iterator_types<Type> { };
 template <class Type>
-struct iterator_types_or_none<Type, false>{ };
+struct iterator_types_or_none_base<Type, false>{ };
+// note: pointer shortcut w/o SFINAE iterator detection
+template <class Type>
+struct iterator_types_or_none : iterator_types_or_none_base<Type> { };
+template <class Type>
+struct iterator_types_or_none<Type*> : iterator_types<Type*> { };
 
 template < class Type, bool HasDeref = is_iterator<Type>::value >
-struct iterator_types_or_type : iterator_types<Type> { };
+struct iterator_types_or_type_base : iterator_types<Type> { };
 template <class Type>
-struct iterator_types_or_type<Type, false> {
+struct iterator_types_or_type_base<Type, false> {
 	typedef Type value_type;
 	typedef Type difference_type;
 	typedef Type* pointer;
 	typedef Type& reference;
 };
+// note: pointer shortcut w/o SFINAE iterator detection
+template <class Type>
+struct iterator_types_or_type : iterator_types_or_type_base<Type> { };
+template <class Type>
+struct iterator_types_or_type<Type*> : iterator_types<Type*> { };
 
 /// Range type.
 template <class Iterator>
@@ -399,6 +429,10 @@ struct range
 {
 	typedef Iterator iterator;
 	typedef Iterator const_iterator;
+
+	typedef typename iterator_types_or_type<iterator>::difference_type difference_type;
+	typedef typename make_unsigned<difference_type>::type size_type;
+	typedef typename iterator_types_or_type<iterator>::reference reference;
 
 	iterator first, last;
 
@@ -416,20 +450,16 @@ struct range
 	// const& to catch pre-POD usage
 	LEAN_INLINE iterator const& begin() const { return first; }
 	LEAN_INLINE iterator const& end() const { return last; }
-	LEAN_INLINE size_t size() const { return last - first; }
-#if !defined(LEAN0X_NO_DECLTYPE)
-//	LEAN_INLINE auto delta() const -> decltype(make_lval<iterator>() - make_lval<iterator>()) { return last - first; }
-	// Works for non-iterator types as well due to expression SFINAE/VC++ late template checking
-	template <class Index>
-	LEAN_INLINE auto operator [](Index i) const -> decltype(*(make_lval<iterator>() + i)) { return *(first + i); }
-#else
-//	LEAN_INLINE typename iterator_types_or_type<iterator>::difference_type delta() const { return last - first; }
-	template <class Index>
-	LEAN_INLINE typename iterator_types_or_type<iterator>::reference operator [](Index i) const { return *(first + i); }
-#endif
-
-	/// Gets whether this range is empty.
 	LEAN_INLINE bool empty() const { return (first == last); }
+	LEAN_INLINE difference_type delta() const { return last - first; }
+	LEAN_INLINE size_type size() const { return last - first; }
+	template <class Index>
+	LEAN_INLINE reference operator [](Index i) const { return *(first + i); }
+
+	/// Gets a reference to the first element.
+	LEAN_INLINE reference operator *() const { return *first; }
+	/// Gets an iterator to the first element.
+	LEAN_INLINE iterator operator ->() const { return first; }
 	/// Gets whether this range is non-empty.
 	LEAN_INLINE operator bool() const { return (first != last); }
 };

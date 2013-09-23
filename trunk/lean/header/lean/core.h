@@ -82,6 +82,13 @@ namespace detail
 	char const (&arraylen_helper(Type const (&)[Size]))[Size];
 }
 
+/// Gets the length of the given array.
+template <class Type, size_t Size>
+size_t arraylen(Type const (&)[Size]) { return Size; }
+/// Gets the length of the given null-terminated array.
+template <class Type, size_t Size>
+size_t ntarraylen(Type const (&)[Size]) { return Size - 1; }
+
 } // namespace
 
 /// Gets the length of the given array.

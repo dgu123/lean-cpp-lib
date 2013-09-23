@@ -280,7 +280,9 @@ T& make_lval();
 /// Checks if the given integer type is unsigned.
 template <class Integer>
 struct is_unsigned : literal_bool<(Integer(-1) > Integer(0))> { };
-
+/// Checks if the given type is an integer type.
+template <class Integer>
+struct is_integral : false_type { };
 /// Converts the given signed integer type to the corresponding unsigned integer type.
 template <class Integer>
 struct make_unsigned;
@@ -288,16 +290,18 @@ struct make_unsigned;
 template <class Integer>
 struct make_signed;
 #ifndef DOXYGEN_SKIP_THIS
-	#define LEAN_MAKE_INTEGER_SIGN_MAPPING(integer) \
+	#define LEAN_MAKE_INTEGER(integer) \
+		template <> struct is_integral<unsigned integer> : true_type { }; \
+		template <> struct is_integral<signed integer> : true_type { }; \
 		template <> struct make_unsigned<unsigned integer> { typedef unsigned integer type; }; \
 		template <> struct make_unsigned<signed integer> { typedef unsigned integer type; }; \
 		template <> struct make_signed<unsigned integer> { typedef signed integer type; }; \
 		template <> struct make_signed<signed integer> { typedef signed integer type; };
-	LEAN_MAKE_INTEGER_SIGN_MAPPING(char)
-	LEAN_MAKE_INTEGER_SIGN_MAPPING(short)
-	LEAN_MAKE_INTEGER_SIGN_MAPPING(int)
-	LEAN_MAKE_INTEGER_SIGN_MAPPING(long)
-	LEAN_MAKE_INTEGER_SIGN_MAPPING(long long)
+	LEAN_MAKE_INTEGER(char)
+	LEAN_MAKE_INTEGER(short)
+	LEAN_MAKE_INTEGER(int)
+	LEAN_MAKE_INTEGER(long)
+	LEAN_MAKE_INTEGER(long long)
 #endif
 
 namespace detail
@@ -401,7 +405,7 @@ struct iterator_types<Type const*> {
 template <class Type, bool HasDeref = is_iterator<Type>::value>
 struct iterator_types_or_none_base : iterator_types<Type> { };
 template <class Type>
-struct iterator_types_or_none_base<Type, false>{ };
+struct iterator_types_or_none_base<Type, false> { };
 // note: pointer shortcut w/o SFINAE iterator detection
 template <class Type>
 struct iterator_types_or_none : iterator_types_or_none_base<Type> { };

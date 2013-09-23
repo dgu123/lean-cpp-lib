@@ -374,7 +374,7 @@ struct is_iterator : literal_bool<
 } // namespace
 
 // NOTE: <iterator> includes loads of cruft
-namespace std { template<class Iterator> struct iterator_traits; }
+namespace std { template <class Iterator> struct iterator_traits; }
 
 namespace lean
 {

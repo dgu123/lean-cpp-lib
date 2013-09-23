@@ -26,10 +26,8 @@ template <class T>
 class vector {
 	LEAN_INTERFACE_BEHAVIOR(vector)
 public:
-	virtual void resize(size_t size) = 0;
-	virtual size_t size() const = 0;
-	virtual T* data() = 0;
-	virtual T const* data() const = 0;
+	virtual T* resize(size_t size) = 0;
+	virtual range<T const*> data() const = 0;
 };
 template <class Container, class Element = typename Container::value_type>
 struct vector_ref : vector<Element>
@@ -37,10 +35,8 @@ struct vector_ref : vector<Element>
 	Container& container;
 
 	vector_ref(Container& container) : container(container) { }
-	void resize(size_t size) { container.resize(size); }
-	virtual size_t size() const { return container.size(); }
-	Element* data() { return &container[0]; }
-	Element const* data() const { return container.data(); }
+	Element* resize(size_t size) { container.resize(size); return &container[0]; }
+	range<Element const*> data() const { Element const* p = container.data(); return range<Element const*>(p, p + container.size()); }
 };
 template <class E, class A>
 struct ref_type_map< vector<E>, std::vector<E, A> > { typedef vector_ref< std::vector<E, A> > type; };

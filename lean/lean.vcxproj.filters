@@ -546,18 +546,6 @@
     <ClInclude Include="header\lean\logging\log_details.h">
       <Filter>Header Files\logging</Filter>
     </ClInclude>
-    <ClInclude Include="header\lean\config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="header\lean\core.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="header\lean\platform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="header\lean\use.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\stdafx.cpp">

@@ -130,6 +130,15 @@ struct nullterminated_compatible< std::basic_string<Char, StringTraits, StringAl
 	static compatible_type to(const Char *begin, const Char *end) { return compatible_type(begin, end); }
 };
 
+/// Returns the length of the given null-terminated array.
+template <class Type, size_t Size>
+LEAN_INLINE size_t ntarraylen(Type (&)[Size])
+{
+	return (Size > 0)
+		? static_cast<size_t>(Size - 1)
+		: 0;
+}
+
 } // namespace
 
 using strings::char_nti;
@@ -176,6 +185,8 @@ using strings::utf32_ntr;
 using strings::utf8_string;
 using strings::utf16_string;
 using strings::utf32_string;
+
+using strings::ntarraylen;
 
 } // namespace
 

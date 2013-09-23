@@ -6,9 +6,6 @@
 #ifndef LEAN_CPP0X
 #define LEAN_CPP0X
 
-#include "macros.h"
-#include "meta/literal.h"
-
 /// @addtogroup CPP0X C++0x-related macros
 /// @see GlobalMacros
 /// @{
@@ -18,7 +15,6 @@
 	/// Define this to disable all C++0x features
 	#define LEAN0X_DISABLE
 #endif
-
 
 // Disable all C++0x features by default when working with older C++ standards
 #if (201100L > __cplusplus) || defined(LEAN0X_DISABLE)
@@ -86,6 +82,14 @@
 	#define LEAN_OVERRIDE
 #endif
 
+#ifndef LEAN0X_NO_ATTRIBUTES
+	/// Indicates that the corresponding function will never return.
+	#define LEAN_NORETURN [[noreturn]]
+#else
+	/// Indicates that the corresponding function will never return.
+	#define LEAN_NORETURN __declspec(noreturn)
+#endif
+
 // Emulate static_assert
 #if defined(LEAN0X_NO_STATIC_ASSERT) && !defined(static_assert)
 
@@ -121,13 +125,11 @@
 		::lean::impl::emit_static_assertion_error< \
 			::lean::impl::trigger_static_assertion_error<(expr), ::lean::static_assertion_error>::triggered \
 		> LEAN_JOIN_VALUES(static_assertion_error_, __LINE__)
-
 	/// Static assertion incorporating the given message in a compiler error on failure.
 	#define LEAN_STATIC_ASSERT_MSG(expr, msg) typedef \
 		::lean::impl::emit_static_assertion_error< \
 			::lean::impl::trigger_static_assertion_error<(expr), ::lean::static_assertion_error>::triggered \
 		> LEAN_JOIN_VALUES(static_assertion_error_, __LINE__)
-
 	/// Static assertion incorporating either the given message or the given type name in a compiler error on failure.
 	#define LEAN_STATIC_ASSERT_MSG_ALT(expr, msg, msgtype) struct static_assertion_error__##msgtype; typedef \
 		::lean::impl::emit_static_assertion_error< \
@@ -136,45 +138,29 @@
 
 	// Emulate static_assert
 	#define static_assert(expr, msg) LEAN_STATIC_ASSERT_MSG(expr, msg)
-
 #else
 	/// Static assertion triggering a compiler error on failure.
 	#define LEAN_STATIC_ASSERT(expr) static_assert(expr, #expr)
-	
 	/// Static assertion incorporating the given message in a compiler error on failure.
 	#define LEAN_STATIC_ASSERT_MSG(expr, msg) static_assert(expr, msg)
-	
 	/// Static assertion incorporating either the given message or the given incomplete type in a compiler error on failure.
 	#define LEAN_STATIC_ASSERT_MSG_ALT(expr, msg, msgtype) static_assert(expr, msg)
-#endif
-
-#ifndef LEAN0X_NO_ATTRIBUTES
-	/// Indicates that the corresponding function will never return.
-	#define LEAN_NORETURN [[noreturn]]
-#else
-	/// Indicates that the corresponding function will never return.
-	#define LEAN_NORETURN __declspec(noreturn)
 #endif
 
 #ifndef LEAN0X_NO_RVALUE_REFERENCES
 	// Automatically include utility for move semantics
 	#include <utility>
-
 	/// Forwarding reference.
 	#define LEAN_FW_REF &&
-
 	/// Forwards the given value.
 	#define LEAN_FORWARD(type, arg) std::forward<type>(arg)
-
 	/// Moves the given value.
 	#define LEAN_MOVE(arg) std::move(arg)
 #else
 	/// Forwarding reference.
 	#define LEAN_FW_REF const &
-
 	/// Forwards the given value.
 	#define LEAN_FORWARD(type, arg) arg
-
 	/// Moves the given value.
 	#define LEAN_MOVE(arg) arg
 #endif

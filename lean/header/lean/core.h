@@ -454,6 +454,8 @@ struct range
 	// const& to catch pre-POD usage
 	LEAN_INLINE iterator const& begin() const { return first; }
 	LEAN_INLINE iterator const& end() const { return last; }
+	LEAN_INLINE const_iterator const& cbegin() const { return first; }
+	LEAN_INLINE const_iterator const& cend() const { return last; }
 	LEAN_INLINE bool empty() const { return (first == last); }
 	LEAN_INLINE difference_type delta() const { return last - first; }
 	LEAN_INLINE size_type size() const { return last - first; }
@@ -466,6 +468,11 @@ struct range
 	LEAN_INLINE iterator operator ->() const { return first; }
 	/// Gets whether this range is non-empty.
 	LEAN_INLINE operator bool() const { return (first != last); }
+
+	LEAN_INLINE iterator data() const { return first; }
+	LEAN_INLINE iterator data_end() const { return last; }
+	LEAN_INLINE const_iterator cdata() const { return first; }
+	LEAN_INLINE const_iterator cdata_end() const { return last; }
 };
 
 /// Makes a range from the given pair of iterators.

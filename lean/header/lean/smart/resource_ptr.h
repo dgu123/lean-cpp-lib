@@ -161,6 +161,10 @@ public:
 	{
 		rebind(nullptr);
 	}
+
+	/// Accepts the critical pointer by resetting this pointer and returning a stable pointer.
+	LEAN_INLINE resource_ptr<Resource, stable_ref> accept() {
+		return resource_ptr<Resource, stable_ref>(unbind(), bind_reference); }
 	
 	/// Replaces the stored resource with the given resource. <b>[ESA]</b>
 	resource_ptr& operator =(resource_type *resource)

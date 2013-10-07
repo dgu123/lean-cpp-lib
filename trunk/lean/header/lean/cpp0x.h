@@ -152,6 +152,8 @@
 	#include <utility>
 	/// Forwarding reference.
 	#define LEAN_FW_REF &&
+	/// Forwarding reference.
+	#define LEAN_FW_MREF &&
 	/// Forwards the given value.
 	#define LEAN_FORWARD(type, arg) std::forward<type>(arg)
 	/// Moves the given value.
@@ -159,6 +161,8 @@
 #else
 	/// Forwarding reference.
 	#define LEAN_FW_REF const &
+	/// Forwarding reference.
+	#define LEAN_FW_MREF &
 	/// Forwards the given value.
 	#define LEAN_FORWARD(type, arg) arg
 	/// Moves the given value.

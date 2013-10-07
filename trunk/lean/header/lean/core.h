@@ -192,6 +192,9 @@ struct dependent_false : false_type { };
 /// Defines a false literal, ignoring any template arguments.
 template <int N>
 struct int_dependent_false : false_type { };
+/// Defines a false literal, ignoring any template arguments.
+template <class T, T V>
+struct literal_dependent_false : false_type { };
 
 #define LEAN_IS_TRUE_TYPE_SIZE(x) (sizeof(x) == sizeof(::lean::true_type))
 

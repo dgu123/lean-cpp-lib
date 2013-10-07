@@ -237,6 +237,9 @@ public:
 	{
 		return move_ptr_t(m_object);
 	}
+	/// Accepts the critical pointer by resetting this pointer and returning a stable pointer.
+	LEAN_INLINE scoped_ptr<Type, stable_ref, ReleasePolicy> accept() {
+		return scoped_ptr<Type, stable_ref, ReleasePolicy>(detach()); }
 
 	/// Destroys the stored object.
 	LEAN_INLINE void release()
